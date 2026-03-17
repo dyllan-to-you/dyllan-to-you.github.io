@@ -1,0 +1,599 @@
+# Dyllan.to — Personal Website Holograph
+#
+# A book-shaped personal website for Dyllan Justice Tô-Yu.
+# Hitchhiker's Guide aesthetic: skeuomorphic book shell,
+# digital/terminal-esque page interiors. Built with Astro.
+#
+# Structure:
+#   System Holons — book-ui, guide-aesthetic, writings-engine
+#   Page Holons   — cover, about, projects, writings, contact
+#   Each page Holon projects to an Astro component (the glamour).
+
+
+# ============================================================================
+# DYLLAN-TO — The Website (Level 3: Holograph)
+# ============================================================================
+
+dyllan-to:
+  level: 3
+  name: Dyllan.to
+  description: "Personal website for Dyllan Justice Tô-Yu, shaped like a book."
+
+  why:
+    identity: >
+      A digital book you can flip through — part portfolio, part story,
+      part writings platform. The Hitchhiker's Guide to Justice.
+
+    motivation: >
+      Give Justice a home on the web that embodies his aesthetic and values:
+      playful but precise, skeuomorphic but digital, inviting but not shallow.
+
+    tenets:
+      - "The book metaphor is structural, not decorative. Navigation IS page-flipping."
+      - "Each page earns its place. No filler."
+      - "Content-first. Book chrome enhances reading, never competes."
+      - "Accessible. Works without JS (graceful degradation to standard nav)."
+
+    tensions:
+      - "Delight vs. usability — flip animation shouldn't slow navigation."
+      - "Skeuomorphic vs. performant — rich textures vs. fast load."
+      - "Book metaphor vs. web conventions — URLs, back buttons, deep links must work."
+
+  what:
+    connections:
+      memberships:
+        - context: Playfaire
+
+      relations:
+        - target: website
+          type: conforms-to
+          description: "Inherits web architecture standards (accessibility, performance, CSS tokens, progressive enhancement)."
+
+      facets:
+        - name: system
+          contains: [book-ui, guide-aesthetic, writings-engine]
+        - name: pages
+          contains: [page-cover, page-about, page-projects, page-writings, page-contact]
+
+    schema:
+      domain: dyllan.to
+      stack: astro
+      deploy: static
+      content-format: mdx
+
+    tells:
+      - "Looks like a physical book when you land on it."
+      - "Pages flip with realistic 3D animation on navigation."
+      - "Interior pages have a digital/terminal aesthetic."
+      - "Every page is a shareable URL."
+
+  how:
+    invariants:
+      - "Every page is a valid, bookmarkable URL."
+      - "Page-flip animation under 600ms."
+      - "First contentful paint under 1.5s on 3G."
+      - "All content renders server-side. JS enhances, never gates."
+
+    faults:
+      - name: content-trapped
+        trigger: "Content only accessible through book UI, not via direct URL."
+        consequence: "SEO dies. Sharing breaks."
+
+      - name: metaphor-overreach
+        trigger: "Book metaphor forces unnatural UX patterns."
+        consequence: "Users fight the interface."
+
+
+# ============================================================================
+# SYSTEM HOLONS
+# ============================================================================
+
+book-ui:
+  level: 2
+  name: Book UI
+
+  why:
+    identity: >
+      Page-flip book component for Astro. CSS 3D transforms for the flip,
+      slot-based content injection, touch/swipe/keyboard support.
+
+    motivation: >
+      Make page navigation feel like flipping through a physical book.
+
+    tenets:
+      - "CSS-first animation. No canvas, no WebGL. 3D transforms + transitions."
+      - "Each page is an Astro slot — component doesn't know about content."
+      - "Touch, mouse, keyboard. Swipe, click edges, arrow keys."
+      - "Without JS, pages render as vertical stack with nav links."
+
+    tensions:
+      - "Realism vs. performance — more layers = richer flip = more paint."
+      - "Touch gestures vs. scroll — swipe-to-flip can conflict with scroll."
+
+  what:
+    connections:
+      memberships:
+        - context: Dyllan.to
+          type: system
+
+      relations:
+        - target: guide-aesthetic
+          type: styled-by
+
+    schema:
+      props:
+        current-page: number
+        total-pages: number
+        enable-swipe: boolean
+        enable-keyboard: boolean
+      events:
+        page-flip-start: "{ from: number, to: number, direction: forward | backward }"
+        page-flip-end: "{ page: number }"
+      css-custom-properties:
+        --book-width: "clamp(320px, 80vw, 900px)"
+        --book-height: "clamp(480px, 80vh, 1200px)"
+        --flip-duration: "500ms"
+
+    tells:
+      - "3D book in viewport with visible spine and cover edges."
+      - "Pages flip on click/swipe/keyboard with smooth 3D rotation."
+      - "Subtle page indicator (dots or numbers) showing current position."
+      - "Responsive — scales to viewport, maintains aspect ratio."
+
+  how:
+    invariants:
+      - "Flip uses CSS transforms only (no JS animation frames for the flip)."
+      - "Each page: single DOM element, backface-visibility: hidden."
+      - "Navigation state syncs with URL (history.pushState)."
+      - "Page indicator updates on every flip. Clicking an indicator dot jumps to that page."
+
+    faults:
+      - name: z-fighting
+        trigger: "Multiple pages at similar z-index during flip."
+        consequence: "Pages flicker or show through each other."
+
+      - name: swipe-scroll-conflict
+        trigger: "Horizontal swipe conflicts with vertical scroll."
+        consequence: "Can't scroll without accidentally flipping."
+
+      - name: animation-jank
+        trigger: "Flip drops below 30fps on mid-range devices."
+        consequence: "Core metaphor fails."
+
+
+guide-aesthetic:
+  level: 2
+  name: Guide Aesthetic
+
+  why:
+    identity: >
+      Visual language of Dyllan.to. Hitchhiker's Guide to the Galaxy
+      meets terminal emulator. Book shell is warm and tactile. Page
+      interiors are cool and digital.
+
+    motivation: >
+      The contrast between analog exterior and digital interior mirrors
+      Justice's work — formal frameworks expressed through playful interfaces.
+
+    tenets:
+      - "DON'T PANIC — but in a tasteful font."
+      - "Cover says 'book.' Pages say 'terminal.' The contrast is the point."
+      - "Warm golds and leather outside, cool greens and blues inside."
+      - "Serif for the cover, monospace for the interior."
+
+    tensions:
+      - "Retro-futurism vs. modern web — CRT effects shouldn't feel dated."
+      - "Texture density vs. load time."
+      - "Accessibility vs. aesthetic — green-on-black is atmospheric but readability matters."
+
+  what:
+    connections:
+      memberships:
+        - context: Dyllan.to
+          type: system
+
+    schema:
+      color-tokens:
+        # Exterior
+        cover-leather: "#2a1810"
+        cover-gold: "#c9a54e"
+        page-edge: "#f0e6d0"
+        spine-shadow: "#0d0a07"
+        # Interior
+        terminal-bg: "#0d1117"
+        terminal-text: "#c9d1d9"
+        terminal-green: "#33ff88"
+        terminal-amber: "#ffaa33"
+        terminal-dim: "#484f58"
+
+      typography:
+        cover: "serif (Playfair Display or EB Garamond)"
+        headings: "monospace bold (JetBrains Mono or Fira Code)"
+        body: "monospace (IBM Plex Mono)"
+
+      textures:
+        cover: "Dark leather grain — CSS-generated or optimized WebP < 50KB"
+        pages: "Subtle noise + faint scanlines (CSS only, opacity 0.03-0.05)"
+
+    tells:
+      - "First impression: 'That's a book. Wait — it's a terminal inside.'"
+      - "Color contrast passes WCAG AA for all text."
+
+  how:
+    invariants:
+      - "All text meets WCAG AA contrast (4.5:1 normal, 3:1 large)."
+      - "Textures are CSS-generated or SVG where possible. Raster < 50KB each."
+      - "Color tokens are CSS custom properties — no hardcoded values."
+
+    faults:
+      - name: contrast-fail
+        trigger: "Text falls below WCAG AA ratio."
+        consequence: "Content is inaccessible."
+
+      - name: texture-bloat
+        trigger: "Raster textures exceed 200KB total for initial load."
+        consequence: "Book takes too long to appear."
+
+
+writings-engine:
+  level: 2
+  name: Writings Engine
+
+  why:
+    identity: >
+      Blog/writings system using Astro content collections. MDX files
+      with frontmatter become book pages at build time.
+
+    motivation: >
+      Let Justice publish essays, the Ur story, technical pieces —
+      write in MDX, publish as book pages. No CMS, no database.
+
+    tenets:
+      - "Write in MDX, publish as book pages."
+      - "Frontmatter drives metadata — title, date, tags, draft."
+      - "Long posts can span multiple book pages."
+
+  what:
+    connections:
+      memberships:
+        - context: Dyllan.to
+          type: system
+
+      relations:
+        - target: page-writings
+          type: feeds-into
+
+    schema:
+      post-frontmatter:
+        title: string (required)
+        date: date (required)
+        slug: string (required)
+        description: string
+        tags: "string[]"
+        draft: boolean
+      directory: src/content/writings/
+      format: mdx
+
+    tells:
+      - "Posts are .mdx files in src/content/writings/."
+      - "Draft posts excluded from production builds."
+      - "RSS feed generated from published posts."
+
+  how:
+    invariants:
+      - "Astro content collections validate frontmatter at build time."
+      - "RSS feed auto-generated."
+
+    faults:
+      - name: frontmatter-invalid
+        trigger: "Post missing required frontmatter."
+        consequence: "Build fails."
+
+
+# ============================================================================
+# PAGE HOLONS — each projects to an Astro page component
+# ============================================================================
+
+page-cover:
+  level: 2
+  name: "Cover Page"
+
+  why:
+    identity: "The front cover of the book. First thing visitors see."
+    motivation: "Hook the visitor. Set the aesthetic. Invite them to open the book."
+
+    tenets:
+      - "Minimal. Name, a hook line, and a way to open."
+      - "The cover IS the landing page. No splash screen before the book."
+
+  what:
+    connections:
+      memberships:
+        - context: Dyllan.to
+          type: page
+      relations:
+        - target: page-toc
+          type: next-page
+
+    schema:
+      slug: /
+      page-number: 0
+      content:
+        title: "Dyllan Justice Tô-Yu"
+        subtitle: "Live a good story."
+        action: "Open the book (flip to TOC)"
+      layout: cover  # special layout — leather texture, embossed gold text
+
+    tells:
+      - "Leather-textured cover with embossed gold lettering."
+      - "Single call-to-action: open the book."
+      - "No navigation chrome — just the cover."
+
+  how:
+    invariants:
+      - "No content below the fold. Everything visible without scroll."
+      - "Click/tap anywhere (or specific CTA) flips to the table of contents."
+
+    faults:
+      - name: empty-hook
+        trigger: "Subtitle/hook line is placeholder or generic."
+        consequence: "No reason to open the book. Current: 'Live a good story.'"
+
+
+page-toc:
+  level: 2
+  name: "Table of Contents"
+
+  why:
+    identity: "The book's table of contents. Second page, right after the cover."
+    motivation: >
+      Reinforce the book metaphor. Give visitors a map of what's inside.
+      A real book has a contents page — so does this one.
+
+    tenets:
+      - "Simple list. Section name and page number (or position)."
+      - "Each entry is a link to that page."
+
+  what:
+    connections:
+      memberships:
+        - context: Dyllan.to
+          type: page
+      relations:
+        - target: page-cover
+          type: prev-page
+        - target: page-about
+          type: next-page
+
+    schema:
+      slug: /contents
+      page-number: 1
+      content:
+        title: "Contents"
+        sections:
+          - { label: "About", page: 2 }
+          - { label: "Projects", page: 3 }
+          - { label: "Writings", page: 4 }
+          - { label: "Contact", page: 5 }
+      layout: interior  # terminal aesthetic
+
+    tells:
+      - "Clean list of sections with page numbers."
+      - "Each section name is clickable."
+      - "Terminal aesthetic, consistent with interior pages."
+
+  how:
+    invariants:
+      - "Every section in the book has a corresponding entry."
+      - "Entries link to their respective pages."
+
+    faults:
+      - name: stale-toc
+        trigger: "A page is added or removed but TOC is not updated."
+        consequence: "Broken link or missing entry."
+
+
+page-about:
+  level: 2
+  name: "About Page"
+
+  why:
+    identity: "Who Justice is. The second interior page."
+    motivation: >
+      The Feynman-at-a-barbecue version. Brief, real, human.
+      Not a CV — a person.
+
+    tenets:
+      - "First person. Conversational. Not corporate."
+      - "Show, don't list. A narrative, not bullet points."
+
+  what:
+    connections:
+      memberships:
+        - context: Dyllan.to
+          type: page
+      relations:
+        - target: page-cover
+          type: prev-page
+        - target: page-projects
+          type: next-page
+        - target: justice
+          type: about
+
+    schema:
+      slug: /about
+      page-number: 2
+      content:
+        sections:
+          - "Origin — where Justice comes from, what shaped him"
+          - "Now — what he's doing today (Playfaire, Ur, the work)"
+          - "Why — the driving motivation (sovereignty, play, description)"
+      layout: interior  # terminal aesthetic
+
+    tells:
+      - "Terminal-aesthetic page with phosphor-green headings."
+      - "Reads like a story, not a resume."
+
+  how:
+    invariants:
+      - "Fits on one book page (no scroll, or minimal scroll)."
+      - "No jargon without context. A stranger should follow."
+
+    faults:
+      - name: resume-mode
+        trigger: "Content reads like a LinkedIn profile."
+        consequence: "The personal voice is lost. The book feels corporate."
+
+
+page-projects:
+  level: 2
+  name: "Projects Page"
+
+  why:
+    identity: "What Justice builds. A single page overview of all projects."
+    motivation: >
+      Give visitors a map of the work. Each project gets a card-sized
+      description. Depth comes later (individual project pages or writings).
+
+    tenets:
+      - "Overview, not exhaustive. Each project: what + why + status in a few lines."
+      - "Visual hierarchy. Most important/active projects prominent."
+
+  what:
+    connections:
+      memberships:
+        - context: Dyllan.to
+          type: page
+      relations:
+        - target: page-about
+          type: prev-page
+        - target: page-writings
+          type: next-page
+
+    schema:
+      slug: /projects
+      page-number: 3
+      content:
+        projects:
+          - name: Ur
+            blurb: "Recursive specification framework. Derives everything from 'nothing exists.'"
+          - name: Ludex
+            blurb: "The playbook. Holonic memory, crossing function, projection engine."
+          - name: Faewyld
+            blurb: "Agent orchestration. Seven primitives for AI coordination."
+          - name: Lifesaga
+            blurb: "Personal data ecosystem. Your life, your holons."
+          - name: Playfaire
+            blurb: "Public benefit company. The umbrella for all of this."
+      layout: interior
+
+    tells:
+      - "Grid or list of project cards on terminal background."
+      - "Each card: name, one-line blurb, visual indicator of status."
+
+  how:
+    invariants:
+      - "All projects listed. None hidden."
+      - "Links to deeper content (writings, repos) where available."
+
+    faults:
+      - name: stale-status
+        trigger: "Project status doesn't reflect reality."
+        consequence: "Visitors get wrong impression of what's active."
+
+
+page-writings:
+  level: 2
+  name: "Writings Page"
+
+  why:
+    identity: "Index of blog posts and longer pieces. The library chapter."
+    motivation: >
+      Show what Justice has written. Reverse-chronological list.
+      Each entry links to the full post (which renders as its own book page).
+
+    tenets:
+      - "The index is a page. Individual posts are additional pages."
+      - "Newest first. Scannable titles and dates."
+
+  what:
+    connections:
+      memberships:
+        - context: Dyllan.to
+          type: page
+      relations:
+        - target: page-projects
+          type: prev-page
+        - target: page-contact
+          type: next-page
+        - target: writings-engine
+          type: powered-by
+
+    schema:
+      slug: /writings
+      page-number: 4
+      content:
+        type: dynamic-index
+        source: "src/content/writings/"
+        sort: date-descending
+        display: "title, date, description, tags"
+      layout: interior
+
+    tells:
+      - "List of post titles with dates on terminal background."
+      - "Click a post → flip to that post's page."
+
+  how:
+    invariants:
+      - "Dynamically generated from content collection at build time."
+      - "Draft posts hidden in production."
+
+    faults:
+      - name: empty-index
+        trigger: "No published posts yet."
+        consequence: "Page looks broken. Needs an empty state."
+
+
+page-contact:
+  level: 2
+  name: "Contact Page"
+
+  why:
+    identity: "How to reach Justice. The back of the book."
+    motivation: "Links, not forms. Simple and direct."
+
+    tenets:
+      - "No contact form. Just links."
+      - "Feels like the back cover — a graceful close."
+
+  what:
+    connections:
+      memberships:
+        - context: Dyllan.to
+          type: page
+      relations:
+        - target: page-writings
+          type: prev-page
+
+    schema:
+      slug: /contact
+      page-number: 5
+      content:
+        links:
+          - type: email
+            url: "howdy@dyllan.to"
+      layout: back-cover  # could be leather exterior like front, or interior
+
+    tells:
+      - "Clean list of contact links."
+      - "Feels like closing the book."
+
+  how:
+    invariants:
+      - "All links are real and current."
+      - "No forms, no captchas."
+
+    faults:
+      - name: dead-links
+        trigger: "A contact link 404s or goes to wrong place."
+        consequence: "The one job of this page fails."

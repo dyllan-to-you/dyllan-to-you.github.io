@@ -1,0 +1,87 @@
+# Dyllan.to Glamour — Projection Registry
+#
+# Maps source Holons from dyllan-to.holograph.yaml to their
+# projection artifacts (Astro components, CSS, config).
+
+glamour:
+  name: Dyllan.to Glamour
+
+  why:
+    identity: >
+      Projection registry for the Dyllan.to website. Lists every
+      artifact with its source Holon and lens pipeline.
+
+    purpose: >
+      An agent reading this file can enumerate all website artifacts
+      and trace each back to its source Holon.
+
+  what:
+    connections:
+      relations:
+        - target: dyllan-to/dyllan-to.holograph.yaml
+          type: source
+
+    schema:
+      projections:
+        # System components
+        - artifact: src/components/Book.astro
+          source: book-ui
+          lens: [astro-component]
+          description: "Page-flip book component. CSS 3D transforms, slot-based pages."
+
+        - artifact: src/styles/guide.css
+          source: guide-aesthetic
+          lens: [css]
+          description: "Design tokens, typography, textures. The visual language."
+
+        - artifact: src/layouts/BookLayout.astro
+          source: [book-ui, guide-aesthetic]
+          lens: [astro-layout]
+          description: "Wraps pages in the Book component with guide styling."
+
+        # Page projections
+        - artifact: src/pages/index.astro
+          source: page-cover
+          lens: [astro-page, cover-layout]
+          description: "Front cover. Landing page."
+
+        - artifact: src/pages/about.astro
+          source: page-about
+          lens: [astro-page, interior-layout]
+          description: "About page. Who Justice is."
+
+        - artifact: src/pages/projects.astro
+          source: page-projects
+          lens: [astro-page, interior-layout]
+          description: "Projects overview page."
+
+        - artifact: src/pages/writings/index.astro
+          source: page-writings
+          lens: [astro-page, interior-layout, content-collection]
+          description: "Writings index. Dynamic from content collection."
+
+        - artifact: "src/pages/writings/[slug].astro"
+          source: writings-engine
+          lens: [astro-dynamic-page, interior-layout, content-collection]
+          description: "Individual writing/post pages. Dynamic routes."
+
+        - artifact: src/pages/contact.astro
+          source: page-contact
+          lens: [astro-page, back-cover-layout]
+          description: "Contact page. Back of the book."
+
+        # Config
+        - artifact: astro.config.mjs
+          source: dyllan-to
+          lens: [astro-config]
+          description: "Astro configuration. Content collections, integrations."
+
+        - artifact: src/content/config.ts
+          source: writings-engine
+          lens: [astro-content-config]
+          description: "Content collection schema. Validates post frontmatter."
+
+  how:
+    invariants:
+      - "Every artifact traces to a source Holon in dyllan-to.holograph.yaml."
+      - "Lens pipelines point toward sources, never away."
