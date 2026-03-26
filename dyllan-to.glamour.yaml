@@ -1,7 +1,7 @@
 # Dyllan.to Glamour — Projection Registry
 #
 # Maps source Holons from dyllan-to.holograph.yaml to their
-# projection artifacts (Astro components, CSS, config).
+# projection artifacts (Svelte components, Astro shell, config).
 
 glamour:
   name: Dyllan.to Glamour
@@ -23,65 +23,113 @@ glamour:
 
     schema:
       projections:
-        # System components
-        - artifact: src/components/Book.astro
-          source: book-ui
-          lens: [astro-component]
-          description: "Page-flip book component. CSS 3D transforms, slot-based pages."
-
-        - artifact: src/styles/guide.css
-          source: guide-aesthetic
-          lens: [css]
-          description: "Design tokens, typography, textures. The visual language."
-
-        - artifact: src/layouts/BookLayout.astro
-          source: [book-ui, guide-aesthetic]
-          lens: [astro-layout]
-          description: "Wraps pages in the Book component with guide styling."
-
-        # Page projections
+        # ── Astro shell ──
         - artifact: src/pages/index.astro
-          source: page-cover
-          lens: [astro-page, cover-layout]
-          description: "Front cover. Landing page."
+          source: dyllan-to
+          lens: [astro-page]
+          description: "Astro shell. Font loading, meta tags, hydrates Tome island."
 
-        - artifact: src/pages/about.astro
-          source: page-about
-          lens: [astro-page, interior-layout]
-          description: "About page. Who Justice is."
-
-        - artifact: src/pages/projects.astro
-          source: page-projects
-          lens: [astro-page, interior-layout]
-          description: "Projects overview page."
-
-        - artifact: src/pages/writings/index.astro
-          source: page-writings
-          lens: [astro-page, interior-layout, content-collection]
-          description: "Writings index. Dynamic from content collection."
-
-        - artifact: "src/pages/writings/[slug].astro"
-          source: writings-engine
-          lens: [astro-dynamic-page, interior-layout, content-collection]
-          description: "Individual writing/post pages. Dynamic routes."
-
-        - artifact: src/pages/contact.astro
-          source: page-contact
-          lens: [astro-page, back-cover-layout]
-          description: "Contact page. Back of the book."
-
-        # Config
         - artifact: astro.config.mjs
           source: dyllan-to
           lens: [astro-config]
-          description: "Astro configuration. Content collections, integrations."
+          description: "Astro configuration. Svelte integration, site URL."
 
-        - artifact: src/content/config.ts
-          source: writings-engine
-          lens: [astro-content-config]
-          description: "Content collection schema. Validates post frontmatter."
+        # ── Engine ──
+        - artifact: src/components/tome/Tome.svelte
+          source: tome-engine
+          lens: [svelte-component]
+          description: "Book engine. Flip state, 3D transforms, orientation, input, a11y."
+
+        - artifact: src/components/tome/tokens.js
+          source: tome-aesthetic
+          lens: [js-module]
+          description: "Design tokens. Colors, fonts, timing, layout, z-index, orientation maps."
+
+        # ── Decorations (source: tome-aesthetic) ──
+        - artifact: src/components/tome/CircuitVine.svelte
+          source: tome-aesthetic
+          lens: [svelte-component, svg]
+          description: "Circuit-trace vine border decoration."
+
+        - artifact: src/components/tome/CoverSigil.svelte
+          source: tome-aesthetic
+          lens: [svelte-component, svg]
+          description: "Geometric/organic central emblem. Hexagonal + pentagonal geometry."
+
+        - artifact: src/components/tome/CornerOrnament.svelte
+          source: tome-aesthetic
+          lens: [svelte-component, svg]
+          description: "Corner flourish. 4 rotations via position prop."
+
+        # ── Atoms (source: tome-aesthetic + tome-engine) ──
+        - artifact: src/components/tome/PageNumber.svelte
+          source: tome-aesthetic
+          lens: [svelte-component]
+          description: "Centered page number at bottom of page."
+
+        - artifact: src/components/tome/ProjectCard.svelte
+          source: tome-aesthetic
+          lens: [svelte-component]
+          description: "Project name + description card."
+
+        - artifact: src/components/tome/ChapterHeader.svelte
+          source: tome-aesthetic
+          lens: [svelte-component]
+          description: "Chapter opener: number, title, subtitle, divider."
+
+        - artifact: src/components/tome/PaperBlank.svelte
+          source: tome-aesthetic
+          lens: [svelte-component]
+          description: "Blank paper page (endpapers, fillers)."
+
+        # ── Page components (source: page-* holons) ──
+        - artifact: src/components/tome/CoverPage.svelte
+          source: page-cover
+          lens: [svelte-component, cover-layout]
+          description: "Front cover. Leather texture, gold title, sigil, corner ornaments."
+
+        - artifact: src/components/tome/EpigraphPage.svelte
+          source: page-epigraph
+          lens: [svelte-component, paper-layout]
+          description: "Epigraph. 'Assert nothing. Derive everything.'"
+
+        - artifact: src/components/tome/PhilosophyPage.svelte
+          source: page-philosophy
+          lens: [svelte-component, paper-layout]
+          description: "Philosophy + Practice. Two-section page."
+
+        - artifact: src/components/tome/ArchitectPage.svelte
+          source: page-architect
+          lens: [svelte-component, paper-layout]
+          description: "Chapter I — The Architect. Drop-cap narrative."
+
+        - artifact: src/components/tome/CoreProjectsPage.svelte
+          source: page-core-projects
+          lens: [svelte-component, paper-layout]
+          description: "Ur, Faewyld, Ludex project cards."
+
+        - artifact: src/components/tome/WorksPage.svelte
+          source: page-works
+          lens: [svelte-component, paper-layout]
+          description: "Chapter II — Locus, Verve, Toast project cards."
+
+        - artifact: src/components/tome/FrequenciesPage.svelte
+          source: page-frequencies
+          lens: [svelte-component, paper-layout]
+          description: "Chapter III — Music and performance."
+
+        - artifact: src/components/tome/ColophonPage.svelte
+          source: page-colophon
+          lens: [svelte-component, paper-layout]
+          description: "Closing inscription. Playfaire PBC · MMXXVI."
+
+        - artifact: src/components/tome/BackCover.svelte
+          source: page-back-cover
+          lens: [svelte-component, cover-layout]
+          description: "Back cover. Leather texture, muted sigil."
 
   how:
     invariants:
       - "Every artifact traces to a source Holon in dyllan-to.holograph.yaml."
+      - "Every Svelte component in src/components/tome/ has an entry."
       - "Lens pipelines point toward sources, never away."
