@@ -2,45 +2,43 @@
   import { fonts, colors, backgrounds } from './tokens.js';
   import CoverSigil from './CoverSigil.svelte';
 
-  let { flipped = 1, onNavigate } = $props();
+  let { activePage = 1, onNavigate, onFlipBack } = $props();
 
   const entries = [
-    { label: 'Epigraph', page: 1, number: 'i' },
-    { label: 'Philosophy', page: 2, number: 'ii' },
-    { label: 'The Architect', page: 3, number: 'iii' },
-    { label: 'Core Projects', page: 4, number: 'iv' },
-    { label: 'The Works', page: 5, number: 'v' },
-    { label: 'Frequencies', page: 6, number: 'vi' },
-    { label: 'Colophon', page: 7, number: 'vii' },
+    { label: 'epigraph', page: 1 },
+    { label: 'philosophy', page: 2 },
+    { label: 'the-architect', page: 3 },
+    { label: 'core-projects', page: 4 },
+    { label: 'the-works', page: 5 },
+    { label: 'frequencies', page: 6 },
+    { label: 'colophon', page: 7 },
   ];
 </script>
 
-<div class="page" style:background={backgrounds.paper}>
-  <!-- TOC half -->
+<div class="page" style:background={backgrounds.paper} onclick={(e) => { if (e.target.closest('button')) return; onFlipBack?.(); }} role="presentation">
   <nav class="toc" aria-label="Table of contents">
-    <div class="toc-header" style:font-family={fonts.mono} style:color={colors.termDim}>&gt; contents</div>
-    <ul>
-      {#each entries as entry}
-        {@const active = entry.page === flipped}
-        <li>
-          <button
-            class="toc-entry"
-            class:active
-            style:font-family={fonts.body}
-            style:color={active ? colors.termGreen : colors.ink}
-            onclick={() => onNavigate(entry.page)}
-            aria-current={active ? 'page' : undefined}
-          >
-            <span class="prompt" style:color={colors.termGreen} style:opacity={active ? 1 : 0}>&gt;</span>
-            <span class="label">{entry.label}</span>
-            <span class="number" style:font-family={fonts.mono} style:color={colors.termDim}>{entry.number}</span>
-          </button>
-        </li>
+    <div class="terminal-chrome">
+      <span class="path" style:font-family={fonts.mono} style:color={colors.termGreen}>~/dyllan.to</span>
+    </div>
+    <div class="tree" style:font-family={fonts.mono} style:color={colors.ink}>
+      <div class="tree-root" style:color={colors.termDim}>.</div>
+      {#each entries as entry, i}
+        {@const active = entry.page === activePage}
+        {@const last = i === entries.length - 1}
+        <button
+          class="tree-entry"
+          class:active
+          onclick={() => onNavigate(entry.page)}
+          aria-current={active ? 'page' : undefined}
+        >
+          <span class="branch" style:color={colors.termDim}>{last ? '└──' : '├──'}</span>
+          <span class="leaf" style:color={active ? colors.termGreen : colors.ink}>{entry.label}</span>
+          {#if active}<span class="cursor" style:background={colors.termGreen}></span>{/if}
+        </button>
       {/each}
-    </ul>
+    </div>
   </nav>
 
-  <!-- Supplementary half -->
   <div class="supplementary">
     <div class="rule" style:background="linear-gradient(90deg, transparent, {colors.gold}44, transparent)"></div>
     <div class="sigil-small">
@@ -50,6 +48,8 @@
       Playfaire PBC
     </div>
   </div>
+
+  <div class="scanlines"></div>
 </div>
 
 <style>
@@ -58,6 +58,20 @@
     display: flex; flex-direction: column;
     padding: 28px 24px 20px;
     position: relative;
+    overflow: hidden;
+  }
+
+  .scanlines {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.015) 2px,
+      rgba(0, 0, 0, 0.015) 4px
+    );
+    pointer-events: none;
   }
 
   .toc {
@@ -66,65 +80,87 @@
     flex-direction: column;
   }
 
-  .toc-header {
-    font-size: 0.55rem;
-    letter-spacing: 0.1em;
-    margin-bottom: 12px;
+  .terminal-chrome {
+    margin-bottom: 16px;
   }
 
-  ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  .path {
+    font-size: 0.65rem;
+    letter-spacing: 0.04em;
+  }
+
+  .tree {
     display: flex;
     flex-direction: column;
-    gap: 2px;
   }
 
-  .toc-entry {
+  .tree-root {
+    font-size: 0.75rem;
+    padding: 0 0 0 2px;
+    line-height: 1.4;
+    letter-spacing: 0.02em;
+  }
+
+  .tree-entry {
     display: flex;
-    align-items: baseline;
-    gap: 6px;
-    width: 100%;
+    align-items: center;
     background: none;
     border: none;
-    padding: 5px 8px;
+    padding: 0 6px 0 2px;
+    margin: 0;
     cursor: pointer;
     border-radius: 2px;
     text-align: left;
+    font-family: inherit;
+    line-height: 1.4;
     transition: background 0.2s;
+    position: relative;
   }
 
-  .toc-entry:hover {
-    background: rgba(201, 168, 76, 0.08);
-  }
-
-  .toc-entry:focus-visible {
-    outline: 1px solid rgba(201, 168, 76, 0.4);
-    outline-offset: 1px;
-  }
-
-  .toc-entry.active {
+  .tree-entry:hover {
     background: rgba(45, 107, 63, 0.06);
   }
 
-  .prompt {
-    font-size: 0.7rem;
-    width: 10px;
+  .tree-entry:focus-visible {
+    outline: 1px solid rgba(45, 107, 63, 0.4);
+    outline-offset: 1px;
+  }
+
+  .tree-entry.active {
+    background: rgba(45, 107, 63, 0.08);
+  }
+
+  .branch {
+    font-size: 0.75rem;
+    white-space: pre;
     flex-shrink: 0;
-    transition: opacity 0.2s;
+    user-select: none;
+    margin-right: 6px;
   }
 
-  .toc-entry:hover .prompt { opacity: 0.5 !important; }
-
-  .label {
-    flex: 1;
-    font-size: 0.85rem;
+  .leaf {
+    font-size: 0.75rem;
+    letter-spacing: 0.02em;
+    transition: color 0.2s;
   }
 
-  .number {
-    font-size: 0.6rem;
-    letter-spacing: 0.05em;
+  .tree-entry:hover .leaf {
+    color: rgba(45, 107, 63, 0.8) !important;
+  }
+
+  .cursor {
+    display: inline-block;
+    width: 6px;
+    height: 12px;
+    margin-left: 3px;
+    vertical-align: middle;
+    opacity: 0.7;
+    animation: blink 1s step-end infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 0; }
   }
 
   /* ─── Supplementary ─── */

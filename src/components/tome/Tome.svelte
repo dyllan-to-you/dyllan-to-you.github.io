@@ -65,6 +65,8 @@
   let isPortrait = $state(false);
   let flipped = $state(0);
   let animatingLeaf = $state(-1);
+  let flipTarget = $state(0);
+  let preFlipped = $state(0);
   let timer;
 
   /* ─── Derived ─── */
@@ -121,58 +123,80 @@
     clearTimeout(timer);
     const table = wasPortrait ? PORTRAIT_TO_LANDSCAPE : LANDSCAPE_TO_PORTRAIT;
     flipped = table[Math.min(currentFlipped, table.length - 1)];
+    preFlipped = flipped;
   });
 
 
   /* ─── Flip mechanics ─── */
 
   function flip(direction) {
-    if (animatingLeaf >= 0) return;
+    if (animatingLeaf >= 0 || fanFlip) return;
     const next = flipped + direction;
     if (next < 0 || next > total) return;
+    preFlipped = flipped;
+    flipTarget = next;
     animatingLeaf = direction > 0 ? flipped : flipped - 1;
     flipped = next;
     clearTimeout(timer);
-    timer = setTimeout(() => { animatingLeaf = -1; }, timing.cooldownMs);
+    timer = setTimeout(() => { animatingLeaf = -1; preFlipped = flipped; }, timing.cooldownMs);
   }
 
   function flipForward() { flip(1); }
   function flipBack()    { flip(-1); }
 
-  /** Navigate to a specific page (used by TOC). Animates one leaf flip. */
+  /** Navigate to a specific page (used by TOC). Multi-page jumps fan
+   *  all intermediate leaves simultaneously with staggered CSS delays. */
+  let fanFlip = $state(null); // { from, to, forward, staggerMs }
+
   function goToPage(target) {
-    if (animatingLeaf >= 0) return;
+    if (animatingLeaf >= 0 || fanFlip) return;
     if (target === flipped || target < 0 || target > total) return;
 
-    if (target > flipped) {
-      // Forward: animate the current top (unflipped) leaf flipping away
-      animatingLeaf = flipped;
-    } else {
-      // Backward: animate the leaf just above target unflipping back
-      // The leaf at index `target` will become the new top unflipped leaf,
-      // so animate the leaf at `target` (it's currently flipped, swinging back)
-      animatingLeaf = target;
-    }
+    const steps = Math.abs(target - flipped);
+    if (steps === 1) { flip(target > flipped ? 1 : -1); return; }
+
+    const forward = target > flipped;
+    // Leaf index range that needs to flip/unflip
+    const from = forward ? flipped : target;
+    const to = (forward ? target : flipped) - 1;
+
+    fanFlip = { from, to, forward, staggerMs: timing.flipMs * 0.35 };
     flipped = target;
     clearTimeout(timer);
-    timer = setTimeout(() => { animatingLeaf = -1; }, timing.cooldownMs);
+    timer = setTimeout(() => {
+      fanFlip = null;
+      preFlipped = flipped;
+    }, timing.flipMs + fanFlip.staggerMs + 50);
   }
 
 
   /* ─── Z-index calculation ─── */
 
-  function zIndexFor(leafIndex, isFlipped) {
+  function zIndexFor(leafIndex) {
     if (leafIndex === animatingLeaf) return zIndex.animating;
-    // Flipped: lower indices on bottom (0..total-1)
-    // Unflipped: higher range, lower indices on top (total+1..2*total)
-    // The +total offset prevents ties between the last flipped and first unflipped leaf
-    return isFlipped
+    if (fanFlip && leafIndex >= fanFlip.from && leafIndex <= fanFlip.to) {
+      // Both directions: lowest i on top. Forward peels content away on
+      // the right; backward fans content back with destination settling last.
+      return zIndex.animating - 1 - (leafIndex - fanFlip.from);
+    }
+    // Non-animating leaves use preFlipped for z-order so intermediate
+    // leaves don't restack until the animation completes.
+    const wasFlipped = leafIndex < preFlipped;
+    return wasFlipped
       ? zIndex.leafBase + leafIndex
       : zIndex.leafBase + total - leafIndex + total;
   }
 
   /** Per-leaf transition: only the animating leaf gets CSS transition */
   function transitionFor(leafIndex) {
+    if (fanFlip && leafIndex >= fanFlip.from && leafIndex <= fanFlip.to) {
+      const { from, to, forward, staggerMs } = fanFlip;
+      const steps = to - from;
+      // Forward: lowest i starts first. Backward: highest i starts first.
+      const pos = forward ? leafIndex - from : to - leafIndex;
+      const delay = steps > 0 ? (pos / steps) * staggerMs : 0;
+      return `transform ${timing.flipMs}ms ${timing.flipEase} ${delay}ms`;
+    }
     return leafIndex === animatingLeaf
       ? `transform ${timing.flipMs}ms ${timing.flipEase}`
       : 'none';
@@ -182,7 +206,7 @@
   /* ─── Click: cover/back cover open/close, portrait position-based ─── */
 
   function handleClick(event) {
-    if (animatingLeaf >= 0) return;
+    if (animatingLeaf >= 0 || fanFlip) return;
 
     if (!isPortrait) {
       // Landscape: click zone only active when book is closed
@@ -227,7 +251,7 @@
 
   function handleWheel(event) {
     event.preventDefault();
-    if (animatingLeaf >= 0) return;
+    if (animatingLeaf >= 0 || fanFlip) return;
     // deltaY > 0 = scroll down = forward, < 0 = scroll up = backward
     if (event.deltaY > 0) flipForward();
     else if (event.deltaY < 0) flipBack();
@@ -285,13 +309,14 @@
       <!-- ─── PORTRAIT LEAVES ─── -->
       {#if isPortrait}
         {#each PORTRAIT_PAGES as Page, i (i)}
-          {@const isFlipped = i < flipped}
+          {@const isFan = fanFlip && i >= fanFlip.from && i <= fanFlip.to}
+          {@const isFlipped = isFan ? i < flipped : (i === animatingLeaf ? i < flipped : i < preFlipped)}
           <div
             class="leaf portrait-leaf"
             style:transform={isFlipped ? 'rotateX(180deg)' : 'rotateX(0deg)'}
             style:transition={transitionFor(i)}
             style:will-change={i === animatingLeaf ? 'transform' : 'auto'}
-            style:z-index={zIndexFor(i, isFlipped)}
+            style:z-index={zIndexFor(i)}
             role="group"
             aria-label={PAGE_LABELS[i] || `Page ${i + 1}`}
           >
@@ -309,13 +334,14 @@
       <!-- Last leaf back = PaperBlank (back cover exterior when fully closed). -->
       {#if !isPortrait}
         {#each LANDSCAPE_FRONTS as Front, i (i)}
-          {@const isFlipped = i < flipped}
+          {@const isFan = fanFlip && i >= fanFlip.from && i <= fanFlip.to}
+          {@const isFlipped = isFan ? i < flipped : (i === animatingLeaf ? i < flipped : i < preFlipped)}
           <div
             class="leaf landscape-leaf"
             style:transform={isFlipped ? 'rotateY(-180deg)' : 'rotateY(0deg)'}
             style:transition={transitionFor(i)}
             style:will-change={i === animatingLeaf ? 'transform' : 'auto'}
-            style:z-index={zIndexFor(i, isFlipped)}
+            style:z-index={zIndexFor(i)}
             role="group"
             aria-label={PAGE_LABELS[i] || `Leaf ${i + 1}`}
           >
@@ -324,7 +350,7 @@
             </div>
             <div class="face back-y verso" class:shadow-left={isFlipped}>
               {#if i < LANDSCAPE_FRONTS.length - 1}
-                <TocPage {flipped} onNavigate={goToPage} />
+                <TocPage activePage={i + 1} onNavigate={goToPage} onFlipBack={flipBack} />
               {:else}
                 <PaperBlank />
               {/if}

@@ -46,10 +46,10 @@ export const timing = {
 };
 
 export const layout = {
-  portraitW:            "min(420px, 94vw)",
-  portraitH:            "min(620px, 82vh)",
-  landscapeW:           "min(1100px, 96vw)",
-  landscapeH:           "min(680px, 88vh)",
+  portraitW:            "min(460px, 96vw)",
+  portraitH:            "min(700px, 90vh)",
+  landscapeW:           "min(1300px, 97vw)",
+  landscapeH:           "min(800px, 94vh)",
   portraitPerspective:  "800px",
   landscapePerspective: "1200px",
   portraitEye:          "50% 120%",
