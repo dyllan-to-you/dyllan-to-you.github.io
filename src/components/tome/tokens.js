@@ -82,12 +82,3 @@ export const backgrounds = {
   void: "radial-gradient(ellipse at 50% 50%, #1a1a2e 0%, #0a0a15 100%)",
 };
 
-/**
- * Deterministic position mapping between orientations.
- *
- * Both modes now have the same 9 content pages (1:1 mapping).
- * Cover=0, Epigraph=1, Philosophy=2, Architect=3, CoreProjects=4,
- * Works=5, Frequencies=6, Colophon=7, BackCover=8, Done=9
- */
-export const LANDSCAPE_TO_PORTRAIT = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-export const PORTRAIT_TO_LANDSCAPE = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];

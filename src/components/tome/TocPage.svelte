@@ -1,18 +1,9 @@
 <script>
   import { fonts, colors, backgrounds } from './tokens.js';
+  import { tocEntries } from './pages.js';
   import CoverSigil from './CoverSigil.svelte';
 
   let { activePage = 1, onNavigate, onFlipBack } = $props();
-
-  const entries = [
-    { label: 'epigraph', page: 1 },
-    { label: 'philosophy', page: 2 },
-    { label: 'the-architect', page: 3 },
-    { label: 'core-projects', page: 4 },
-    { label: 'the-works', page: 5 },
-    { label: 'frequencies', page: 6 },
-    { label: 'colophon', page: 7 },
-  ];
 </script>
 
 <div class="page" style:background={backgrounds.paper} onclick={(e) => { if (e.target.closest('button')) return; onFlipBack?.(); }} role="presentation">
@@ -22,17 +13,17 @@
     </div>
     <div class="tree" style:font-family={fonts.mono} style:color={colors.ink}>
       <div class="tree-root" style:color={colors.termDim}>.</div>
-      {#each entries as entry, i}
-        {@const active = entry.page === activePage}
-        {@const last = i === entries.length - 1}
+      {#each tocEntries as entry, i}
+        {@const active = entry.index === activePage}
+        {@const last = i === tocEntries.length - 1}
         <button
           class="tree-entry"
           class:active
-          onclick={() => onNavigate(entry.page)}
+          onclick={() => onNavigate(entry.index)}
           aria-current={active ? 'page' : undefined}
         >
           <span class="branch" style:color={colors.termDim}>{last ? '└──' : '├──'}</span>
-          <span class="leaf" style:color={active ? colors.termGreen : colors.ink}>{entry.label}</span>
+          <span class="leaf" style:color={active ? colors.termGreen : colors.ink}>{entry.toc}</span>
           {#if active}<span class="cursor" style:background={colors.termGreen}></span>{/if}
         </button>
       {/each}

@@ -2,7 +2,7 @@
   §7 — Book Engine
 
   Manages flip state, 3D transforms, z-indexing, and input handling.
-  No content knowledge — reads from leaf/page arrays defined below.
+  No content knowledge — reads from the page registry (pages.js).
 
   Renders in two modes based on viewport orientation:
     Landscape: persistent TOC on left, content flips on right. Navigation via TOC.
@@ -16,45 +16,13 @@
   import {
     colors, fonts, backgrounds,
     timing, layout, zIndex, interaction,
-    LANDSCAPE_TO_PORTRAIT, PORTRAIT_TO_LANDSCAPE,
   } from './tokens.js';
+  import { pages, pageNumbers, vineSide } from './pages.js';
 
-  /* ─── Page imports ─── */
   import PaperBlank from './PaperBlank.svelte';
   import CoverPage from './CoverPage.svelte';
-  import EpigraphPage from './EpigraphPage.svelte';
-  import PhilosophyPage from './PhilosophyPage.svelte';
-  import ArchitectPage from './ArchitectPage.svelte';
-  import CoreProjectsPage from './CoreProjectsPage.svelte';
-  import WorksPage from './WorksPage.svelte';
-  import FrequenciesPage from './FrequenciesPage.svelte';
-  import ColophonPage from './ColophonPage.svelte';
-  import BackCover from './BackCover.svelte';
+  import ContentPage from './ContentPage.svelte';
   import TocPage from './TocPage.svelte';
-
-  /** Landscape leaf fronts (right side). Backs 0–7 = TocPage, back 8 = PaperBlank. */
-  const LANDSCAPE_FRONTS = [
-    CoverPage, EpigraphPage, PhilosophyPage,
-    ArchitectPage, CoreProjectsPage,
-    WorksPage, FrequenciesPage,
-    ColophonPage, BackCover,
-  ];
-
-  /** Portrait: single pages, bottom-to-top flipbook. */
-  const PORTRAIT_PAGES = [
-    CoverPage, EpigraphPage, PhilosophyPage,
-    ArchitectPage, CoreProjectsPage,
-    WorksPage, FrequenciesPage,
-    ColophonPage, BackCover,
-  ];
-
-  /** Page labels for screen readers */
-  const PAGE_LABELS = [
-    'Front Cover', 'Epigraph', 'Philosophy',
-    'The Architect', 'Core Projects',
-    'The Works', 'Frequencies',
-    'Colophon', 'Back Cover',
-  ];
 
 
   /* ═══════════════════════════════════════════════
@@ -68,30 +36,30 @@
   let flipped = $state(0);
   let animation = $state(null);
   // animation shape: { from, to, forward, startFlipped, staggerMs }
-  // from/to = leaf index range (inclusive) being animated
   let timer;
+
+  const total = pages.length;
 
   /* ─── Derived ─── */
 
-  let total = $derived(isPortrait ? PORTRAIT_PAGES.length : LANDSCAPE_FRONTS.length);
-  let bookOpen = $derived(!isPortrait && flipped > 0 && flipped < LANDSCAPE_FRONTS.length);
+  let bookOpen = $derived(!isPortrait && flipped > 0 && flipped < total);
   let busy = $derived(animation !== null);
 
   let landscapeOffset = $derived.by(() => {
     if (isPortrait) return '0px';
     if (flipped === 0) return '-25%';
-    if (flipped >= LANDSCAPE_FRONTS.length) return '25%';
+    if (flipped >= total) return '25%';
     return '0px';
   });
 
   let currentPageLabel = $derived.by(() => {
     if (isPortrait) {
-      const idx = Math.min(flipped, PAGE_LABELS.length - 1);
-      return `Page ${flipped + 1} of ${PORTRAIT_PAGES.length}: ${PAGE_LABELS[idx]}`;
+      const idx = Math.min(flipped, total - 1);
+      return `Page ${flipped + 1} of ${total}: ${pages[idx].label}`;
     }
-    if (flipped >= LANDSCAPE_FRONTS.length) return 'Book closed (back)';
+    if (flipped >= total) return 'Book closed (back)';
     if (flipped === 0) return 'Front Cover';
-    return `${PAGE_LABELS[flipped] || 'Page ' + flipped}`;
+    return pages[flipped]?.label || `Page ${flipped}`;
   });
 
 
@@ -109,21 +77,15 @@
   $effect(() => {
     const current = isPortrait;
     if (previousPortrait === current) return;
-    const wasPortrait = previousPortrait;
     previousPortrait = current;
-    const currentFlipped = untrack(() => flipped);
     animation = null;
     clearTimeout(timer);
-    const table = wasPortrait ? PORTRAIT_TO_LANDSCAPE : LANDSCAPE_TO_PORTRAIT;
-    flipped = table[Math.min(currentFlipped, table.length - 1)];
+    // Position maps 1:1 between orientations (same page count)
   });
 
 
   /* ═══════════════════════════════════════════════
      Navigation — one function for everything.
-
-     goTo(target) handles single flips and multi-page fans.
-     All inputs (keys, clicks, swipe, TOC) call goTo.
   ═══════════════════════════════════════════════ */
 
   function goTo(target) {
@@ -151,24 +113,17 @@
      Per-leaf calculations — pure functions of state.
   ═══════════════════════════════════════════════ */
 
-  /** Is this leaf in the animated set? */
   function isAnimating(i) {
     return animation && i >= animation.from && i <= animation.to;
   }
 
-  /** Should this leaf be in the flipped position? */
   function isFlippedFor(i) {
-    // Animated leaves use the target state (CSS transition handles the motion)
     if (isAnimating(i)) return i < flipped;
-    // Static leaves freeze at pre-animation state to prevent z-index restacking
     return animation ? i < animation.startFlipped : i < flipped;
   }
 
-  /** Z-index: animated leaves on top, static leaves frozen at pre-animation order. */
   function zIndexFor(i) {
     if (isAnimating(i)) {
-      // Lowest i on top: departing content peels first (forward),
-      // destination content settles last (backward).
       return zIndex.animating - (i - animation.from);
     }
     const wasFlipped = animation ? i < animation.startFlipped : i < flipped;
@@ -177,7 +132,6 @@
       : zIndex.leafBase + total - i + total;
   }
 
-  /** CSS transition: animated leaves get flip + stagger delay; static leaves get none. */
   function transitionFor(i) {
     if (!isAnimating(i)) return 'none';
     const { from, to, forward, staggerMs } = animation;
@@ -189,14 +143,14 @@
 
 
   /* ═══════════════════════════════════════════════
-     Input handlers — all route to goTo / goForward / goBack
+     Input handlers
   ═══════════════════════════════════════════════ */
 
   function handleClick(event) {
     if (busy) return;
     if (!isPortrait) {
       if (flipped === 0) { goTo(1); return; }
-      if (flipped >= LANDSCAPE_FRONTS.length) { goTo(LANDSCAPE_FRONTS.length - 1); return; }
+      if (flipped >= total) { goTo(total - 1); return; }
       return;
     }
     const rect = event.currentTarget.getBoundingClientRect();
@@ -242,7 +196,6 @@
 
 <div class="tome-root" style:background={backgrounds.void} style:font-family={fonts.fallback} role="region" aria-label="Interactive book" aria-roledescription="book">
 
-  <!-- Live region for page-turn announcements -->
   <div class="sr-only" aria-live="polite" aria-atomic="true">
     {currentPageLabel}
   </div>
@@ -254,7 +207,6 @@
     onwheel={handleWheel}
     role="presentation"
   >
-    <!-- Perspective container -->
     <div
       class="perspective"
       style:width={isPortrait ? layout.portraitW : layout.landscapeW}
@@ -273,54 +225,50 @@
       {/if}
 
 
-      <!-- ─── PORTRAIT LEAVES ─── -->
-      {#if isPortrait}
-        {#each PORTRAIT_PAGES as Page, i (i)}
-          {@const leafFlipped = isFlippedFor(i)}
+      <!-- ─── LEAVES ─── -->
+      {#each pages as page, i (i)}
+        {@const leafFlipped = isFlippedFor(i)}
+        <div
+          class="leaf"
+          class:portrait-leaf={isPortrait}
+          class:landscape-leaf={!isPortrait}
+          style:transform={leafFlipped
+            ? (isPortrait ? 'rotateX(180deg)' : 'rotateY(-180deg)')
+            : (isPortrait ? 'rotateX(0deg)' : 'rotateY(0deg)')}
+          style:transition={transitionFor(i)}
+          style:will-change={isAnimating(i) ? 'transform' : 'auto'}
+          style:z-index={zIndexFor(i)}
+          role="group"
+          aria-label={page.label}
+        >
+          <!-- Front face -->
           <div
-            class="leaf portrait-leaf"
-            style:transform={leafFlipped ? 'rotateX(180deg)' : 'rotateX(0deg)'}
-            style:transition={transitionFor(i)}
-            style:will-change={isAnimating(i) ? 'transform' : 'auto'}
-            style:z-index={zIndexFor(i)}
-            role="group"
-            aria-label={PAGE_LABELS[i] || `Page ${i + 1}`}
+            class="face front"
+            class:shadow-bottom={isPortrait}
+            class:recto={!isPortrait}
+            class:shadow-right={!isPortrait && !leafFlipped}
           >
-            <div class="face front shadow-bottom">
-              <Page />
-            </div>
-            <div class="face back-x paper-back shadow-top" style:background={backgrounds.paper} aria-hidden="true"></div>
+            {#if page.type === 'cover'}
+              <CoverPage variant={page.variant}/>
+            {:else}
+              <ContentPage {page} number={pageNumbers[i]} vine={vineSide[i]}/>
+            {/if}
           </div>
-        {/each}
-      {/if}
 
-
-      <!-- ─── LANDSCAPE LEAVES ─── -->
-      {#if !isPortrait}
-        {#each LANDSCAPE_FRONTS as Front, i (i)}
-          {@const leafFlipped = isFlippedFor(i)}
-          <div
-            class="leaf landscape-leaf"
-            style:transform={leafFlipped ? 'rotateY(-180deg)' : 'rotateY(0deg)'}
-            style:transition={transitionFor(i)}
-            style:will-change={isAnimating(i) ? 'transform' : 'auto'}
-            style:z-index={zIndexFor(i)}
-            role="group"
-            aria-label={PAGE_LABELS[i] || `Leaf ${i + 1}`}
-          >
-            <div class="face front recto" class:shadow-right={!leafFlipped}>
-              <Front />
-            </div>
+          <!-- Back face -->
+          {#if isPortrait}
+            <div class="face back-x paper-back shadow-top" style:background={backgrounds.paper} aria-hidden="true"></div>
+          {:else}
             <div class="face back-y verso" class:shadow-left={leafFlipped}>
-              {#if i < LANDSCAPE_FRONTS.length - 1}
-                <TocPage activePage={i + 1} onNavigate={goTo} onFlipBack={goBack} />
+              {#if i < total - 1}
+                <TocPage activePage={i + 1} onNavigate={goTo} onFlipBack={goBack}/>
               {:else}
-                <PaperBlank />
+                <PaperBlank/>
               {/if}
             </div>
-          </div>
-        {/each}
-      {/if}
+          {/if}
+        </div>
+      {/each}
 
 
       <!-- Click zones -->
@@ -358,7 +306,7 @@
     </div>
 
 
-    <!-- ─── Navigation: portrait only ─── -->
+    <!-- Portrait navigation -->
     {#if isPortrait}
       <nav class="nav-bar" aria-label="Book navigation">
         <button
@@ -413,10 +361,6 @@
 </div>
 
 
-<!-- ═══════════════════════════════════════════════
-     Scoped styles — structural CSS for the engine.
-     Visual tokens are applied via style: directives.
-     ═══════════════════════════════════════════════ -->
 <style>
   @keyframes -global-sigilPulse {
     0%, 100% { filter: drop-shadow(0 0 8px rgba(201, 168, 76, 0.2)); }
