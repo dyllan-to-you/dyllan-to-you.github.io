@@ -1,21 +1,24 @@
 <!--
   §7 — Book Engine
 
-  Manages flip state, 3D transforms, z-indexing, and input handling.
+  Manages flip state, 3D transforms, depth ordering, and input handling.
   No content knowledge — reads from the page registry (pages.js).
 
   Renders in two modes based on viewport orientation:
-    Landscape: persistent TOC on left, content flips on right. Navigation via TOC.
-    Portrait:  single-page flipbook, pages flip bottom-to-top (rotateX)
+    Landscape: two-page spread, rotateY around left edge. TOC on verso.
+    Portrait:  single-page full-screen, rotateX around top edge. TOC in drawer.
 
   Mental model: a stack of leaves. `flipped` is how many have been turned.
-  All navigation is goTo(target). A single-page flip is a fan of one leaf.
+  All navigation is goTo(target).
+
+  Depth ordering: translateZ within a preserve-3d context. No z-index on
+  leaves. Depth transitions with the flip for natural cascading.
 -->
 <script>
-  import { untrack, onDestroy } from 'svelte';
+  import { onDestroy } from 'svelte';
   import {
     colors, fonts, backgrounds,
-    timing, layout, zIndex, interaction,
+    timing, layout, interaction,
   } from './tokens.js';
   import { pages, pageNumbers, vineSide } from './pages.js';
 
@@ -26,19 +29,24 @@
 
 
   /* ═══════════════════════════════════════════════
-     Engine state — two variables, one model.
+     Constants
+  ═══════════════════════════════════════════════ */
 
-     flipped:   how many leaves have been turned (0 = closed front, total = closed back)
-     animation: null when idle, otherwise describes the in-progress flip
+  const total = pages.length;
+  const DEPTH = 2;
+  const DEPTH_OVERLAY = (total + 1) * DEPTH;
+  const DEPTH_UI = (total + 2) * DEPTH;
+
+
+  /* ═══════════════════════════════════════════════
+     Engine state
   ═══════════════════════════════════════════════ */
 
   let isPortrait = $state(false);
   let flipped = $state(0);
   let animation = $state(null);
-  // animation shape: { from, to, forward, startFlipped, staggerMs }
   let timer;
-
-  const total = pages.length;
+  let tocOpen = $state(false);
 
   /* ─── Derived ─── */
 
@@ -79,13 +87,13 @@
     if (previousPortrait === current) return;
     previousPortrait = current;
     animation = null;
+    tocOpen = false;
     clearTimeout(timer);
-    // Position maps 1:1 between orientations (same page count)
   });
 
 
   /* ═══════════════════════════════════════════════
-     Navigation — one function for everything.
+     Navigation
   ═══════════════════════════════════════════════ */
 
   function goTo(target) {
@@ -100,6 +108,7 @@
 
     animation = { from, to, forward, startFlipped: flipped, staggerMs };
     flipped = target;
+    tocOpen = false;
 
     clearTimeout(timer);
     timer = setTimeout(() => { animation = null; }, timing.flipMs + staggerMs + 50);
@@ -110,7 +119,7 @@
 
 
   /* ═══════════════════════════════════════════════
-     Per-leaf calculations — pure functions of state.
+     Per-leaf calculations
   ═══════════════════════════════════════════════ */
 
   function isAnimating(i) {
@@ -122,14 +131,17 @@
     return animation ? i < animation.startFlipped : i < flipped;
   }
 
-  function zIndexFor(i) {
-    if (isAnimating(i)) {
-      return zIndex.animating - (i - animation.from);
+  function transformFor(i) {
+    const onLeft = isFlippedFor(i);
+    const depth = (onLeft ? i : total - i) * DEPTH;
+    if (isPortrait) {
+      // Positive rotateX = page lifts toward viewer, flips over the top.
+      // Fan: flipped pages rest slightly open, peeking above the book.
+      const angle = onLeft ? 180 - i * 0.4 : 0;
+      return `translateZ(${depth}px) rotateX(${angle}deg)`;
     }
-    const wasFlipped = animation ? i < animation.startFlipped : i < flipped;
-    return wasFlipped
-      ? zIndex.leafBase + i
-      : zIndex.leafBase + total - i + total;
+    const rotation = onLeft ? 'rotateY(-180deg)' : 'rotateY(0deg)';
+    return `translateZ(${depth}px) ${rotation}`;
   }
 
   function transitionFor(i) {
@@ -153,9 +165,10 @@
       if (flipped >= total) { goTo(total - 1); return; }
       return;
     }
+    // Portrait: tap top quarter = back, bottom three-quarters = forward
     const rect = event.currentTarget.getBoundingClientRect();
     const ratio = (event.clientY - rect.top) / rect.height;
-    ratio < interaction.portraitBackZone ? goBack() : goForward();
+    ratio < 0.25 ? goBack() : goForward();
   }
 
   let touchStart = { x: 0, y: 0 };
@@ -167,9 +180,12 @@
   function handleTouchEnd(event) {
     const dx = event.changedTouches[0].clientX - touchStart.x;
     const dy = event.changedTouches[0].clientY - touchStart.y;
-    const delta = isPortrait ? dy : dx;
-    if (delta < -interaction.swipeThreshold) goForward();
-    else if (delta > interaction.swipeThreshold) goBack();
+    // Portrait: vertical swipe (matches rotateX). Landscape: horizontal (matches rotateY).
+    const delta = isPortrait ? -dy : -dx;
+    const cross = isPortrait ? Math.abs(dx) : Math.abs(dy);
+    if (Math.abs(delta) < interaction.swipeThreshold) return;
+    if (cross > Math.abs(delta)) return;  // ignore cross-axis swipes
+    delta > 0 ? goForward() : goBack();
   }
 
   function handleKeydown(event) {
@@ -180,8 +196,8 @@
   function handleWheel(event) {
     event.preventDefault();
     if (busy) return;
-    if (event.deltaY > 0) goForward();
-    else if (event.deltaY < 0) goBack();
+    if (event.deltaY > 0 || event.deltaX > 0) goForward();
+    else if (event.deltaY < 0 || event.deltaX < 0) goBack();
   }
 
   onDestroy(() => clearTimeout(timer));
@@ -194,8 +210,15 @@
 
 <svelte:window onkeydown={handleKeydown}/>
 
-<div class="tome-root" style:background={backgrounds.void} style:font-family={fonts.fallback} role="region" aria-label="Interactive book" aria-roledescription="book">
-
+<div
+  class="tome-root"
+  class:portrait={isPortrait}
+  style:background={backgrounds.void}
+  style:font-family={fonts.fallback}
+  role="region"
+  aria-label="Interactive book"
+  aria-roledescription="book"
+>
   <div class="sr-only" aria-live="polite" aria-atomic="true">
     {currentPageLabel}
   </div>
@@ -217,10 +240,16 @@
     >
       {#if !isPortrait}
         {#if bookOpen}
-          <div class="binding-shadow" style:z-index={zIndex.bindingShadow} aria-hidden="true"></div>
+          <div
+            class="binding-shadow"
+            style:transform="translateX(-50%) translateZ({DEPTH_OVERLAY}px)"
+            aria-hidden="true"
+          ></div>
         {/if}
         {#if flipped < total}
-          <div class="static-right" style:z-index={zIndex.rightBase} style:background={backgrounds.paper}></div>
+          <div class="static-right" style:background={backgrounds.paper}>
+            <div class="page-edge" aria-hidden="true"></div>
+          </div>
         {/if}
       {/if}
 
@@ -232,21 +261,16 @@
           class="leaf"
           class:portrait-leaf={isPortrait}
           class:landscape-leaf={!isPortrait}
-          style:transform={leafFlipped
-            ? (isPortrait ? 'rotateX(180deg)' : 'rotateY(-180deg)')
-            : (isPortrait ? 'rotateX(0deg)' : 'rotateY(0deg)')}
+          style:transform={transformFor(i)}
           style:transition={transitionFor(i)}
-          style:will-change={isAnimating(i) ? 'transform' : 'auto'}
-          style:z-index={zIndexFor(i)}
           role="group"
           aria-label={page.label}
         >
           <!-- Front face -->
           <div
             class="face front"
-            class:shadow-bottom={isPortrait}
             class:recto={!isPortrait}
-            class:shadow-right={!isPortrait && !leafFlipped}
+            class:shadow-right={!leafFlipped}
           >
             {#if page.type === 'cover'}
               <CoverPage variant={page.variant}/>
@@ -257,13 +281,15 @@
 
           <!-- Back face -->
           {#if isPortrait}
-            <div class="face back-x paper-back shadow-top" style:background={backgrounds.paper} aria-hidden="true"></div>
+            <div class="face back-x">
+              <div class="paper-back" style:background={backgrounds.paper}></div>
+            </div>
           {:else}
             <div class="face back-y verso" class:shadow-left={leafFlipped}>
-              {#if i < total - 1}
-                <TocPage activePage={flipped} onNavigate={goTo} onFlipBack={goBack}/>
+              {#if page.type === 'cover' && page.variant === 'back'}
+                <CoverPage variant="back"/>
               {:else}
-                <PaperBlank/>
+                <TocPage activePage={i + 1} onNavigate={goTo} onFlipBack={goBack}/>
               {/if}
             </div>
           {/if}
@@ -275,17 +301,16 @@
       {#if isPortrait}
         <div
           class="click-zone"
-          style:z-index={zIndex.clickZone}
+          style:transform="translateZ({DEPTH_UI}px)"
           onclick={handleClick}
-          onkeydown={(e) => { if (e.key === 'Enter') handleClick(e); }}
           role="button"
           tabindex="0"
-          aria-label="Tap upper area for previous page, lower area for next page"
+          aria-label="Tap left side for previous page, right side for next page"
         ></div>
       {:else if !bookOpen}
         <div
           class="click-zone"
-          style:z-index={zIndex.clickZone}
+          style:transform="translateZ({DEPTH_UI}px)"
           onclick={handleClick}
           onkeydown={(e) => { if (e.key === 'Enter') handleClick(e); }}
           role="button"
@@ -295,7 +320,7 @@
       {:else}
         <div
           class="click-zone-right"
-          style:z-index={zIndex.clickZone}
+          style:transform="translateZ({DEPTH_UI}px)"
           onclick={goForward}
           onkeydown={(e) => { if (e.key === 'Enter') goForward(); }}
           role="button"
@@ -306,47 +331,37 @@
     </div>
 
 
-    <!-- Portrait navigation -->
+    <!-- Portrait: TOC handle sits on the peeking sliver above the book -->
+    {#if isPortrait && flipped > 0}
+      <button
+        class="toc-handle"
+        onclick={() => { tocOpen = !tocOpen; }}
+        aria-expanded={tocOpen}
+        aria-controls="portrait-toc"
+        style:font-family={fonts.mono}
+        style:color={colors.termGreen}
+      >
+        <span class="toc-handle-icon" class:open={tocOpen}>▾</span>
+        <span class="toc-handle-label">{tocOpen ? 'close' : 'contents'}</span>
+      </button>
+    {/if}
+
+    <!-- Portrait: TOC drawer drops down over the book -->
     {#if isPortrait}
-      <nav class="nav-bar" aria-label="Book navigation">
-        <button
-          class="nav-btn"
-          onclick={goBack}
-          disabled={flipped === 0}
-          aria-label="Previous page"
-          style:color={flipped === 0 ? '#333' : colors.gold}
-          style:font-family={fonts.heading}
-          style:opacity={flipped === 0 ? 0.3 : 0.7}
-        >
-          ▴ PREV
-        </button>
+      <div
+        id="portrait-toc"
+        class="toc-drawer"
+        class:open={tocOpen}
+        style:background={backgrounds.paper}
+      >
+        <TocPage activePage={flipped} onNavigate={goTo} onFlipBack={() => { tocOpen = false; }}/>
+      </div>
+    {/if}
 
-        <div class="dots" style:max-width="80px" role="group" aria-label={`Page progress: ${flipped} of ${total} pages turned`}>
-          {#each Array(total) as _, i}
-            <div
-              class="dot"
-              style:background={i < flipped ? colors.gold : '#333'}
-              style:border-color="{colors.gold}44"
-              role="presentation"
-            ></div>
-          {/each}
-        </div>
-
-        <button
-          class="nav-btn"
-          onclick={goForward}
-          disabled={flipped === total}
-          aria-label="Next page"
-          style:color={flipped === total ? '#333' : colors.gold}
-          style:font-family={fonts.heading}
-          style:opacity={flipped === total ? 0.3 : 0.7}
-        >
-          NEXT ▾
-        </button>
-      </nav>
-
-      <div class="hint" style:font-family={fonts.body} style:color={colors.gold} aria-hidden="true">
-        swipe or tap · ↑↓ keys
+    <!-- Portrait: page indicator -->
+    {#if isPortrait && !tocOpen}
+      <div class="page-indicator" style:font-family={fonts.mono} style:color={colors.gold}>
+        {flipped} / {total}
       </div>
     {/if}
 
@@ -384,10 +399,17 @@
     user-select: none;
   }
 
+  .tome-root.portrait {
+    padding: 8px 4px;
+    justify-content: flex-start;
+    padding-top: 56px;  /* room for the peeking fan + handle */
+  }
+
   .wrapper { position: relative; }
 
   .perspective {
     position: relative;
+    transform-style: preserve-3d;
     transition: transform 600ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
@@ -419,18 +441,20 @@
   .back-x { transform: rotateX(180deg); }
   .back-y { transform: rotateY(180deg); }
 
+  .paper-back {
+    width: 100%; height: 100%;
+  }
+
   .recto  { border-radius: 0 3px 3px 0; }
   .verso  { border-radius: 3px 0 0 3px; }
 
-  .shadow-bottom { box-shadow: 0 4px 20px rgba(0,0,0,0.25); }
-  .shadow-top    { box-shadow: 0 -4px 20px rgba(0,0,0,0.2); }
   .shadow-right  { box-shadow: 3px 0 12px rgba(0,0,0,0.15); }
   .shadow-left   { box-shadow: -3px 0 12px rgba(0,0,0,0.15); }
 
   /* ─── Landscape panels ─── */
   .binding-shadow {
     position: absolute;
-    top: 0; left: 50%; transform: translateX(-50%);
+    top: 0; left: 50%;
     width: 24px; height: 100%;
     pointer-events: none;
     background: linear-gradient(90deg,
@@ -446,6 +470,20 @@
     width: 50%; height: 100%;
     overflow: hidden;
     border-radius: 0 3px 3px 0;
+  }
+
+  .page-edge {
+    position: absolute;
+    top: 4px; bottom: 4px; left: 0;
+    width: 4px;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(0,0,0,.03),
+      rgba(0,0,0,.03) 1px,
+      rgba(255,255,255,.04) 1px,
+      rgba(255,255,255,.04) 2px
+    );
+    border-radius: 1px 0 0 1px;
   }
 
   /* ─── Click zones ─── */
@@ -468,39 +506,63 @@
     border-radius: 3px;
   }
 
-  /* ─── Navigation (portrait) ─── */
-  .nav-bar {
-    display: flex; justify-content: center;
-    align-items: center; gap: 16px;
-    margin-top: 16px;
+  /* ─── Portrait TOC ─── */
+  .toc-handle {
+    position: absolute;
+    top: -28px; left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 14px 6px;
+    background: rgba(240, 228, 204, 0.85);
+    border: none;
+    border-radius: 6px 6px 0 0;
+    cursor: pointer;
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    z-index: 12;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
   }
 
-  .nav-btn {
-    background: none; border: none;
-    font-size: 0.75rem; cursor: pointer;
-    letter-spacing: 0.1em;
-    min-width: 44px; min-height: 44px;
-    padding: 8px 12px;
-    display: inline-flex;
-    align-items: center; justify-content: center;
-    transition: color 0.3s;
-  }
-  .nav-btn:disabled { cursor: default; }
+  .toc-handle:hover,
+  .toc-handle:focus-visible { opacity: 1; }
 
-  .nav-btn:focus-visible {
-    outline: 2px solid rgba(201, 168, 76, 0.6);
-    outline-offset: 2px; border-radius: 3px;
+  .toc-handle-icon {
+    display: inline-block;
+    transition: transform 0.25s;
+    font-size: 0.7rem;
+    line-height: 1;
   }
 
-  .dots {
-    display: flex; gap: 5px;
-    flex-wrap: wrap; justify-content: center;
+  .toc-handle-icon.open {
+    transform: rotate(180deg);
   }
 
-  .dot {
-    width: 6px; height: 6px;
-    border-radius: 50%; border: 1px solid;
-    transition: background 0.3s;
+  .toc-drawer {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    max-height: 0;
+    overflow: hidden;
+    border-radius: 0 0 6px 6px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 11;
+  }
+
+  .toc-drawer.open {
+    max-height: 70vh;
+  }
+
+  /* ─── Portrait page indicator ─── */
+  .page-indicator {
+    text-align: center;
+    margin-top: 8px;
+    font-size: 0.6rem;
+    opacity: 0.3;
+    letter-spacing: 0.15em;
   }
 
   .hint {

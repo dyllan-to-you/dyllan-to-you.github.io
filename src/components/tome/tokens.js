@@ -5,7 +5,7 @@
  * Change the tome's look by editing this file alone.
  *
  * Consumed by:
- *   - Tome.svelte (engine mechanics: timing, z-index, layout, interaction)
+ *   - Tome.svelte (engine mechanics: timing, layout, interaction)
  *   - Page components (colors, fonts, backgrounds)
  *   - SVG decorations (colors)
  */
@@ -40,27 +40,19 @@ export const fonts = {
 };
 
 export const timing = {
-  flipMs:     750,
-  flipEase:   "cubic-bezier(0.4, 0, 0.2, 1)",
+  flipMs:     600,
+  flipEase:   "cubic-bezier(0.45, 0.05, 0.55, 0.95)",  // symmetric ease-in-out
 };
 
 export const layout = {
-  portraitW:            "min(460px, 96vw)",
-  portraitH:            "min(700px, 90vh)",
+  portraitW:            "96vw",
+  portraitH:            "min(85vh, 700px)",
   landscapeW:           "min(1300px, 97vw)",
   landscapeH:           "min(800px, 94vh)",
-  portraitPerspective:  "800px",
+  portraitPerspective:  "1000px",
   landscapePerspective: "1200px",
-  portraitEye:          "50% 120%",
+  portraitEye:          "50% 50%",     // centered — symmetric forward/backward
   landscapeEye:         "75% 50%",
-};
-
-export const zIndex = {
-  rightBase:     4,
-  leafBase:      50,
-  bindingShadow: 101,
-  animating:     150,
-  clickZone:     200,
 };
 
 export const interaction = {
