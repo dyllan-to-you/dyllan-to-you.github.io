@@ -261,7 +261,7 @@
           {:else}
             <div class="face back-y verso" class:shadow-left={leafFlipped}>
               {#if i < total - 1}
-                <TocPage activePage={i + 1} onNavigate={goTo} onFlipBack={goBack}/>
+                <TocPage activePage={flipped} onNavigate={goTo} onFlipBack={goBack}/>
               {:else}
                 <PaperBlank/>
               {/if}
