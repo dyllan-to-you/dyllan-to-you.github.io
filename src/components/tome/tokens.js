@@ -42,7 +42,6 @@ export const fonts = {
 export const timing = {
   flipMs:     750,
   flipEase:   "cubic-bezier(0.4, 0, 0.2, 1)",
-  cooldownMs: 800,
 };
 
 export const layout = {
