@@ -1,28 +1,23 @@
 <script>
-  import { fonts, colors, backgrounds } from './tokens.js';
   import CornerOrnament from './CornerOrnament.svelte';
   import CoverSigil from './CoverSigil.svelte';
 
   let { variant = 'front' } = $props();
 </script>
 
-<div class="page" style:background={backgrounds.leather}>
+<div class="page" class:back={variant !== 'front'}>
   {#each ['tl', 'tr', 'br', 'bl'] as pos}
     <CornerOrnament position={pos}/>
   {/each}
-  <div class="border-frame" style:border-color={variant === 'front' ? 'rgba(201,168,76,0.2)' : 'rgba(201,168,76,0.13)'}></div>
+  <div class="border-frame" class:back={variant !== 'front'}></div>
 
   {#if variant === 'front'}
     <div class="sigil-wrap">
       <CoverSigil idPrefix="cover"/>
     </div>
-    <h1 style:font-family={fonts.display} style:color={colors.gold} style:text-shadow="0 0 20px {colors.gold}44, 0 2px 4px rgba(0,0,0,.5)">
-      Justice
-    </h1>
+    <h1>Justice</h1>
     <div class="gold-line"></div>
-    <p class="subtitle" style:font-family={fonts.body} style:color={colors.goldBright}>
-      Builder · Musician · Architect
-    </p>
+    <p class="subtitle">Builder · Musician · Architect</p>
   {:else}
     <div class="sigil-muted">
       <CoverSigil idPrefix="back"/>
@@ -36,12 +31,16 @@
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     position: relative;
+    background: var(--tome-bg-leather);
   }
   .border-frame {
     position: absolute; inset: 0;
-    border: 1px solid;
+    border: 1px solid rgba(201, 168, 76, 0.2);
     margin: 20px; border-radius: 2px;
     pointer-events: none;
+  }
+  .border-frame.back {
+    border-color: rgba(201, 168, 76, 0.13);
   }
   .sigil-wrap {
     margin-bottom: 24px;
@@ -49,15 +48,20 @@
   }
   .sigil-muted { opacity: 0.3; }
   h1 {
+    font-family: var(--tome-font-display);
+    color: var(--tome-gold);
+    text-shadow: 0 0 20px rgba(201, 168, 76, 0.27), 0 2px 4px rgba(0,0,0,.5);
     font-size: 2.2rem; letter-spacing: 0.3em;
     margin: 0 0 8px; text-transform: uppercase;
   }
   .gold-line {
     width: 120px; height: 1px;
-    background: linear-gradient(90deg, transparent, #c9a84c, transparent);
+    background: linear-gradient(90deg, transparent, var(--tome-gold), transparent);
     margin: 8px 0;
   }
   .subtitle {
+    font-family: var(--tome-font-body);
+    color: var(--tome-gold-bright);
     font-size: 0.85rem; letter-spacing: 0.2em;
     opacity: 0.7; margin: 0; text-transform: uppercase;
   }

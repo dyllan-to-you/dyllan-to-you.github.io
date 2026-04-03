@@ -16,10 +16,7 @@
 -->
 <script>
   import { onDestroy } from 'svelte';
-  import {
-    colors, fonts, backgrounds,
-    timing, layout, interaction,
-  } from './tokens.js';
+  import { timing, layout, interaction } from './tokens.js';
   import { pages, pageNumbers, vineSide } from './pages.js';
 
   import PaperBlank from './PaperBlank.svelte';
@@ -135,8 +132,6 @@
     const onLeft = isFlippedFor(i);
     const depth = (onLeft ? i : total - i) * DEPTH;
     if (isPortrait) {
-      // Positive rotateX = page lifts toward viewer, flips over the top.
-      // Fan: flipped pages rest slightly open, peeking above the book.
       const angle = onLeft ? 180 - i * 0.4 : 0;
       return `translateZ(${depth}px) rotateX(${angle}deg)`;
     }
@@ -165,7 +160,6 @@
       if (flipped >= total) { goTo(total - 1); return; }
       return;
     }
-    // Portrait: tap top quarter = back, bottom three-quarters = forward
     const rect = event.currentTarget.getBoundingClientRect();
     const ratio = (event.clientY - rect.top) / rect.height;
     ratio < 0.25 ? goBack() : goForward();
@@ -180,11 +174,10 @@
   function handleTouchEnd(event) {
     const dx = event.changedTouches[0].clientX - touchStart.x;
     const dy = event.changedTouches[0].clientY - touchStart.y;
-    // Portrait: vertical swipe (matches rotateX). Landscape: horizontal (matches rotateY).
     const delta = isPortrait ? -dy : -dx;
     const cross = isPortrait ? Math.abs(dx) : Math.abs(dy);
     if (Math.abs(delta) < interaction.swipeThreshold) return;
-    if (cross > Math.abs(delta)) return;  // ignore cross-axis swipes
+    if (cross > Math.abs(delta)) return;
     delta > 0 ? goForward() : goBack();
   }
 
@@ -213,8 +206,6 @@
 <div
   class="tome-root"
   class:portrait={isPortrait}
-  style:background={backgrounds.void}
-  style:font-family={fonts.fallback}
   role="region"
   aria-label="Interactive book"
   aria-roledescription="book"
@@ -247,7 +238,7 @@
           ></div>
         {/if}
         {#if flipped < total}
-          <div class="static-right" style:background={backgrounds.paper}>
+          <div class="static-right">
             <div class="page-edge" aria-hidden="true"></div>
           </div>
         {/if}
@@ -282,7 +273,7 @@
           <!-- Back face -->
           {#if isPortrait}
             <div class="face back-x">
-              <div class="paper-back" style:background={backgrounds.paper}></div>
+              <div class="paper-back"></div>
             </div>
           {:else}
             <div class="face back-y verso" class:shadow-left={leafFlipped}>
@@ -338,8 +329,6 @@
         onclick={() => { tocOpen = !tocOpen; }}
         aria-expanded={tocOpen}
         aria-controls="portrait-toc"
-        style:font-family={fonts.mono}
-        style:color={colors.termGreen}
       >
         <span class="toc-handle-icon" class:open={tocOpen}>▾</span>
         <span class="toc-handle-label">{tocOpen ? 'close' : 'contents'}</span>
@@ -352,7 +341,6 @@
         id="portrait-toc"
         class="toc-drawer"
         class:open={tocOpen}
-        style:background={backgrounds.paper}
       >
         <TocPage activePage={flipped} onNavigate={goTo} onFlipBack={() => { tocOpen = false; }}/>
       </div>
@@ -360,19 +348,19 @@
 
     <!-- Portrait: page indicator -->
     {#if isPortrait && !tocOpen}
-      <div class="page-indicator" style:font-family={fonts.mono} style:color={colors.gold}>
+      <div class="page-indicator">
         {flipped} / {total}
       </div>
     {/if}
 
     {#if !isPortrait && !bookOpen}
-      <div class="hint" style:font-family={fonts.body} style:color={colors.gold} aria-hidden="true">
+      <div class="hint" aria-hidden="true">
         click to open
       </div>
     {/if}
   </div>
 
-  <div class="ambient-glow" style:background="radial-gradient(ellipse, {colors.gold}08 0%, transparent 70%)" aria-hidden="true"></div>
+  <div class="ambient-glow" aria-hidden="true"></div>
 </div>
 
 
@@ -397,12 +385,14 @@
     align-items: center; justify-content: center;
     padding: 20px; box-sizing: border-box;
     user-select: none;
+    background: var(--tome-bg-void);
+    font-family: var(--tome-font-fallback);
   }
 
   .tome-root.portrait {
     padding: 8px 4px;
     justify-content: flex-start;
-    padding-top: 56px;  /* room for the peeking fan + handle */
+    padding-top: 56px;
   }
 
   .wrapper { position: relative; }
@@ -443,6 +433,7 @@
 
   .paper-back {
     width: 100%; height: 100%;
+    background: var(--tome-bg-paper);
   }
 
   .recto  { border-radius: 0 3px 3px 0; }
@@ -470,6 +461,7 @@
     width: 50%; height: 100%;
     overflow: hidden;
     border-radius: 0 3px 3px 0;
+    background: var(--tome-bg-paper);
   }
 
   .page-edge {
@@ -519,6 +511,8 @@
     border: none;
     border-radius: 6px 6px 0 0;
     cursor: pointer;
+    font-family: var(--tome-font-mono);
+    color: var(--tome-term-green);
     font-size: 0.6rem;
     letter-spacing: 0.08em;
     opacity: 0.7;
@@ -550,6 +544,7 @@
     box-shadow: 0 4px 20px rgba(0,0,0,0.3);
     transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 11;
+    background: var(--tome-bg-paper);
   }
 
   .toc-drawer.open {
@@ -560,6 +555,8 @@
   .page-indicator {
     text-align: center;
     margin-top: 8px;
+    font-family: var(--tome-font-mono);
+    color: var(--tome-gold);
     font-size: 0.6rem;
     opacity: 0.3;
     letter-spacing: 0.15em;
@@ -567,6 +564,8 @@
 
   .hint {
     text-align: center; margin-top: 8px;
+    font-family: var(--tome-font-body);
+    color: var(--tome-gold);
     font-size: 0.7rem; opacity: 0.3;
     letter-spacing: 0.1em;
   }
@@ -577,5 +576,6 @@
     transform: translate(-50%, -50%);
     width: 600px; height: 400px;
     pointer-events: none; z-index: 0;
+    background: radial-gradient(ellipse, rgba(201, 168, 76, 0.03) 0%, transparent 70%);
   }
 </style>

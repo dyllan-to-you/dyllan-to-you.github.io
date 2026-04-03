@@ -1,0 +1,58 @@
+/*
+ * §1 — Guide Aesthetic
+ *
+ * Design tokens for the Dyllan.to tome.
+ * Source: tome-aesthetic holon (dyllan-to.holograph.yaml)
+ *
+ * Leather casing, parchment terminal.
+ * The book IS the device; the pages are the output.
+ *
+ * Convention: --tome-{category}-{name}
+ *   colors   → --tome-{name}
+ *   fonts    → --tome-font-{name}
+ *   bg       → --tome-bg-{name}
+ */
+
+:root {
+  /* ── Exterior: leather casing ── */
+  --tome-leather:      #3a2818;
+  --tome-leather-mid:  #4a3525;
+  --tome-spine:        #2a1808;
+  --tome-gold:         #c9a84c;
+  --tome-gold-bright:  #e8d68c;
+  --tome-copper:       #b87333;
+
+  /* ── Interior: parchment terminal ── */
+  --tome-paper:        #f0e4cc;
+  --tome-paper-light:  #f5ead5;
+  --tome-paper-edge:   #e0d0b0;
+  --tome-ink:          #2a1a0a;
+  --tome-ink-light:    #6a5a4a;
+
+  /* ── Terminal accents ── */
+  --tome-term-green:   #2d6b3f;
+  --tome-term-amber:   #a07828;
+  --tome-term-dim:     #8a7a6a;
+  --tome-prompt:       #3d7a4f;
+
+  /* ── Typography ── */
+  --tome-font-display:  'Cinzel Decorative', 'Cinzel', serif;
+  --tome-font-heading:  'Cinzel', serif;
+  --tome-font-body:     'Cormorant Garamond', serif;
+  --tome-font-mono:     'IBM Plex Mono', 'Courier New', monospace;
+  --tome-font-fallback: 'Cormorant Garamond', Georgia, serif;
+
+  /* ── Backgrounds (CSS-generated textures) ── */
+  --tome-bg-leather:
+    repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(0,0,0,.02) 3px, rgba(0,0,0,.02) 6px),
+    repeating-linear-gradient(-30deg, transparent, transparent 5px, rgba(0,0,0,.015) 5px, rgba(0,0,0,.015) 10px),
+    radial-gradient(ellipse at 40% 30%, var(--tome-leather-mid), var(--tome-leather) 60%, var(--tome-spine));
+
+  --tome-bg-paper:
+    radial-gradient(ellipse at 85% 15%, rgba(180,150,100,.12), transparent 50%),
+    radial-gradient(ellipse at 15% 85%, rgba(160,130,80,.08), transparent 40%),
+    radial-gradient(ellipse at 50% 50%, var(--tome-paper-light), var(--tome-paper) 70%, var(--tome-paper-edge));
+
+  --tome-bg-void:
+    radial-gradient(ellipse at 50% 50%, #1a1a2e 0%, #0a0a15 100%);
+}

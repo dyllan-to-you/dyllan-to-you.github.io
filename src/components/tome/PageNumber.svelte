@@ -1,9 +1,8 @@
 <script>
-  import { fonts, colors } from './tokens.js';
   let { number } = $props();
 </script>
 
-<div class="page-number" style:font-family={fonts.heading} style:color={colors.copper}>
+<div class="page-number">
   — {number} —
 </div>
 
@@ -13,6 +12,8 @@
     bottom: 16px;
     left: 50%;
     transform: translateX(-50%);
+    font-family: var(--tome-font-heading);
+    color: var(--tome-copper);
     font-size: 0.6rem;
     opacity: 0.4;
   }

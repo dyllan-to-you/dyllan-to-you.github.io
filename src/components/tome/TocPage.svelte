@@ -1,18 +1,17 @@
 <script>
-  import { fonts, colors, backgrounds } from './tokens.js';
   import { tocEntries } from './pages.js';
   import CoverSigil from './CoverSigil.svelte';
 
   let { activePage = 1, onNavigate, onFlipBack } = $props();
 </script>
 
-<div class="page" style:background={backgrounds.paper} onclick={(e) => { if (e.target.closest('button')) return; onFlipBack?.(); }} role="presentation">
+<div class="page" onclick={(e) => { if (e.target.closest('button')) return; onFlipBack?.(); }} role="presentation">
   <nav class="toc" aria-label="Table of contents">
     <div class="terminal-chrome">
-      <span class="path" style:font-family={fonts.mono} style:color={colors.termGreen}>~/dyllan.to</span>
+      <span class="path">~/dyllan.to</span>
     </div>
-    <div class="tree" style:font-family={fonts.mono} style:color={colors.ink}>
-      <div class="tree-root" style:color={colors.termDim}>.</div>
+    <div class="tree">
+      <div class="tree-root">.</div>
       {#each tocEntries as entry, i}
         {@const active = entry.index === activePage}
         {@const last = i === tocEntries.length - 1}
@@ -22,20 +21,20 @@
           onclick={() => onNavigate(entry.index)}
           aria-current={active ? 'page' : undefined}
         >
-          <span class="branch" style:color={colors.termDim}>{last ? '└──' : '├──'}</span>
-          <span class="leaf" style:color={active ? colors.termGreen : colors.ink}>{entry.toc}</span>
-          {#if active}<span class="cursor" style:background={colors.termGreen}></span>{/if}
+          <span class="branch">{last ? '└──' : '├──'}</span>
+          <span class="leaf" class:leaf-active={active}>{entry.toc}</span>
+          {#if active}<span class="cursor"></span>{/if}
         </button>
       {/each}
     </div>
   </nav>
 
   <div class="supplementary">
-    <div class="rule" style:background="linear-gradient(90deg, transparent, {colors.gold}44, transparent)"></div>
+    <div class="rule"></div>
     <div class="sigil-small">
       <CoverSigil idPrefix="toc"/>
     </div>
-    <div class="branding" style:font-family={fonts.mono} style:color={colors.termDim}>
+    <div class="branding">
       Playfaire PBC
     </div>
   </div>
@@ -50,6 +49,7 @@
     padding: 28px 24px 20px;
     position: relative;
     overflow: hidden;
+    background: var(--tome-bg-paper);
   }
 
   .scanlines {
@@ -76,16 +76,21 @@
   }
 
   .path {
+    font-family: var(--tome-font-mono);
+    color: var(--tome-term-green);
     font-size: 0.65rem;
     letter-spacing: 0.04em;
   }
 
   .tree {
+    font-family: var(--tome-font-mono);
+    color: var(--tome-ink);
     display: flex;
     flex-direction: column;
   }
 
   .tree-root {
+    color: var(--tome-term-dim);
     font-size: 0.75rem;
     padding: 0 0 0 2px;
     line-height: 1.4;
@@ -122,6 +127,7 @@
   }
 
   .branch {
+    color: var(--tome-term-dim);
     font-size: 0.75rem;
     white-space: pre;
     flex-shrink: 0;
@@ -130,13 +136,18 @@
   }
 
   .leaf {
+    color: var(--tome-ink);
     font-size: 0.75rem;
     letter-spacing: 0.02em;
     transition: color 0.2s;
   }
 
+  .leaf-active {
+    color: var(--tome-term-green);
+  }
+
   .tree-entry:hover .leaf {
-    color: rgba(45, 107, 63, 0.8) !important;
+    color: rgba(45, 107, 63, 0.8);
   }
 
   .cursor {
@@ -145,6 +156,7 @@
     height: 12px;
     margin-left: 3px;
     vertical-align: middle;
+    background: var(--tome-term-green);
     opacity: 0.7;
     animation: blink 1s step-end infinite;
   }
@@ -163,12 +175,17 @@
     padding-top: 8px;
   }
 
-  .rule { width: 60%; height: 1px; }
+  .rule {
+    width: 60%; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(201, 168, 76, 0.27), transparent);
+  }
 
   .sigil-small { opacity: 0.25; width: 70px; height: 70px; }
   .sigil-small :global(.sigil) { width: 70px; height: 70px; }
 
   .branding {
+    font-family: var(--tome-font-mono);
+    color: var(--tome-term-dim);
     font-size: 0.5rem;
     letter-spacing: 0.15em;
     opacity: 0.4;
