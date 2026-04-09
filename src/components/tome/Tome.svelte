@@ -15,7 +15,7 @@
   leaves. Depth transitions with the flip for natural cascading.
 -->
 <script>
-import { onDestroy } from "svelte";
+import { onDestroy, onMount } from "svelte";
 import ContentPage from "./ContentPage.svelte";
 import CoverPage from "./CoverPage.svelte";
 import { pageNumbers, pages, vineSide } from "./pages.js";
@@ -40,6 +40,7 @@ let flipped = $state(0);
 let animation = $state(null);
 let timer;
 let tocOpen = $state(false);
+let suppressPush = false;
 
 /* ─── Derived ─── */
 
@@ -86,6 +87,42 @@ $effect(() => {
 });
 
 /* ═══════════════════════════════════════════════
+     URL routing
+  ═══════════════════════════════════════════════ */
+
+const slugs = pages.map((p) => p.slug ?? "");
+
+function indexForPath(pathname) {
+  const clean = pathname.replace(/^\/+|\/+$/g, "");
+  if (clean === "") return 0;
+  const found = slugs.findIndex((s) => s === clean);
+  return found === -1 ? 0 : found;
+}
+
+function pathForIndex(i) {
+  const slug = slugs[i];
+  return slug ? `/${slug}` : "/";
+}
+
+onMount(() => {
+  // Initial sync: jump to the leaf matching the URL, no animation.
+  const initialIdx = indexForPath(window.location.pathname);
+  if (initialIdx !== flipped) {
+    flipped = initialIdx;
+  }
+
+  const onPop = () => {
+    const idx = indexForPath(window.location.pathname);
+    if (idx !== flipped) {
+      suppressPush = true;
+      goTo(idx);
+    }
+  };
+  window.addEventListener("popstate", onPop);
+  return () => window.removeEventListener("popstate", onPop);
+});
+
+/* ═══════════════════════════════════════════════
      Navigation
   ═══════════════════════════════════════════════ */
 
@@ -102,6 +139,18 @@ function goTo(target) {
   animation = { from, to, forward, startFlipped: flipped, staggerMs };
   flipped = target;
   tocOpen = false;
+
+  // Sync URL (skipped when called from popstate to avoid loops)
+  if (typeof window !== "undefined") {
+    if (suppressPush) {
+      suppressPush = false;
+    } else {
+      const newPath = pathForIndex(target);
+      if (window.location.pathname !== newPath) {
+        history.pushState(null, "", newPath);
+      }
+    }
+  }
 
   clearTimeout(timer);
   timer = setTimeout(

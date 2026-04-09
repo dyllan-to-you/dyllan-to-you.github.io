@@ -19,6 +19,7 @@ export const pages = [
     type: "cover",
     label: "Front Cover",
     variant: "front",
+    slug: "",
   },
 
   // ─── Content pages ───
@@ -26,6 +27,7 @@ export const pages = [
     type: "epigraph",
     label: "Epigraph",
     toc: "epigraph",
+    slug: "epigraph",
     prompt: "cat /etc/motd",
     quote: "\u201CAssert nothing.<br/>Derive everything.\u201D",
     attribution: "THE UR FRAMEWORK",
@@ -34,6 +36,7 @@ export const pages = [
     type: "prose",
     label: "Philosophy",
     toc: "philosophy",
+    slug: "philosophy",
     sections: [
       {
         label: "philosophy",
@@ -49,6 +52,7 @@ export const pages = [
     type: "chapter",
     label: "The Architect",
     toc: "the-architect",
+    slug: "architect",
     chapter: { number: "I", title: "The Architect", subtitle: "On building and becoming" },
     paragraphs: [
       {
@@ -65,6 +69,7 @@ export const pages = [
     type: "cards",
     label: "Core Projects",
     toc: "core-projects",
+    slug: "projects",
     header: "ls ~/core",
     cards: [
       { name: "Ur", description: "A recursive specification framework. The ontological kernel." },
@@ -76,6 +81,7 @@ export const pages = [
     type: "cards",
     label: "The Works",
     toc: "the-works",
+    slug: "works",
     chapter: { number: "II", title: "The Works", subtitle: "Projects and pursuits" },
     cards: [
       {
@@ -90,6 +96,7 @@ export const pages = [
     type: "chapter",
     label: "The Frequencies",
     toc: "frequencies",
+    slug: "frequencies",
     chapter: { number: "III", title: "The Frequencies", subtitle: "Sound, light, and presence" },
     paragraphs: [
       {
@@ -106,6 +113,7 @@ export const pages = [
     type: "colophon",
     label: "Colophon",
     toc: "colophon",
+    slug: "colophon",
     lines: [
       { text: "Crafted with intention." },
       { text: "Built on sovereign systems<br/>and transparent tools.", italic: true },
@@ -118,6 +126,7 @@ export const pages = [
     type: "cover",
     label: "Back Cover",
     variant: "back",
+    slug: "back",
   },
 ];
 
