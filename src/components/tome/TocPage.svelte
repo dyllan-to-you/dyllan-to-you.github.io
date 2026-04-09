@@ -7,7 +7,13 @@ let { activePage = 1, onNavigate, onFlipBack } = $props();
 <div class="page" onclick={(e) => { if (e.target.closest('button')) return; onFlipBack?.(); }} role="presentation">
   <nav class="toc" aria-label="Table of contents">
     <div class="terminal-chrome">
-      <span class="path">~/dyllan.to</span>
+      <button
+        class="path"
+        class:path-active={activePage === 0}
+        onclick={() => onNavigate(0)}
+        aria-label="Return to front cover"
+        aria-current={activePage === 0 ? 'page' : undefined}
+      >~/dyllan.to</button>
     </div>
     <div class="tree">
       <div class="tree-root">.</div>
@@ -69,6 +75,29 @@ let { activePage = 1, onNavigate, onFlipBack } = $props();
     color: var(--tome-term-green);
     font-size: 0.65rem;
     letter-spacing: 0.04em;
+    background: none;
+    border: none;
+    padding: 2px 4px;
+    margin: -2px -4px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 0.2s, opacity 0.2s;
+    opacity: 0.85;
+  }
+
+  .path:hover {
+    background: rgba(45, 107, 63, 0.08);
+    opacity: 1;
+  }
+
+  .path:focus-visible {
+    outline: 1px solid rgba(45, 107, 63, 0.4);
+    outline-offset: 1px;
+  }
+
+  .path-active {
+    background: rgba(45, 107, 63, 0.1);
+    opacity: 1;
   }
 
   .tree {

@@ -114,19 +114,12 @@ export const pages = [
     label: "Colophon",
     toc: "colophon",
     slug: "colophon",
+    backFace: "cover",
     lines: [
-      { text: "Crafted with intention." },
-      { text: "Built on sovereign systems<br/>and transparent tools.", italic: true },
+      { text: "Built with Astro, Svelte, and Claude." },
+      { text: "Designed in conversation.", italic: true },
       { text: "dyllan.to \u00B7 MMXXVI", mono: true },
     ],
-  },
-
-  // ─── Back cover ───
-  {
-    type: "cover",
-    label: "Back Cover",
-    variant: "back",
-    slug: "back",
   },
 ];
 

@@ -16,8 +16,10 @@ export const timing = {
 export const layout = {
   portraitW: "96vw",
   portraitH: "min(85vh, 700px)",
-  landscapeW: "min(1300px, 97vw)",
-  landscapeH: "min(800px, 94vh)",
+  // Landscape: fills 90% of vertical space. Width derives from height
+  // via the preserved ~1.625 ratio, capped by 95vw on narrow viewports.
+  landscapeW: "min(95vw, calc(90vh * 1.625))",
+  landscapeH: "90vh",
   portraitPerspective: "1000px",
   landscapePerspective: "1200px",
   portraitEye: "50% 50%",

@@ -92,23 +92,33 @@ $effect(() => {
 
 const slugs = pages.map((p) => p.slug ?? "");
 
+// "back" is a virtual slug: the closed-back state (flipped === total).
+// It has no page in the registry — the back cover is the verso of the
+// colophon leaf — but direct-linking to /back is still useful.
+const BACK_SLUG = "back";
+
 function indexForPath(pathname) {
   const clean = pathname.replace(/^\/+|\/+$/g, "");
   if (clean === "") return 0;
+  if (clean === BACK_SLUG) return total;
   const found = slugs.findIndex((s) => s === clean);
   return found === -1 ? 0 : found;
 }
 
 function pathForIndex(i) {
+  if (i === total) return `/${BACK_SLUG}`;
   const slug = slugs[i];
   return slug ? `/${slug}` : "/";
 }
 
 onMount(() => {
-  // Initial sync: jump to the leaf matching the URL, no animation.
+  // Initial sync: if the URL points past the cover, animate the
+  // cascading flip from cover to target. goTo's stagger logic
+  // showcases each leaf as it turns. pushState is skipped because
+  // the URL already matches the target.
   const initialIdx = indexForPath(window.location.pathname);
   if (initialIdx !== flipped) {
-    flipped = initialIdx;
+    goTo(initialIdx);
   }
 
   const onPop = () => {
@@ -162,10 +172,10 @@ function goTo(target) {
 }
 
 function goForward() {
-  goTo(flipped === total - 2 ? total : flipped + 1);
+  goTo(flipped + 1);
 }
 function goBack() {
-  goTo(flipped === total ? total - 2 : flipped - 1);
+  goTo(flipped - 1);
 }
 
 /* ═══════════════════════════════════════════════
@@ -213,7 +223,7 @@ function handleClick(event) {
       return;
     }
     if (flipped >= total) {
-      goTo(total - 2);
+      goTo(total - 1);
       return;
     }
     return;
@@ -301,7 +311,11 @@ onDestroy(() => clearTimeout(timer));
             aria-hidden="true"
           ></div>
         {/if}
-        {#if flipped < total}
+        <!-- Static right-side paper backdrop. Hidden during the
+             open-from-closed-back animation so the right side reads
+             as "interior not yet revealed" (void) rather than
+             "blank paper page" while the back cover rotates away. -->
+        {#if flipped < total && !(animation && animation.startFlipped === total)}
           <div class="static-right">
             <div class="page-edge" aria-hidden="true"></div>
           </div>
@@ -341,7 +355,7 @@ onDestroy(() => clearTimeout(timer));
             </div>
           {:else}
             <div class="face back-y verso" class:shadow-left={leafFlipped}>
-              {#if page.type === 'cover' && page.variant === 'back'}
+              {#if page.backFace === 'cover'}
                 <CoverPage variant="back"/>
               {:else}
                 <TocPage activePage={i + 1} onNavigate={goTo} onFlipBack={goBack}/>
@@ -447,16 +461,15 @@ onDestroy(() => clearTimeout(timer));
     width: 100vw; min-height: 100vh;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    padding: 20px; box-sizing: border-box;
+    padding: 0; box-sizing: border-box;
     user-select: none;
     background: var(--tome-bg-void);
     font-family: var(--tome-font-fallback);
   }
 
   .tome-root.portrait {
-    padding: 8px 4px;
+    padding: 56px 4px 8px;
     justify-content: flex-start;
-    padding-top: 56px;
   }
 
   .wrapper { position: relative; }
@@ -565,25 +578,23 @@ onDestroy(() => clearTimeout(timer));
   /* ─── Portrait TOC ─── */
   .toc-handle {
     position: absolute;
-    top: -36px; left: 50%;
+    top: -26px; left: 50%;
     transform: translateX(-50%);
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 18px 8px;
-    background: rgba(240, 228, 204, 0.92);
-    border: 1px solid rgba(201, 168, 76, 0.25);
-    border-bottom: none;
-    border-radius: 8px 8px 0 0;
+    padding: 6px 20px 10px;
+    background: var(--tome-bg-paper);
+    border: none;
+    border-radius: 6px 6px 0 0;
     cursor: pointer;
     font-family: var(--tome-font-mono);
     color: var(--tome-term-green);
     font-size: 0.7rem;
     letter-spacing: 0.08em;
-    opacity: 0.9;
+    opacity: 0.92;
     transition: opacity 0.2s;
     z-index: 12;
-    box-shadow: 0 -2px 8px rgba(0,0,0,0.12);
   }
 
   .toc-handle:hover,
