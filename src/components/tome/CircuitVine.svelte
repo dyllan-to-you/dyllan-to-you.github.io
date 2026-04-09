@@ -1,6 +1,6 @@
 <script>
-  /** @type {'left' | 'right'} Which side of a spread this page sits on. */
-  let { page = 'right' } = $props();
+/** @type {'left' | 'right'} Which side of a spread this page sits on. */
+let { page = "right" } = $props();
 </script>
 
 <svg

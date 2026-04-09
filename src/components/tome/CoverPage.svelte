@@ -1,8 +1,8 @@
 <script>
-  import CornerOrnament from './CornerOrnament.svelte';
-  import CoverSigil from './CoverSigil.svelte';
+import CornerOrnament from "./CornerOrnament.svelte";
+import CoverSigil from "./CoverSigil.svelte";
 
-  let { variant = 'front' } = $props();
+let { variant = "front" } = $props();
 </script>
 
 <div class="page" class:back={variant !== 'front'}>
@@ -32,6 +32,7 @@
     align-items: center; justify-content: center;
     position: relative;
     background: var(--tome-bg-leather);
+    transform: translateZ(0);
   }
   .border-frame {
     position: absolute; inset: 0;

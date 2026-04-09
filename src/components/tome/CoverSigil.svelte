@@ -1,13 +1,13 @@
 <script>
-  /** @type {string} Unique prefix for SVG IDs to avoid collisions across instances. */
-  let { idPrefix = 's' } = $props();
+/** @type {string} Unique prefix for SVG IDs to avoid collisions across instances. */
+let { idPrefix = "s" } = $props();
 
-  const glow = `${idPrefix}-glow`;
-  const grad = `${idPrefix}-grad`;
+const glow = `${idPrefix}-glow`;
+const grad = `${idPrefix}-grad`;
 
-  const DEG = Math.PI / 180;
-  const hexAngles = [0, 60, 120, 180, 240, 300];
-  const pentAngles = [0, 72, 144, 216, 288];
+const DEG = Math.PI / 180;
+const hexAngles = [0, 60, 120, 180, 240, 300];
+const pentAngles = [0, 72, 144, 216, 288];
 </script>
 
 <svg viewBox="0 0 200 200" class="sigil" xmlns="http://www.w3.org/2000/svg">

@@ -1,5 +1,5 @@
 <script>
-  let { number } = $props();
+let { number } = $props();
 </script>
 
 <div class="page-number">

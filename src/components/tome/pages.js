@@ -16,119 +16,118 @@
 export const pages = [
   // ─── Cover ───
   {
-    type: 'cover',
-    label: 'Front Cover',
-    variant: 'front',
+    type: "cover",
+    label: "Front Cover",
+    variant: "front",
   },
 
   // ─── Content pages ───
   {
-    type: 'epigraph',
-    label: 'Epigraph',
-    toc: 'epigraph',
-    prompt: 'cat /etc/motd',
-    quote: '\u201CAssert nothing.<br/>Derive everything.\u201D',
-    attribution: 'THE UR FRAMEWORK',
+    type: "epigraph",
+    label: "Epigraph",
+    toc: "epigraph",
+    prompt: "cat /etc/motd",
+    quote: "\u201CAssert nothing.<br/>Derive everything.\u201D",
+    attribution: "THE UR FRAMEWORK",
   },
   {
-    type: 'prose',
-    label: 'Philosophy',
-    toc: 'philosophy',
+    type: "prose",
+    label: "Philosophy",
+    toc: "philosophy",
     sections: [
       {
-        label: 'philosophy',
-        text: 'Local-first. Data-sovereign. Community-owned. The solarpunk ethos isn\u2019t aesthetic \u2014 it\u2019s architectural. Every system should make its inhabitants more free, not less.',
+        label: "philosophy",
+        text: "Local-first. Data-sovereign. Community-owned. The solarpunk ethos isn\u2019t aesthetic \u2014 it\u2019s architectural. Every system should make its inhabitants more free, not less.",
       },
       {
-        label: 'practice',
-        text: 'Recursive specification as design method. Formal modeling before implementation. Convergent systems that derive structure from first principles \u2014 assert nothing, derive everything.',
+        label: "practice",
+        text: "Recursive specification as design method. Formal modeling before implementation. Convergent systems that derive structure from first principles \u2014 assert nothing, derive everything.",
       },
     ],
   },
   {
-    type: 'chapter',
-    label: 'The Architect',
-    toc: 'the-architect',
-    chapter: { number: 'I', title: 'The Architect', subtitle: 'On building and becoming' },
+    type: "chapter",
+    label: "The Architect",
+    toc: "the-architect",
+    chapter: { number: "I", title: "The Architect", subtitle: "On building and becoming" },
     paragraphs: [
       {
-        drop: 'S',
-        text: 'ystems thinker. Software engineer. Solo founder of Playfaire PBC \u2014 a public benefit corporation building sovereign systems and transparent tools.',
+        drop: "S",
+        text: "ystems thinker. Software engineer. Solo founder of Playfaire PBC \u2014 a public benefit corporation building sovereign systems and transparent tools.",
       },
       {
-        text: 'Seven years in enterprise software taught the mechanics. The vision came from somewhere older \u2014 a conviction that technology should serve autonomy, not extract it.',
+        text: "Seven years in enterprise software taught the mechanics. The vision came from somewhere older \u2014 a conviction that technology should serve autonomy, not extract it.",
       },
     ],
-    closing: 'location: San Francisco Bay Area\nbuilding: ontology \u00D7 orchestration \u00D7 play',
+    closing: "location: San Francisco Bay Area\nbuilding: ontology \u00D7 orchestration \u00D7 play",
   },
   {
-    type: 'cards',
-    label: 'Core Projects',
-    toc: 'core-projects',
-    header: 'ls ~/core',
+    type: "cards",
+    label: "Core Projects",
+    toc: "core-projects",
+    header: "ls ~/core",
     cards: [
-      { name: 'Ur', description: 'A recursive specification framework. The ontological kernel.' },
-      { name: 'Faewyld', description: 'Agent orchestration. Self-optimizing autonomous loops.' },
-      { name: 'Ludex', description: 'The knowledge and crossing layer. Navigation through meaning.' },
+      { name: "Ur", description: "A recursive specification framework. The ontological kernel." },
+      { name: "Faewyld", description: "Agent orchestration. Self-optimizing autonomous loops." },
+      { name: "Ludex", description: "The knowledge and crossing layer. Navigation through meaning." },
     ],
   },
   {
-    type: 'cards',
-    label: 'The Works',
-    toc: 'the-works',
-    chapter: { number: 'II', title: 'The Works', subtitle: 'Projects and pursuits' },
+    type: "cards",
+    label: "The Works",
+    toc: "the-works",
+    chapter: { number: "II", title: "The Works", subtitle: "Projects and pursuits" },
     cards: [
-      { name: 'Locus', description: 'Coaching tools. Detecting phase transitions and applying pressure at the edge of becoming.' },
-      { name: 'Verve', description: 'Personal productivity. Time and rhythm as first-class primitives.' },
-      { name: 'Toast', description: 'Cryptographic proof-of-presence. The clink of glasses, verified.' },
+      {
+        name: "Locus",
+        description: "Coaching tools. Detecting phase transitions and applying pressure at the edge of becoming.",
+      },
+      { name: "Verve", description: "Personal productivity. Time and rhythm as first-class primitives." },
+      { name: "Toast", description: "Cryptographic proof-of-presence. The clink of glasses, verified." },
     ],
   },
   {
-    type: 'chapter',
-    label: 'The Frequencies',
-    toc: 'frequencies',
-    chapter: { number: 'III', title: 'The Frequencies', subtitle: 'Sound, light, and presence' },
+    type: "chapter",
+    label: "The Frequencies",
+    toc: "frequencies",
+    chapter: { number: "III", title: "The Frequencies", subtitle: "Sound, light, and presence" },
     paragraphs: [
       {
-        drop: 'M',
-        text: 'usic is the other architecture. Looping-based performance \u2014 layers built live, deconstructed live. Classical piano training as foundation, everything else as exploration.',
+        drop: "M",
+        text: "usic is the other architecture. Looping-based performance \u2014 layers built live, deconstructed live. Classical piano training as foundation, everything else as exploration.",
       },
       {
-        text: 'Multiple instruments. Art installations at Burning Man. The DJ persona Hatman, where the hat comes off and something else takes over.',
+        text: "Multiple instruments. Art installations at Burning Man. The DJ persona Hatman, where the hat comes off and something else takes over.",
       },
     ],
-    closing: 'every performance is a system that runs once',
+    closing: "every performance is a system that runs once",
   },
   {
-    type: 'colophon',
-    label: 'Colophon',
-    toc: 'colophon',
+    type: "colophon",
+    label: "Colophon",
+    toc: "colophon",
     lines: [
-      { text: 'Crafted with intention.' },
-      { text: 'Built on sovereign systems<br/>and transparent tools.', italic: true },
-      { text: 'Playfaire PBC \u00B7 MMXXVI', mono: true },
+      { text: "Crafted with intention." },
+      { text: "Built on sovereign systems<br/>and transparent tools.", italic: true },
+      { text: "dyllan.to \u00B7 MMXXVI", mono: true },
     ],
   },
 
   // ─── Back cover ───
   {
-    type: 'cover',
-    label: 'Back Cover',
-    variant: 'back',
+    type: "cover",
+    label: "Back Cover",
+    variant: "back",
   },
 ];
 
 /** Content pages (everything between covers) for TOC generation. */
-export const tocEntries = pages
-  .map((p, i) => ({ ...p, index: i }))
-  .filter(p => p.toc);
+export const tocEntries = pages.map((p, i) => ({ ...p, index: i })).filter((p) => p.toc);
 
 /** Roman numeral page numbers for content pages. */
-const ROMAN = ['i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix', 'x'];
+const ROMAN = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x"];
 let contentIndex = 0;
-export const pageNumbers = pages.map(p =>
-  p.type !== 'cover' ? ROMAN[contentIndex++] : null
-);
+export const pageNumbers = pages.map((p) => (p.type !== "cover" ? ROMAN[contentIndex++] : null));
 
 /** CircuitVine side alternation for content pages (odd index = right, even = left). */
-export const vineSide = pages.map((_, i) => i % 2 === 1 ? 'right' : 'left');
+export const vineSide = pages.map((_, i) => (i % 2 === 1 ? "right" : "left"));

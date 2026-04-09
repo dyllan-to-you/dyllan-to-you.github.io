@@ -15,185 +15,200 @@
   leaves. Depth transitions with the flip for natural cascading.
 -->
 <script>
-  import { onDestroy } from 'svelte';
-  import { timing, layout, interaction } from './tokens.js';
-  import { pages, pageNumbers, vineSide } from './pages.js';
+import { onDestroy } from "svelte";
+import ContentPage from "./ContentPage.svelte";
+import CoverPage from "./CoverPage.svelte";
+import { pageNumbers, pages, vineSide } from "./pages.js";
+import TocPage from "./TocPage.svelte";
+import { interaction, layout, timing } from "./tokens.js";
 
-  import PaperBlank from './PaperBlank.svelte';
-  import CoverPage from './CoverPage.svelte';
-  import ContentPage from './ContentPage.svelte';
-  import TocPage from './TocPage.svelte';
-
-
-  /* ═══════════════════════════════════════════════
+/* ═══════════════════════════════════════════════
      Constants
   ═══════════════════════════════════════════════ */
 
-  const total = pages.length;
-  const DEPTH = 2;
-  const DEPTH_OVERLAY = (total + 1) * DEPTH;
-  const DEPTH_UI = (total + 2) * DEPTH;
+const total = pages.length;
+const DEPTH = 2;
+const DEPTH_OVERLAY = (total + 1) * DEPTH;
+const DEPTH_UI = (total + 2) * DEPTH;
 
-
-  /* ═══════════════════════════════════════════════
+/* ═══════════════════════════════════════════════
      Engine state
   ═══════════════════════════════════════════════ */
 
-  let isPortrait = $state(false);
-  let flipped = $state(0);
-  let animation = $state(null);
-  let timer;
-  let tocOpen = $state(false);
+let isPortrait = $state(false);
+let flipped = $state(0);
+let animation = $state(null);
+let timer;
+let tocOpen = $state(false);
 
-  /* ─── Derived ─── */
+/* ─── Derived ─── */
 
-  let bookOpen = $derived(!isPortrait && flipped > 0 && flipped < total);
-  let busy = $derived(animation !== null);
+let bookOpen = $derived(!isPortrait && flipped > 0 && flipped < total);
+let busy = $derived(animation !== null);
 
-  let landscapeOffset = $derived.by(() => {
-    if (isPortrait) return '0px';
-    if (flipped === 0) return '-25%';
-    if (flipped >= total) return '25%';
-    return '0px';
-  });
+let landscapeOffset = $derived.by(() => {
+  if (isPortrait) return "0px";
+  if (flipped === 0) return "-25%";
+  if (flipped >= total) return "25%";
+  return "0px";
+});
 
-  let currentPageLabel = $derived.by(() => {
-    if (isPortrait) {
-      const idx = Math.min(flipped, total - 1);
-      return `Page ${flipped + 1} of ${total}: ${pages[idx].label}`;
-    }
-    if (flipped >= total) return 'Book closed (back)';
-    if (flipped === 0) return 'Front Cover';
-    return pages[flipped]?.label || `Page ${flipped}`;
-  });
+let currentPageLabel = $derived.by(() => {
+  if (isPortrait) {
+    const idx = Math.min(flipped, total - 1);
+    return `Page ${flipped + 1} of ${total}: ${pages[idx].label}`;
+  }
+  if (flipped >= total) return "Book closed (back)";
+  if (flipped === 0) return "Front Cover";
+  return pages[flipped]?.label || `Page ${flipped}`;
+});
 
+/* ─── Orientation ─── */
 
-  /* ─── Orientation ─── */
+$effect(() => {
+  const check = () => {
+    isPortrait = window.innerWidth < window.innerHeight;
+  };
+  check();
+  window.addEventListener("resize", check);
+  return () => window.removeEventListener("resize", check);
+});
 
-  $effect(() => {
-    const check = () => { isPortrait = window.innerWidth < window.innerHeight; };
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  });
+let previousPortrait = isPortrait;
 
-  let previousPortrait = isPortrait;
+$effect(() => {
+  const current = isPortrait;
+  if (previousPortrait === current) return;
+  previousPortrait = current;
+  animation = null;
+  tocOpen = false;
+  clearTimeout(timer);
+});
 
-  $effect(() => {
-    const current = isPortrait;
-    if (previousPortrait === current) return;
-    previousPortrait = current;
-    animation = null;
-    tocOpen = false;
-    clearTimeout(timer);
-  });
-
-
-  /* ═══════════════════════════════════════════════
+/* ═══════════════════════════════════════════════
      Navigation
   ═══════════════════════════════════════════════ */
 
-  function goTo(target) {
-    if (busy) return;
-    if (target === flipped || target < 0 || target > total) return;
+function goTo(target) {
+  if (busy) return;
+  if (target === flipped || target < 0 || target > total) return;
 
-    const forward = target > flipped;
-    const from = Math.min(flipped, target);
-    const to = Math.max(flipped, target) - 1;
-    const steps = to - from + 1;
-    const staggerMs = steps > 1 ? timing.flipMs * 0.35 : 0;
+  const forward = target > flipped;
+  const from = Math.min(flipped, target);
+  const to = Math.max(flipped, target) - 1;
+  const steps = to - from + 1;
+  const staggerMs = steps > 1 ? timing.flipMs * 0.35 : 0;
 
-    animation = { from, to, forward, startFlipped: flipped, staggerMs };
-    flipped = target;
-    tocOpen = false;
+  animation = { from, to, forward, startFlipped: flipped, staggerMs };
+  flipped = target;
+  tocOpen = false;
 
-    clearTimeout(timer);
-    timer = setTimeout(() => { animation = null; }, timing.flipMs + staggerMs + 50);
-  }
+  clearTimeout(timer);
+  timer = setTimeout(
+    () => {
+      animation = null;
+    },
+    timing.flipMs + staggerMs + 50,
+  );
+}
 
-  function goForward() { goTo(flipped + 1); }
-  function goBack()    { goTo(flipped - 1); }
+function goForward() {
+  goTo(flipped === total - 2 ? total : flipped + 1);
+}
+function goBack() {
+  goTo(flipped === total ? total - 2 : flipped - 1);
+}
 
-
-  /* ═══════════════════════════════════════════════
+/* ═══════════════════════════════════════════════
      Per-leaf calculations
   ═══════════════════════════════════════════════ */
 
-  function isAnimating(i) {
-    return animation && i >= animation.from && i <= animation.to;
+function isAnimating(i) {
+  return animation && i >= animation.from && i <= animation.to;
+}
+
+function isFlippedFor(i) {
+  if (isAnimating(i)) return i < flipped;
+  return animation ? i < animation.startFlipped : i < flipped;
+}
+
+function transformFor(i) {
+  const onLeft = isFlippedFor(i);
+  const depth = (onLeft ? i : total - i) * DEPTH;
+  if (isPortrait) {
+    const angle = onLeft ? 180 - i * 0.4 : 0;
+    return `translateZ(${depth}px) rotateX(${angle}deg)`;
   }
+  const rotation = onLeft ? "rotateY(-180deg)" : "rotateY(0deg)";
+  return `translateZ(${depth}px) ${rotation}`;
+}
 
-  function isFlippedFor(i) {
-    if (isAnimating(i)) return i < flipped;
-    return animation ? i < animation.startFlipped : i < flipped;
-  }
+function transitionFor(i) {
+  if (!isAnimating(i)) return "none";
+  const { from, to, forward, staggerMs } = animation;
+  const steps = to - from;
+  const pos = forward ? i - from : to - i;
+  const delay = steps > 0 ? (pos / steps) * staggerMs : 0;
+  return `transform ${timing.flipMs}ms ${timing.flipEase} ${delay}ms`;
+}
 
-  function transformFor(i) {
-    const onLeft = isFlippedFor(i);
-    const depth = (onLeft ? i : total - i) * DEPTH;
-    if (isPortrait) {
-      const angle = onLeft ? 180 - i * 0.4 : 0;
-      return `translateZ(${depth}px) rotateX(${angle}deg)`;
-    }
-    const rotation = onLeft ? 'rotateY(-180deg)' : 'rotateY(0deg)';
-    return `translateZ(${depth}px) ${rotation}`;
-  }
-
-  function transitionFor(i) {
-    if (!isAnimating(i)) return 'none';
-    const { from, to, forward, staggerMs } = animation;
-    const steps = to - from;
-    const pos = forward ? i - from : to - i;
-    const delay = steps > 0 ? (pos / steps) * staggerMs : 0;
-    return `transform ${timing.flipMs}ms ${timing.flipEase} ${delay}ms`;
-  }
-
-
-  /* ═══════════════════════════════════════════════
+/* ═══════════════════════════════════════════════
      Input handlers
   ═══════════════════════════════════════════════ */
 
-  function handleClick(event) {
-    if (busy) return;
-    if (!isPortrait) {
-      if (flipped === 0) { goTo(1); return; }
-      if (flipped >= total) { goTo(total - 1); return; }
+function handleClick(event) {
+  if (busy) return;
+  if (!isPortrait) {
+    if (flipped === 0) {
+      goTo(1);
       return;
     }
-    const rect = event.currentTarget.getBoundingClientRect();
-    const ratio = (event.clientY - rect.top) / rect.height;
-    ratio < 0.25 ? goBack() : goForward();
+    if (flipped >= total) {
+      goTo(total - 2);
+      return;
+    }
+    return;
   }
+  const rect = event.currentTarget.getBoundingClientRect();
+  const ratio = (event.clientY - rect.top) / rect.height;
+  ratio < 0.25 ? goBack() : goForward();
+}
 
-  let touchStart = { x: 0, y: 0 };
+let touchStart = { x: 0, y: 0 };
 
-  function handleTouchStart(event) {
-    touchStart = { x: event.touches[0].clientX, y: event.touches[0].clientY };
-  }
+function handleTouchStart(event) {
+  touchStart = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+}
 
-  function handleTouchEnd(event) {
-    const dx = event.changedTouches[0].clientX - touchStart.x;
-    const dy = event.changedTouches[0].clientY - touchStart.y;
-    const delta = isPortrait ? -dy : -dx;
-    const cross = isPortrait ? Math.abs(dx) : Math.abs(dy);
-    if (Math.abs(delta) < interaction.swipeThreshold) return;
-    if (cross > Math.abs(delta)) return;
-    delta > 0 ? goForward() : goBack();
-  }
+function handleTouchEnd(event) {
+  const dx = event.changedTouches[0].clientX - touchStart.x;
+  const dy = event.changedTouches[0].clientY - touchStart.y;
+  const delta = isPortrait ? -dy : -dx;
+  const cross = isPortrait ? Math.abs(dx) : Math.abs(dy);
+  if (Math.abs(delta) < interaction.swipeThreshold) return;
+  if (cross > Math.abs(delta)) return;
+  delta > 0 ? goForward() : goBack();
+}
 
-  function handleKeydown(event) {
-    if (['ArrowRight', ' ', 'ArrowDown'].includes(event.key)) { event.preventDefault(); goForward(); }
-    if (['ArrowLeft', 'ArrowUp'].includes(event.key)) { event.preventDefault(); goBack(); }
-  }
-
-  function handleWheel(event) {
+function handleKeydown(event) {
+  if (["ArrowRight", " ", "ArrowDown"].includes(event.key)) {
     event.preventDefault();
-    if (busy) return;
-    if (event.deltaY > 0 || event.deltaX > 0) goForward();
-    else if (event.deltaY < 0 || event.deltaX < 0) goBack();
+    goForward();
   }
+  if (["ArrowLeft", "ArrowUp"].includes(event.key)) {
+    event.preventDefault();
+    goBack();
+  }
+}
 
-  onDestroy(() => clearTimeout(timer));
+function handleWheel(event) {
+  event.preventDefault();
+  if (busy) return;
+  if (event.deltaY > 0 || event.deltaX > 0) goForward();
+  else if (event.deltaY < 0 || event.deltaX < 0) goBack();
+}
+
+onDestroy(() => clearTimeout(timer));
 </script>
 
 
@@ -501,24 +516,25 @@
   /* ─── Portrait TOC ─── */
   .toc-handle {
     position: absolute;
-    top: -28px; left: 50%;
+    top: -36px; left: 50%;
     transform: translateX(-50%);
     display: flex;
     align-items: center;
-    gap: 5px;
-    padding: 4px 14px 6px;
-    background: rgba(240, 228, 204, 0.85);
-    border: none;
-    border-radius: 6px 6px 0 0;
+    gap: 6px;
+    padding: 6px 18px 8px;
+    background: rgba(240, 228, 204, 0.92);
+    border: 1px solid rgba(201, 168, 76, 0.25);
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
     cursor: pointer;
     font-family: var(--tome-font-mono);
     color: var(--tome-term-green);
-    font-size: 0.6rem;
+    font-size: 0.7rem;
     letter-spacing: 0.08em;
-    opacity: 0.7;
+    opacity: 0.9;
     transition: opacity 0.2s;
     z-index: 12;
-    box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.12);
   }
 
   .toc-handle:hover,

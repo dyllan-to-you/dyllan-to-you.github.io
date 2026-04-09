@@ -1,14 +1,14 @@
 <script>
-  /** @type {'tl' | 'tr' | 'br' | 'bl'} */
-  let { position } = $props();
+/** @type {'tl' | 'tr' | 'br' | 'bl'} */
+let { position } = $props();
 
-  const rotations = { tl: 0, tr: 90, br: 180, bl: 270 };
-  const offsets = {
-    tl: 'top: 8px; left: 8px',
-    tr: 'top: 8px; right: 8px',
-    br: 'bottom: 8px; right: 8px',
-    bl: 'bottom: 8px; left: 8px',
-  };
+const rotations = { tl: 0, tr: 90, br: 180, bl: 270 };
+const offsets = {
+  tl: "top: 8px; left: 8px",
+  tr: "top: 8px; right: 8px",
+  br: "bottom: 8px; right: 8px",
+  bl: "bottom: 8px; left: 8px",
+};
 </script>
 
 <svg

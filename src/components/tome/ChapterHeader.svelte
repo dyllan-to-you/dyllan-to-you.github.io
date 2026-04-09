@@ -1,5 +1,5 @@
 <script>
-  let { number, title, subtitle } = $props();
+let { number, title, subtitle } = $props();
 </script>
 
 <div class="chapter-label">

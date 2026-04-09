@@ -1,8 +1,7 @@
 <script>
-  import { tocEntries } from './pages.js';
-  import CoverSigil from './CoverSigil.svelte';
+import { tocEntries } from "./pages.js";
 
-  let { activePage = 1, onNavigate, onFlipBack } = $props();
+let { activePage = 1, onNavigate, onFlipBack } = $props();
 </script>
 
 <div class="page" onclick={(e) => { if (e.target.closest('button')) return; onFlipBack?.(); }} role="presentation">
@@ -28,16 +27,6 @@
       {/each}
     </div>
   </nav>
-
-  <div class="supplementary">
-    <div class="rule"></div>
-    <div class="sigil-small">
-      <CoverSigil idPrefix="toc"/>
-    </div>
-    <div class="branding">
-      Playfaire PBC
-    </div>
-  </div>
 
   <div class="scanlines"></div>
 </div>
@@ -166,28 +155,4 @@
     50% { opacity: 0; }
   }
 
-  /* ─── Supplementary ─── */
-  .supplementary {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    padding-top: 8px;
-  }
-
-  .rule {
-    width: 60%; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(201, 168, 76, 0.27), transparent);
-  }
-
-  .sigil-small { opacity: 0.25; width: 70px; height: 70px; }
-  .sigil-small :global(.sigil) { width: 70px; height: 70px; }
-
-  .branding {
-    font-family: var(--tome-font-mono);
-    color: var(--tome-term-dim);
-    font-size: 0.5rem;
-    letter-spacing: 0.15em;
-    opacity: 0.4;
-  }
 </style>

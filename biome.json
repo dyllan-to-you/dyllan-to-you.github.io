@@ -1,0 +1,81 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.4.10/schema.json",
+  "vcs": {
+    "enabled": false
+  },
+  "files": {
+    "includes": ["src/**"]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 120
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "correctness": {
+        "noUnusedVariables": "warn",
+        "noUnusedImports": "warn",
+        "useExhaustiveDependencies": "off"
+      },
+      "suspicious": {
+        "noExplicitAny": "warn",
+        "noConfusingVoidType": "off",
+        "noConsole": "warn"
+      },
+      "style": {
+        "useConst": "error",
+        "noNonNullAssertion": "warn",
+        "useImportType": "error",
+        "noParameterAssign": "error",
+        "noUselessElse": "warn",
+        "useConsistentArrayType": "warn",
+        "useTemplate": "warn"
+      },
+      "complexity": {
+        "noForEach": "off"
+      },
+      "performance": {
+        "noReExportAll": "warn"
+      },
+      "a11y": {
+        "useAltText": "error",
+        "noRedundantAlt": "warn",
+        "useHtmlLang": "error",
+        "noAriaHiddenOnFocusable": "error",
+        "useButtonType": "error"
+      }
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double",
+      "semicolons": "always",
+      "trailingCommas": "all"
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["**/*.svelte", "**/*.astro"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUnusedVariables": "off",
+            "noUnusedImports": "off"
+          }
+        }
+      }
+    }
+  ],
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  }
+}

@@ -8,7 +8,11 @@
     "preview": "astro preview",
     "astro": "astro",
     "test": "npx playwright test",
-    "test:vision": "npx playwright test --grep @vision"
+    "test:vision": "npx playwright test --grep @vision",
+    "lint": "biome check src/",
+    "lint:fix": "biome check --fix src/",
+    "format": "biome format --write src/",
+    "format:check": "biome format src/"
   },
   "dependencies": {
     "@astrojs/svelte": "^7.0.4",
@@ -17,6 +21,7 @@
   },
   "devDependencies": {
     "@anthropic-ai/sdk": "^0.80.0",
+    "@biomejs/biome": "^2.4.7",
     "@playwright/test": "^1.58.2",
     "playwright": "^1.58.2"
   }

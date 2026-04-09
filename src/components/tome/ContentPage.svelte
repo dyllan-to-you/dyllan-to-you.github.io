@@ -1,14 +1,16 @@
 <script>
-  import CircuitVine from './CircuitVine.svelte';
-  import ChapterHeader from './ChapterHeader.svelte';
-  import ProjectCard from './ProjectCard.svelte';
-  import PageNumber from './PageNumber.svelte';
+import ChapterHeader from "./ChapterHeader.svelte";
+import CircuitVine from "./CircuitVine.svelte";
+import PageNumber from "./PageNumber.svelte";
+import ProjectCard from "./ProjectCard.svelte";
 
-  let { page, number, vine } = $props();
+let { page, number, vine } = $props();
 </script>
 
 <div class="page">
-  <CircuitVine page={vine}/>
+  {#if page.type !== 'colophon'}
+    <CircuitVine page={vine}/>
+  {/if}
 
   {#if page.type === 'epigraph'}
     <div class="centered">

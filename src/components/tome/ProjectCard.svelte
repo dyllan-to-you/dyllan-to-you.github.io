@@ -1,5 +1,5 @@
 <script>
-  let { name, description } = $props();
+let { name, description } = $props();
 </script>
 
 <div class="card">
