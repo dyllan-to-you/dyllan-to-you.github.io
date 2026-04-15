@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 /** @type {'tl' | 'tr' | 'br' | 'bl'} */
 let { position } = $props();
 

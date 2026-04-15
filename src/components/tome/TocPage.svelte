@@ -1,7 +1,5 @@
-<script>
-import { tocEntries } from "./pages.js";
-
-let { activePage = 1, onNavigate, onFlipBack } = $props();
+<script lang="ts">
+let { tocEntries, activePage = 1, onNavigate, onFlipBack } = $props();
 </script>
 
 <div class="page" onclick={(e) => { if (e.target.closest('button')) return; onFlipBack?.(); }} role="presentation">

@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 import ChapterHeader from "./ChapterHeader.svelte";
 import CircuitVine from "./CircuitVine.svelte";
 import PageNumber from "./PageNumber.svelte";
@@ -7,85 +7,78 @@ import ProjectCard from "./ProjectCard.svelte";
 let { page, number, vine } = $props();
 </script>
 
-<div class="page">
-  {#if page.type !== 'colophon'}
+<div class="page" class:epigraph={page.quote} class:colophon={!!page.lines}>
+  {#if !page.lines}
     <CircuitVine page={vine}/>
   {/if}
 
   <div class="scroll-area">
-  {#if page.type === 'epigraph'}
-    <div class="centered">
-      <div class="prompt">&gt; {page.prompt}</div>
-      <blockquote>
-        {@html page.quote}
-      </blockquote>
-      <div class="rule"></div>
-      <p class="attribution">&mdash; {page.attribution}</p>
-    </div>
-
-  {:else if page.type === 'prose'}
-    <div class="body">
-      {#each page.sections as section, i}
-        {#if i > 0}
-          <div class="section-rule"></div>
-        {/if}
-        <div>
-          <div class="label">&gt; {section.label}</div>
-          <p>{section.text}</p>
-        </div>
-      {/each}
-    </div>
-
-  {:else if page.type === 'chapter'}
-    <ChapterHeader number={page.chapter.number} title={page.chapter.title} subtitle={page.chapter.subtitle}/>
-    <div class="body">
-      {#each page.paragraphs as para}
-        <p>
-          {#if para.drop}
-            <span class="drop">{para.drop}</span>
-          {/if}
-          {para.text}
-        </p>
-      {/each}
-      {#if page.closing}
-        <p class="closing">
-          {#each page.closing.split('\n') as line, i}
-            {#if i > 0}<br/>{/if}
-            &gt; {line}
-          {/each}
-        </p>
-      {/if}
-    </div>
-
-  {:else if page.type === 'cards'}
+    <!-- Chapter header (if present) -->
     {#if page.chapter}
       <ChapterHeader number={page.chapter.number} title={page.chapter.title} subtitle={page.chapter.subtitle}/>
-    {:else if page.header}
+    {/if}
+
+    <!-- Terminal header label (if present, no chapter) -->
+    {#if page.header && !page.chapter}
       <div class="header">&gt; {page.header}</div>
     {/if}
-    <div class="cards">
-      {#each page.cards as card}
-        <ProjectCard name={card.name} description={card.description}/>
-      {/each}
-    </div>
 
-  {:else if page.type === 'colophon'}
-    <div class="colophon-label">&gt; colophon</div>
-    <div class="colophon-rule"></div>
-    <div class="colophon-body">
-      {#each page.lines as line, i}
-        {#if i === page.lines.length - 1}
-          <div class="thin-rule"></div>
+    <!-- Epigraph layout (centered quote + attribution) -->
+    {#if page.quote}
+      <div class="centered">
+        {#if page.prompt}
+          <div class="prompt">&gt; {page.prompt}</div>
         {/if}
-        <p
-          class:italic={line.italic}
-          class:imprint={line.mono}
-        >
-          {@html line.text}
-        </p>
-      {/each}
-    </div>
-  {/if}
+        <blockquote>{page.quote}</blockquote>
+        <div class="rule"></div>
+        <p class="attribution">&mdash; {page.attribution}</p>
+      </div>
+    {/if}
+
+    <!-- MDX body (rendered HTML) -->
+    {#if page.body}
+      <div class="body">
+        {@html page.body}
+      </div>
+    {/if}
+
+    <!-- Cards (if present) -->
+    {#if page.cards}
+      <div class="cards">
+        {#each page.cards as card}
+          <ProjectCard name={card.name} description={card.description}/>
+        {/each}
+      </div>
+    {/if}
+
+    <!-- Closing terminal text (if present) -->
+    {#if page.closing}
+      <p class="closing">
+        {#each page.closing.split('\n') as line, i}
+          {#if i > 0}<br/>{/if}
+          &gt; {line}
+        {/each}
+      </p>
+    {/if}
+
+    <!-- Colophon lines (if present) -->
+    {#if page.lines}
+      <div class="colophon-label">&gt; colophon</div>
+      <div class="colophon-rule"></div>
+      <div class="colophon-body">
+        {#each page.lines as line, i}
+          {#if i === page.lines.length - 1}
+            <div class="thin-rule"></div>
+          {/if}
+          <p
+            class:italic={line.italic}
+            class:imprint={line.mono}
+          >
+            {line.text}
+          </p>
+        {/each}
+      </div>
+    {/if}
   </div>
 
   <PageNumber {number}/>
@@ -119,10 +112,12 @@ let { page, number, vine } = $props();
   .scroll-area { scrollbar-width: thin; scrollbar-color: var(--tome-copper, rgba(160, 120, 60, 0.3)) transparent; }
 
   /* ─── Epigraph ─── */
-  .centered {
+  .epigraph .scroll-area {
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    height: 100%; text-align: center;
+  }
+  .centered {
+    text-align: center;
   }
   .prompt {
     font-family: var(--tome-font-mono);
@@ -147,42 +142,59 @@ let { page, number, vine } = $props();
     font-size: 0.6rem; letter-spacing: 0.1em; opacity: 0.6;
   }
 
-  /* ─── Prose / Chapter ─── */
+  /* ─── Body (MDX rendered HTML) ─── */
   .body {
     font-family: var(--tome-font-body);
     color: var(--tome-ink);
     font-size: 0.9rem; line-height: 1.7;
   }
-  .body p { margin: 0 0 14px; }
-  .body p:last-child { margin: 0; }
-  .label {
+  .body :global(p) { margin: 0 0 14px; }
+  .body :global(p:last-child) { margin: 0; }
+
+  /* Section labels — h2 rendered as terminal-green labels */
+  .body :global(h2) {
     font-family: var(--tome-font-mono);
     color: var(--tome-term-green);
-    font-size: 0.6rem; letter-spacing: 0.1em; margin-bottom: 4px;
+    font-size: 0.6rem; letter-spacing: 0.1em; margin: 0 0 4px;
+    font-weight: normal;
   }
-  .section-rule {
-    width: 60px; height: 1px;
+  .body :global(h2::before) { content: "> "; }
+
+  /* Section rules */
+  .body :global(hr) {
+    width: 60px; height: 1px; border: none; margin: 12px 0;
     background: linear-gradient(90deg, rgba(45, 107, 63, 0.27), transparent);
   }
-  .drop {
+
+  /* Drop cap — first letter of first paragraph in chapter pages */
+  .page:has(.body :global(h2)) .body :global(p) {
+    /* Reset for non-chapter pages with headings (philosophy) */
+  }
+
+  /* Chapter drop cap: first paragraph's first letter */
+  :global(.chapter-drop) .body :global(p:first-child::first-letter) {
     font-family: var(--tome-font-display);
     color: var(--tome-term-green);
     font-size: 2rem; float: left; line-height: 1; margin-right: 6px;
   }
-  .closing {
-    font-family: var(--tome-font-mono);
-    color: var(--tome-term-dim);
-    font-size: 0.7rem; line-height: 1.9; letter-spacing: 0.02em;
-  }
 
-  /* ─── Cards ─── */
+  /* ─── Header ─── */
   .header {
     font-family: var(--tome-font-mono);
     color: var(--tome-term-dim);
     font-size: 0.6rem; letter-spacing: 0.05em;
     margin-bottom: 12px; opacity: 0.5;
   }
+
+  /* ─── Cards ─── */
   .cards { display: flex; flex-direction: column; gap: 14px; }
+
+  /* ─── Closing ─── */
+  .closing {
+    font-family: var(--tome-font-mono);
+    color: var(--tome-term-dim);
+    font-size: 0.7rem; line-height: 1.9; letter-spacing: 0.02em;
+  }
 
   /* ─── Colophon ─── */
   .colophon-label {

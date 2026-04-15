@@ -1,4 +1,7 @@
 ---
+import { getCollection, render } from "astro:content";
+import mdxRenderer from "@astrojs/mdx/server.js";
+import { experimental_AstroContainer } from "astro/container";
 import Tome from "../components/tome/Tome.svelte";
 import "../styles/guide.css";
 
@@ -7,6 +10,26 @@ interface Props {
 }
 
 const { title = "Justice — Builder · Musician · Architect" } = Astro.props;
+
+// Build the page array from the content collection, sorted by order.
+const rawPages = await getCollection("pages");
+const sorted = rawPages.sort((a, b) => a.data.order - b.data.order);
+
+// Render MDX bodies to HTML strings via Container API.
+const container = await experimental_AstroContainer.create();
+container.addServerRenderer({ renderer: mdxRenderer });
+
+const pages = await Promise.all(
+  sorted.map(async (entry) => {
+    const { data } = entry;
+    let body = "";
+    if (data.pageLayout !== "cover" && entry.body && entry.body.trim().length > 0) {
+      const { Content } = await render(entry);
+      body = await container.renderToString(Content);
+    }
+    return { ...data, body };
+  }),
+);
 ---
 
 <html lang="en">
@@ -20,7 +43,7 @@ const { title = "Justice — Builder · Musician · Architect" } = Astro.props;
     <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
   </head>
   <body>
-    <Tome client:load />
+    <Tome client:load pages={pages} />
   </body>
 </html>
 

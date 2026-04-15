@@ -7,7 +7,7 @@
 
   SVG defs (filters, gradients, paths) are defined once and shared via <use>.
 -->
-<script>
+<script lang="ts">
 /**
  * @type {{ direction: 'forward' | 'back', onclick: () => void, disabled?: boolean }}
  */

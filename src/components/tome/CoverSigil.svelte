@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 /** @type {string} Unique prefix for SVG IDs to avoid collisions across instances. */
 let { idPrefix = "s" } = $props();
 

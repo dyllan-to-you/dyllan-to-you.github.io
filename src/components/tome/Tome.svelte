@@ -2,7 +2,7 @@
   §7 — Book Engine
 
   Manages flip state, 3D transforms, depth ordering, and input handling.
-  No content knowledge — reads from the page registry (pages.js).
+  Receives page data as a prop from the Astro layout (content collection).
 
   Renders in two modes based on viewport orientation:
     Landscape: two-page spread, rotateY around left edge. TOC on verso.
@@ -14,14 +14,46 @@
   Depth ordering: translateZ within a preserve-3d context. No z-index on
   leaves. Depth transitions with the flip for natural cascading.
 -->
-<script>
+<script lang="ts">
 import { onDestroy, onMount } from "svelte";
 import ContentPage from "./ContentPage.svelte";
 import CoverPage from "./CoverPage.svelte";
 import Dogear from "./Dogear.svelte";
-import { pageNumbers, pages, vineSide } from "./pages.js";
 import TocPage from "./TocPage.svelte";
-import { interaction, layout, timing } from "./tokens.js";
+import { interaction, layout, timing } from "./tokens.ts";
+
+interface PageData {
+  slug: string;
+  order: number;
+  label: string;
+  toc?: string;
+  pageLayout: "cover" | "content";
+  variant?: "front" | "back";
+  chapter?: { number: string; title: string; subtitle?: string };
+  backFace?: "cover";
+  body?: string;
+  prompt?: string;
+  quote?: string;
+  attribution?: string;
+  lines?: { text: string; italic?: boolean; mono?: boolean }[];
+  cards?: { name: string; description: string }[];
+  header?: string;
+  closing?: string;
+}
+
+let { pages }: { pages: PageData[] } = $props();
+
+/* ═══════════════════════════════════════════════
+     Derived page data
+  ═══════════════════════════════════════════════ */
+
+const tocEntries = pages.map((p, i) => ({ ...p, index: i })).filter((p) => p.toc);
+
+const ROMAN = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x"];
+let contentIndex = 0;
+const pageNumbers = pages.map((p) => (p.pageLayout !== "cover" ? ROMAN[contentIndex++] : null));
+
+const vineSide = pages.map((_, i) => (i % 2 === 1 ? "right" : "left"));
 
 /* ═══════════════════════════════════════════════
      Constants
@@ -39,7 +71,7 @@ const DEPTH_UI = (total + 2) * DEPTH;
 let isPortrait = $state(false);
 let flipped = $state(0);
 let animation = $state(null);
-let timer;
+let timer: ReturnType<typeof setTimeout> | undefined;
 let tocOpen = $state(false);
 let suppressPush = false;
 let wrapperEl = $state(null);
@@ -356,7 +388,7 @@ onDestroy(() => clearTimeout(timer));
             class:recto={!isPortrait}
             class:shadow-right={!leafFlipped}
           >
-            {#if page.type === 'cover'}
+            {#if page.pageLayout === 'cover'}
               <CoverPage variant={page.variant}/>
             {:else}
               <ContentPage {page} number={pageNumbers[i]} vine={vineSide[i]}/>
@@ -376,7 +408,7 @@ onDestroy(() => clearTimeout(timer));
               {#if page.backFace === 'cover'}
                 <CoverPage variant="back"/>
               {:else}
-                <TocPage activePage={i + 1} onNavigate={goTo} onFlipBack={goBack}/>
+                <TocPage {tocEntries} activePage={i + 1} onNavigate={goTo} onFlipBack={goBack}/>
                 <button class="edge-click edge-back" type="button" onclick={goBack} disabled={busy} tabindex="-1" aria-hidden="true"></button>
                 <button class="edge-click edge-fwd" type="button" onclick={goForward} disabled={busy} tabindex="-1" aria-hidden="true"></button>
                 <Dogear direction="back" onclick={goBack} disabled={busy}/>
@@ -423,7 +455,7 @@ onDestroy(() => clearTimeout(timer));
         class="toc-drawer"
         class:open={tocOpen}
       >
-        <TocPage activePage={flipped} onNavigate={goTo} onFlipBack={() => { tocOpen = false; }}/>
+        <TocPage {tocEntries} activePage={flipped} onNavigate={goTo} onFlipBack={() => { tocOpen = false; }}/>
       </div>
     {/if}
 

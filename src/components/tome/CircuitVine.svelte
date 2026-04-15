@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 /** @type {'left' | 'right'} Which side of a spread this page sits on. */
 let { page = "right" } = $props();
 </script>

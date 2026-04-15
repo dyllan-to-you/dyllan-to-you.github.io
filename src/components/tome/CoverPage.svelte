@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 import CornerOrnament from "./CornerOrnament.svelte";
 import CoverSigil from "./CoverSigil.svelte";
 
