@@ -1,0 +1,264 @@
+---
+import "../styles/guide.css";
+---
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Left dogear — leaf scale</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+</head>
+<body>
+  <h1>Left dogear — leaf scale options</h1>
+  <p class="sub">same fold-behind concept · paper triangle with scanlines · varying leaf size</p>
+
+  <svg width="0" height="0" style="position:absolute;" aria-hidden="true">
+    <defs>
+      <filter id="soa-blur-heavy" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="8"/></filter>
+      <filter id="soa-blur-edge"  x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3.5"/></filter>
+      <filter id="soa-blur-light" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.5"/></filter>
+      <filter id="crease-blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.5"/></filter>
+
+      <path id="soa-shape" d="M 200,440 C 160,350 120,260 110,155 C 110,135 140,125 160,145 C 175,160 190,165 200,165 C 210,165 225,160 240,145 C 260,125 290,135 290,155 C 280,260 240,350 200,440 Z"/>
+      <clipPath id="soa-clip"><use href="#soa-shape"/></clipPath>
+      <path id="soa-highlight" d="M 200,400 C 170,320 140,240 135,175 C 135,165 150,155 165,170 C 175,180 185,185 200,185 C 215,185 225,180 235,170 C 250,155 265,165 265,175 C 260,240 230,320 200,400 Z"/>
+      <path id="soa-veins" d="M 200,165 L 200,420 M 200,185 Q 165,160 140,150 M 200,215 Q 160,205 125,190 M 200,250 Q 165,250 130,235 M 200,285 Q 170,285 135,275 M 200,320 Q 175,320 145,310 M 200,355 Q 180,355 160,345 M 200,390 Q 190,390 175,380 M 200,185 Q 235,160 260,150 M 200,215 Q 240,205 275,190 M 200,250 Q 235,250 270,235 M 200,285 Q 230,285 265,275 M 200,320 Q 225,320 255,310 M 200,355 Q 220,355 240,345 M 200,390 Q 210,390 225,380 M 165,205 Q 155,225 140,235 M 235,250 Q 245,270 260,280 M 170,285 Q 160,305 145,315 M 235,160 Q 245,140 260,130 M 165,160 Q 155,140 140,130"/>
+      <linearGradient id="soa-grad" x1="200" y1="155" x2="200" y2="440" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#2d5236"/>
+        <stop offset="35%" stop-color="#3a5a35"/>
+        <stop offset="65%" stop-color="#7a6a2d"/>
+        <stop offset="100%" stop-color="#c9a84c"/>
+      </linearGradient>
+      <linearGradient id="soa-hl-grad" x1="200" y1="175" x2="200" y2="400" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#7aa380"/>
+        <stop offset="60%" stop-color="#a89460"/>
+        <stop offset="100%" stop-color="#e8d68c"/>
+      </linearGradient>
+
+      <!-- Scanlines pattern matching TocPage -->
+      <pattern id="scanlines" patternUnits="userSpaceOnUse" width="4" height="4">
+        <rect width="4" height="2" fill="transparent"/>
+        <rect y="2" width="4" height="2" fill="rgba(0, 0, 0, 0.015)"/>
+      </pattern>
+    </defs>
+  </svg>
+
+  <div class="grid">
+    <h2 class="row-label">Leaf scale at L=50 · 15° angle</h2>
+
+    <!-- Current: 24×20 -->
+    <section class="candidate">
+      <h3>Current · 24×20</h3>
+      <div class="slot">
+        <svg viewBox="-5 -5 60 60" xmlns="http://www.w3.org/2000/svg">
+          <!-- Page bg -->
+          <rect x="0" y="0" width="200" height="200" fill="var(--tome-bg-paper)"/>
+          <!-- Leaf -->
+          <g transform="rotate(15 25 25)">
+            <svg x="13" y="15" width="24" height="20" viewBox="30 180 340 210" preserveAspectRatio="none">
+              <g transform="rotate(90 200 282.5)">
+                <use href="#soa-shape" fill="url(#soa-grad)"/>
+                <g clip-path="url(#soa-clip)">
+                  <use href="#soa-highlight" fill="url(#soa-hl-grad)" filter="url(#soa-blur-heavy)" opacity="0.75"/>
+                  <use href="#soa-veins" fill="none" stroke="#4a4020" stroke-width="14" stroke-linecap="round" filter="url(#soa-blur-heavy)"/>
+                  <use href="#soa-veins" fill="none" stroke="#8a7a3e" stroke-width="7" stroke-linecap="round" filter="url(#soa-blur-edge)"/>
+                  <use href="#soa-veins" fill="none" stroke="#e8e2c8" stroke-width="2.5" stroke-linecap="round" filter="url(#soa-blur-light)"/>
+                </g>
+                <use href="#soa-shape" fill="none" stroke="#1a3420" stroke-width="2.5" opacity="0.8"/>
+              </g>
+            </svg>
+          </g>
+          <!-- Paper triangle with scanlines -->
+          <path d="M 50 0 L 50 50 L 0 50 Z" fill="var(--tome-paper-edge)"/>
+          <path d="M 50 0 L 50 50 L 0 50 Z" fill="url(#scanlines)"/>
+          <!-- Crease -->
+          <line x1="50" y1="0" x2="0" y2="50" stroke="rgba(60,40,20,0.3)" stroke-width="1" filter="url(#crease-blur)"/>
+          <line x1="49" y1="0" x2="-1" y2="50" stroke="rgba(255,245,220,0.35)" stroke-width="1" filter="url(#crease-blur)"/>
+        </svg>
+      </div>
+      <div class="note">24×20 (current) · leaf centered at (25, 25)</div>
+    </section>
+
+    <!-- 30×25 -->
+    <section class="candidate">
+      <h3>B · 30×25</h3>
+      <div class="slot">
+        <svg viewBox="-5 -5 60 60" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0" y="0" width="200" height="200" fill="var(--tome-bg-paper)"/>
+          <g transform="rotate(15 25 25)">
+            <svg x="10" y="12.5" width="30" height="25" viewBox="30 180 340 210" preserveAspectRatio="none">
+              <g transform="rotate(90 200 282.5)">
+                <use href="#soa-shape" fill="url(#soa-grad)"/>
+                <g clip-path="url(#soa-clip)">
+                  <use href="#soa-highlight" fill="url(#soa-hl-grad)" filter="url(#soa-blur-heavy)" opacity="0.75"/>
+                  <use href="#soa-veins" fill="none" stroke="#4a4020" stroke-width="14" stroke-linecap="round" filter="url(#soa-blur-heavy)"/>
+                  <use href="#soa-veins" fill="none" stroke="#8a7a3e" stroke-width="7" stroke-linecap="round" filter="url(#soa-blur-edge)"/>
+                  <use href="#soa-veins" fill="none" stroke="#e8e2c8" stroke-width="2.5" stroke-linecap="round" filter="url(#soa-blur-light)"/>
+                </g>
+                <use href="#soa-shape" fill="none" stroke="#1a3420" stroke-width="2.5" opacity="0.8"/>
+              </g>
+            </svg>
+          </g>
+          <path d="M 50 0 L 50 50 L 0 50 Z" fill="var(--tome-paper-edge)"/>
+          <path d="M 50 0 L 50 50 L 0 50 Z" fill="url(#scanlines)"/>
+          <line x1="50" y1="0" x2="0" y2="50" stroke="rgba(60,40,20,0.3)" stroke-width="1" filter="url(#crease-blur)"/>
+          <line x1="49" y1="0" x2="-1" y2="50" stroke="rgba(255,245,220,0.35)" stroke-width="1" filter="url(#crease-blur)"/>
+        </svg>
+      </div>
+      <div class="note">30×25 · +25% scale</div>
+    </section>
+
+    <!-- 36×30 -->
+    <section class="candidate">
+      <h3>C · 36×30</h3>
+      <div class="slot">
+        <svg viewBox="-5 -5 60 60" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0" y="0" width="200" height="200" fill="var(--tome-bg-paper)"/>
+          <g transform="rotate(15 25 25)">
+            <svg x="7" y="10" width="36" height="30" viewBox="30 180 340 210" preserveAspectRatio="none">
+              <g transform="rotate(90 200 282.5)">
+                <use href="#soa-shape" fill="url(#soa-grad)"/>
+                <g clip-path="url(#soa-clip)">
+                  <use href="#soa-highlight" fill="url(#soa-hl-grad)" filter="url(#soa-blur-heavy)" opacity="0.75"/>
+                  <use href="#soa-veins" fill="none" stroke="#4a4020" stroke-width="14" stroke-linecap="round" filter="url(#soa-blur-heavy)"/>
+                  <use href="#soa-veins" fill="none" stroke="#8a7a3e" stroke-width="7" stroke-linecap="round" filter="url(#soa-blur-edge)"/>
+                  <use href="#soa-veins" fill="none" stroke="#e8e2c8" stroke-width="2.5" stroke-linecap="round" filter="url(#soa-blur-light)"/>
+                </g>
+                <use href="#soa-shape" fill="none" stroke="#1a3420" stroke-width="2.5" opacity="0.8"/>
+              </g>
+            </svg>
+          </g>
+          <path d="M 50 0 L 50 50 L 0 50 Z" fill="var(--tome-paper-edge)"/>
+          <path d="M 50 0 L 50 50 L 0 50 Z" fill="url(#scanlines)"/>
+          <line x1="50" y1="0" x2="0" y2="50" stroke="rgba(60,40,20,0.3)" stroke-width="1" filter="url(#crease-blur)"/>
+          <line x1="49" y1="0" x2="-1" y2="50" stroke="rgba(255,245,220,0.35)" stroke-width="1" filter="url(#crease-blur)"/>
+        </svg>
+      </div>
+      <div class="note">36×30 · +50% scale · fills the triangle</div>
+    </section>
+
+    <!-- 42×35 -->
+    <section class="candidate">
+      <h3>D · 42×35</h3>
+      <div class="slot">
+        <svg viewBox="-5 -5 60 60" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0" y="0" width="200" height="200" fill="var(--tome-bg-paper)"/>
+          <g transform="rotate(15 25 25)">
+            <svg x="4" y="7.5" width="42" height="35" viewBox="30 180 340 210" preserveAspectRatio="none">
+              <g transform="rotate(90 200 282.5)">
+                <use href="#soa-shape" fill="url(#soa-grad)"/>
+                <g clip-path="url(#soa-clip)">
+                  <use href="#soa-highlight" fill="url(#soa-hl-grad)" filter="url(#soa-blur-heavy)" opacity="0.75"/>
+                  <use href="#soa-veins" fill="none" stroke="#4a4020" stroke-width="14" stroke-linecap="round" filter="url(#soa-blur-heavy)"/>
+                  <use href="#soa-veins" fill="none" stroke="#8a7a3e" stroke-width="7" stroke-linecap="round" filter="url(#soa-blur-edge)"/>
+                  <use href="#soa-veins" fill="none" stroke="#e8e2c8" stroke-width="2.5" stroke-linecap="round" filter="url(#soa-blur-light)"/>
+                </g>
+                <use href="#soa-shape" fill="none" stroke="#1a3420" stroke-width="2.5" opacity="0.8"/>
+              </g>
+            </svg>
+          </g>
+          <path d="M 50 0 L 50 50 L 0 50 Z" fill="var(--tome-paper-edge)"/>
+          <path d="M 50 0 L 50 50 L 0 50 Z" fill="url(#scanlines)"/>
+          <line x1="50" y1="0" x2="0" y2="50" stroke="rgba(60,40,20,0.3)" stroke-width="1" filter="url(#crease-blur)"/>
+          <line x1="49" y1="0" x2="-1" y2="50" stroke="rgba(255,245,220,0.35)" stroke-width="1" filter="url(#crease-blur)"/>
+        </svg>
+      </div>
+      <div class="note">42×35 · +75% scale · leaf extends past fold</div>
+    </section>
+
+  </div>
+
+  <div class="notes-block">
+    <p>All zoomed into the 50×50 corner area. Paper triangle now has scanlines matching the TOC page. Leaf stays centered at crease midpoint (25, 25), rotated 15°. Only the width×height of the leaf SVG changes across variants.</p>
+  </div>
+</body>
+
+<style>
+  :global(html, body) {
+    margin: 0;
+    background: var(--tome-bg-void);
+    color: var(--tome-paper);
+    font-family: var(--tome-font-body);
+    min-height: 100vh;
+  }
+  body { padding: 3rem 2rem 6rem; }
+  h1 {
+    font-family: var(--tome-font-display);
+    color: var(--tome-gold);
+    text-align: center;
+    font-size: 2rem;
+    margin: 0 0 0.25rem;
+    letter-spacing: 0.04em;
+  }
+  .sub {
+    text-align: center;
+    color: var(--tome-term-dim);
+    font-family: var(--tome-font-mono);
+    font-size: 0.76rem;
+    margin: 0 0 3rem;
+    letter-spacing: 0.05em;
+  }
+  .grid {
+    max-width: 980px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem 2rem;
+    align-items: start;
+  }
+  .row-label {
+    grid-column: 1 / -1;
+    font-family: var(--tome-font-heading);
+    color: var(--tome-gold);
+    font-size: 0.95rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin: 0 0 0.25rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(201, 168, 76, 0.2);
+  }
+  .candidate {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(201, 168, 76, 0.15);
+    border-radius: 6px;
+    padding: 1rem 1.25rem 1rem;
+  }
+  .candidate h3 {
+    font-family: var(--tome-font-heading);
+    margin: 0 0 0.75rem;
+    color: var(--tome-gold);
+    font-size: 0.85rem;
+    text-align: center;
+    letter-spacing: 0.05em;
+  }
+  .slot {
+    aspect-ratio: 1;
+    overflow: visible;
+  }
+  .slot svg {
+    width: 100%; height: 100%;
+    display: block;
+    overflow: visible;
+  }
+  .note {
+    text-align: center;
+    font-style: italic;
+    font-size: 0.78rem;
+    color: var(--tome-term-dim);
+    margin-top: 0.75rem;
+    line-height: 1.5;
+  }
+  .notes-block {
+    max-width: 780px;
+    margin: 3rem auto 0;
+    color: var(--tome-term-dim);
+    font-family: var(--tome-font-mono);
+    font-size: 0.72rem;
+    line-height: 1.8;
+  }
+  .notes-block p { margin: 0.6rem 0; }
+</style>
+</html>
