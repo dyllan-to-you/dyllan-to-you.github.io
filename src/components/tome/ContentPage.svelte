@@ -109,13 +109,6 @@ let { page, number, vine } = $props();
     padding-bottom: 32px;
   }
 
-  /* Remove fade mask when content fits (not scrollable) */
-  .scroll-area:not([style]):where(:not(:hover)) {
-    /* The mask is always applied for simplicity — the 32px fade
-       at the bottom is subtle enough to be invisible when content
-       doesn't reach the edge. */
-  }
-
   /* Subtle scrollbar that matches the parchment aesthetic */
   .scroll-area::-webkit-scrollbar { width: 4px; }
   .scroll-area::-webkit-scrollbar-track { background: transparent; }
