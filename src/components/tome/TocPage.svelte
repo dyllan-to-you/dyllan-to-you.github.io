@@ -41,7 +41,7 @@ let { activePage = 1, onNavigate, onFlipBack } = $props();
   .page {
     width: 100%; height: 100%; box-sizing: border-box;
     display: flex; flex-direction: column;
-    padding: 28px 24px 20px;
+    padding: 60px 24px 20px;
     position: relative;
     overflow: hidden;
     background: var(--tome-bg-paper);

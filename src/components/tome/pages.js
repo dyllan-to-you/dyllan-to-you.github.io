@@ -29,7 +29,7 @@ export const pages = [
     toc: "epigraph",
     slug: "epigraph",
     prompt: "cat /etc/motd",
-    quote: "\u201CAssert nothing.<br/>Derive everything.\u201D",
+    quote: "\u201CLive a Good Story.\u201D",
     attribution: "THE UR FRAMEWORK",
   },
   {

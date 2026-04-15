@@ -92,7 +92,7 @@ let { page, number, vine } = $props();
 <style>
   .page {
     width: 100%; height: 100%; box-sizing: border-box;
-    padding: 40px 32px 32px; position: relative;
+    padding: 60px 32px 32px; position: relative;
     background: var(--tome-bg-paper);
   }
 
