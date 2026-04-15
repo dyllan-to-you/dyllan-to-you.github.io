@@ -22,6 +22,11 @@ import Dogear from "./Dogear.svelte";
 import TocPage from "./TocPage.svelte";
 import { interaction, layout, timing } from "./tokens.ts";
 
+interface Section {
+  id: string;
+  text: string;
+}
+
 interface PageData {
   slug: string;
   order: number;
@@ -32,6 +37,7 @@ interface PageData {
   chapter?: { number: string; title: string; subtitle?: string };
   backFace?: "cover";
   body?: string;
+  sections?: Section[];
   prompt?: string;
   quote?: string;
   attribution?: string;
@@ -48,6 +54,17 @@ let { pages }: { pages: PageData[] } = $props();
   ═══════════════════════════════════════════════ */
 
 const tocEntries = pages.map((p, i) => ({ ...p, index: i })).filter((p) => p.toc);
+
+/* Map page index → section list for TOC nesting */
+const pageSections: Map<number, Section[]> = new Map();
+pages.forEach((p, i) => {
+  if (p.sections && p.sections.length > 0) {
+    pageSections.set(i, p.sections);
+  }
+});
+
+/* Refs to content page scroll-areas for scroll-to-section */
+let contentRefs: Map<number, HTMLElement> = new Map();
 
 const ROMAN = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x"];
 let contentIndex = 0;
@@ -210,6 +227,23 @@ function goForward() {
 }
 function goBack() {
   goTo(flipped - 1);
+}
+
+function scrollToSection(pageIndex: number, sectionId: string) {
+  const scrollArea = contentRefs.get(pageIndex);
+  if (!scrollArea) return;
+  const heading = scrollArea.querySelector(`#${CSS.escape(sectionId)}`);
+  if (heading) {
+    heading.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+function registerContentRef(pageIndex: number, el: HTMLElement | null) {
+  if (el) {
+    contentRefs.set(pageIndex, el);
+  } else {
+    contentRefs.delete(pageIndex);
+  }
 }
 
 /* ═══════════════════════════════════════════════
@@ -391,7 +425,7 @@ onDestroy(() => clearTimeout(timer));
             {#if page.pageLayout === 'cover'}
               <CoverPage variant={page.variant}/>
             {:else}
-              <ContentPage {page} number={pageNumbers[i]} vine={vineSide[i]}/>
+              <ContentPage {page} number={pageNumbers[i]} vine={vineSide[i]} registerScrollArea={(el) => registerContentRef(i, el)}/>
               <button class="edge-click edge-back" type="button" onclick={goBack} disabled={busy} tabindex="-1" aria-hidden="true"></button>
               <button class="edge-click edge-fwd" type="button" onclick={goForward} disabled={busy} tabindex="-1" aria-hidden="true"></button>
               <Dogear direction="forward" onclick={goForward} disabled={busy}/>
@@ -408,7 +442,7 @@ onDestroy(() => clearTimeout(timer));
               {#if page.backFace === 'cover'}
                 <CoverPage variant="back"/>
               {:else}
-                <TocPage {tocEntries} activePage={i + 1} onNavigate={goTo} onFlipBack={goBack}/>
+                <TocPage {tocEntries} {pageSections} activePage={i + 1} onNavigate={goTo} onFlipBack={goBack} onScrollToSection={scrollToSection}/>
                 <button class="edge-click edge-back" type="button" onclick={goBack} disabled={busy} tabindex="-1" aria-hidden="true"></button>
                 <button class="edge-click edge-fwd" type="button" onclick={goForward} disabled={busy} tabindex="-1" aria-hidden="true"></button>
                 <Dogear direction="back" onclick={goBack} disabled={busy}/>
@@ -455,7 +489,7 @@ onDestroy(() => clearTimeout(timer));
         class="toc-drawer"
         class:open={tocOpen}
       >
-        <TocPage {tocEntries} activePage={flipped} onNavigate={goTo} onFlipBack={() => { tocOpen = false; }}/>
+        <TocPage {tocEntries} {pageSections} activePage={flipped} onNavigate={goTo} onFlipBack={() => { tocOpen = false; }} onScrollToSection={scrollToSection}/>
       </div>
     {/if}
 

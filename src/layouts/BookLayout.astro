@@ -19,15 +19,31 @@ const sorted = rawPages.sort((a, b) => a.data.order - b.data.order);
 const container = await experimental_AstroContainer.create();
 container.addServerRenderer({ renderer: mdxRenderer });
 
+/** Extract h2 headings from rendered HTML for TOC sections. */
+function extractSections(html: string): { id: string; text: string }[] {
+  const sections: { id: string; text: string }[] = [];
+  const re = /<h2[^>]*id="([^"]*)"[^>]*>([\s\S]*?)<\/h2>/gi;
+  for (const match of html.matchAll(re)) {
+    // Strip any inner HTML tags to get plain text
+    const text = match[2].replace(/<[^>]*>/g, "").trim();
+    if (match[1] && text) {
+      sections.push({ id: match[1], text });
+    }
+  }
+  return sections;
+}
+
 const pages = await Promise.all(
   sorted.map(async (entry) => {
     const { data } = entry;
     let body = "";
+    let sections: { id: string; text: string }[] = [];
     if (data.pageLayout !== "cover" && entry.body && entry.body.trim().length > 0) {
       const { Content } = await render(entry);
       body = await container.renderToString(Content);
+      sections = extractSections(body);
     }
-    return { ...data, body };
+    return { ...data, body, sections };
   }),
 );
 ---

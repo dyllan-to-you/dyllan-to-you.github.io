@@ -1,5 +1,24 @@
 <script lang="ts">
-let { tocEntries, activePage = 1, onNavigate, onFlipBack } = $props();
+interface Section {
+  id: string;
+  text: string;
+}
+
+let {
+  tocEntries,
+  pageSections = new Map(),
+  activePage = 1,
+  onNavigate,
+  onFlipBack,
+  onScrollToSection,
+}: {
+  tocEntries: { index: number; toc: string }[];
+  pageSections?: Map<number, Section[]>;
+  activePage?: number;
+  onNavigate: (index: number) => void;
+  onFlipBack?: () => void;
+  onScrollToSection?: (pageIndex: number, sectionId: string) => void;
+} = $props();
 </script>
 
 <div class="page" onclick={(e) => { if (e.target.closest('button')) return; onFlipBack?.(); }} role="presentation">
@@ -18,16 +37,32 @@ let { tocEntries, activePage = 1, onNavigate, onFlipBack } = $props();
       {#each tocEntries as entry, i}
         {@const active = entry.index === activePage}
         {@const last = i === tocEntries.length - 1}
+        {@const sections = pageSections.get(entry.index) ?? []}
+        {@const hasChildren = active && sections.length > 0}
         <button
           class="tree-entry"
           class:active
           onclick={() => onNavigate(entry.index)}
           aria-current={active ? 'page' : undefined}
+          aria-expanded={hasChildren ? true : undefined}
         >
-          <span class="branch">{last ? '└──' : '├──'}</span>
+          <span class="branch">{last && !hasChildren ? '└──' : '├──'}</span>
           <span class="leaf" class:leaf-active={active}>{entry.toc}</span>
-          {#if active}<span class="cursor"></span>{/if}
+          {#if active && !hasChildren}<span class="cursor"></span>{/if}
         </button>
+        {#if hasChildren}
+          {#each sections as section, si}
+            {@const lastSection = si === sections.length - 1}
+            <button
+              class="tree-entry section-entry"
+              onclick={() => onScrollToSection?.(entry.index, section.id)}
+            >
+              <span class="branch">{last ? '    ' : '│   '}{lastSection ? '└──' : '├──'}</span>
+              <span class="leaf section-leaf">{section.text}</span>
+            </button>
+          {/each}
+          {#if active}<span class="cursor section-cursor"></span>{/if}
+        {/if}
       {/each}
     </div>
   </nav>
@@ -162,6 +197,16 @@ let { tocEntries, activePage = 1, onNavigate, onFlipBack } = $props();
     color: var(--tome-term-green);
   }
 
+  .section-leaf {
+    color: var(--tome-term-dim);
+    font-size: 0.65rem;
+    letter-spacing: 0.03em;
+  }
+
+  .section-entry:hover .section-leaf {
+    color: var(--tome-term-green);
+  }
+
   .tree-entry:hover .leaf {
     color: rgba(45, 107, 63, 0.8);
   }
@@ -175,6 +220,10 @@ let { tocEntries, activePage = 1, onNavigate, onFlipBack } = $props();
     background: var(--tome-term-green);
     opacity: 0.7;
     animation: blink 1s step-end infinite;
+  }
+
+  .section-cursor {
+    display: none;
   }
 
   @keyframes blink {

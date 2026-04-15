@@ -4,7 +4,24 @@ import CircuitVine from "./CircuitVine.svelte";
 import PageNumber from "./PageNumber.svelte";
 import ProjectCard from "./ProjectCard.svelte";
 
-let { page, number, vine } = $props();
+let {
+  page,
+  number,
+  vine,
+  registerScrollArea,
+}: {
+  page: Record<string, unknown>;
+  number: string | null;
+  vine: string;
+  registerScrollArea?: (el: HTMLElement | null) => void;
+} = $props();
+
+let scrollAreaEl = $state<HTMLElement | null>(null);
+
+$effect(() => {
+  registerScrollArea?.(scrollAreaEl);
+  return () => registerScrollArea?.(null);
+});
 </script>
 
 <div class="page" class:epigraph={page.quote} class:colophon={!!page.lines}>
@@ -12,7 +29,7 @@ let { page, number, vine } = $props();
     <CircuitVine page={vine}/>
   {/if}
 
-  <div class="scroll-area">
+  <div class="scroll-area" bind:this={scrollAreaEl}>
     <!-- Chapter header (if present) -->
     {#if page.chapter}
       <ChapterHeader number={page.chapter.number} title={page.chapter.title} subtitle={page.chapter.subtitle}/>
