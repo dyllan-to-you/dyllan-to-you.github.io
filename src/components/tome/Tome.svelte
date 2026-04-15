@@ -41,6 +41,7 @@ let animation = $state(null);
 let timer;
 let tocOpen = $state(false);
 let suppressPush = false;
+let wrapperEl = $state(null);
 
 /* ─── Derived ─── */
 
@@ -254,11 +255,31 @@ function handleKeydown(event) {
 }
 
 function handleWheel(event) {
+  // If the wheel target is inside a scroll-area that can still scroll
+  // in the wheel direction, let native scroll handle it.
+  const scrollEl = event.target.closest?.(".scroll-area");
+  if (scrollEl) {
+    const { scrollTop, scrollHeight, clientHeight } = scrollEl;
+    const atTop = scrollTop <= 0;
+    const atBottom = scrollTop + clientHeight >= scrollHeight - 1;
+    const scrollingDown = event.deltaY > 0;
+    if (!(scrollingDown ? atBottom : atTop)) return;
+  }
+
   event.preventDefault();
   if (busy) return;
   if (event.deltaY > 0 || event.deltaX > 0) goForward();
   else if (event.deltaY < 0 || event.deltaX < 0) goBack();
 }
+
+/* Wheel must be non-passive so we can conditionally preventDefault
+   (scroll-area content vs page flip). Svelte 5 binds wheel as passive
+   by default, so we use $effect + addEventListener. */
+$effect(() => {
+  if (!wrapperEl) return;
+  wrapperEl.addEventListener("wheel", handleWheel, { passive: false });
+  return () => wrapperEl.removeEventListener("wheel", handleWheel);
+});
 
 onDestroy(() => clearTimeout(timer));
 </script>
@@ -377,9 +398,9 @@ onDestroy(() => clearTimeout(timer));
 
   <div
     class="wrapper"
+    bind:this={wrapperEl}
     ontouchstart={handleTouchStart}
     ontouchend={handleTouchEnd}
-    onwheel={handleWheel}
     role="presentation"
   >
     <div
@@ -595,7 +616,7 @@ onDestroy(() => clearTimeout(timer));
   }
 
   .tome-root.portrait {
-    padding: 56px 4px 8px;
+    padding: 36px 4px 4px;
     justify-content: flex-start;
   }
 
@@ -746,6 +767,10 @@ onDestroy(() => clearTimeout(timer));
     cursor: default;
     opacity: 0.35;
   }
+
+  /* Portrait uses swipe + TOC drawer, not dogears */
+  .portrait .dogear,
+  .portrait .edge-click { display: none; }
 
   .dogear:focus-visible {
     outline: 2px solid var(--tome-gold);
