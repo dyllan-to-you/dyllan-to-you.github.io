@@ -60,8 +60,8 @@ test.describe("Book navigation", () => {
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.waitForTimeout(500);
 
-    // Navigate to the colophon (page index 7 = 7 ArrowRight presses from cover)
-    for (let i = 0; i < 7; i++) {
+    // Navigate to the colophon (page index 5 = 5 ArrowRight presses from cover)
+    for (let i = 0; i < 5; i++) {
       await page.keyboard.press("ArrowRight");
       await page.waitForTimeout(FLIP_SETTLE_MS);
     }
@@ -83,7 +83,7 @@ test.describe("Book navigation", () => {
     await page.waitForTimeout(500);
 
     // Navigate all the way to closed back
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 5; i++) {
       await page.keyboard.press("ArrowRight");
       await page.waitForTimeout(FLIP_SETTLE_MS);
     }
@@ -110,7 +110,7 @@ test.describe("Book navigation", () => {
     await page.keyboard.press("ArrowRight");
     await page.waitForTimeout(FLIP_SETTLE_MS);
 
-    // Click a TOC entry (the-architect is page index 3)
+    // Click a TOC entry (the-architect = /story page)
     const tocEntry = page.locator("button.tree-entry", { hasText: "the-architect" });
     if (await tocEntry.count() > 0) {
       await tocEntry.first().click();
