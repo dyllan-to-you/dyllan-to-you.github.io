@@ -1,0 +1,912 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Ur — Universal Representation · ClawCamp 2026</title>
+<meta name="description" content="Ur — Universal Representation: alignment infrastructure for human and AI agents. Presented at ClawCamp 2026 by Dyllan Justice Tô-Yu." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    /* Exterior: leather casing */
+    --leather: #3a2818;
+    --leather-mid: #4a3525;
+    --spine: #2a1808;
+    --gold: #c9a84c;
+    --gold-bright: #e8d68c;
+    --copper: #b87333;
+
+    /* Interior: parchment */
+    --paper: #f0e4cc;
+    --paper-light: #f5ead5;
+    --paper-edge: #e0d0b0;
+    --ink: #2a1a0a;
+    --ink-light: #6a5a4a;
+
+    /* Terminal accents */
+    --term-green: #2d6b3f;
+    --term-amber: #a07828;
+    --prompt: #3d7a4f;
+
+    /* Cosmic */
+    --void: #0a0a15;
+    --void-mid: #1a1a2e;
+
+    /* Fonts */
+    --font-display: "Cinzel Decorative", "Cinzel", serif;
+    --font-heading: "Cinzel", serif;
+    --font-body: "Cormorant Garamond", Georgia, serif;
+    --font-mono: "IBM Plex Mono", "Courier New", monospace;
+
+    /* Backgrounds */
+    --bg-leather:
+      repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(0, 0, 0, 0.03) 3px, rgba(0, 0, 0, 0.03) 6px),
+      repeating-linear-gradient(-30deg, transparent, transparent 5px, rgba(0, 0, 0, 0.02) 5px, rgba(0, 0, 0, 0.02) 10px),
+      radial-gradient(ellipse at 40% 30%, var(--leather-mid), var(--leather) 60%, var(--spine));
+
+    --bg-paper:
+      radial-gradient(ellipse at 85% 15%, rgba(180, 150, 100, 0.14), transparent 50%),
+      radial-gradient(ellipse at 15% 85%, rgba(160, 130, 80, 0.1), transparent 40%),
+      radial-gradient(ellipse at 50% 50%, var(--paper-light), var(--paper) 70%, var(--paper-edge));
+
+    --bg-void:
+      radial-gradient(ellipse at 50% 50%, rgba(201, 168, 76, 0.08), transparent 60%),
+      radial-gradient(ellipse at 50% 50%, var(--void-mid) 0%, var(--void) 100%);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    background: var(--void);
+    color: var(--paper);
+    font-family: var(--font-body);
+    font-size: clamp(16px, 1.6vw, 22px);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .deck {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(1.5rem, 5vw, 5rem);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 500ms ease;
+  }
+
+  .slide--active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* ── Variant backgrounds ── */
+  .slide--title {
+    background: var(--bg-leather);
+    color: var(--gold-bright);
+  }
+  .slide--void {
+    background: var(--bg-void);
+    color: var(--paper);
+  }
+  .slide--paper {
+    background: var(--bg-paper);
+    color: var(--ink);
+  }
+
+  /* ── Typography ── */
+  h1, h2, h3 {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: 0.02em;
+  }
+
+  .display {
+    font-family: var(--font-display);
+    font-weight: 900;
+    letter-spacing: 0.04em;
+  }
+
+  .mono {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+  }
+
+  em, .italic {
+    font-style: italic;
+  }
+
+  /* ── Slide 1 : Title ── */
+  .slide--title .title {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: clamp(5rem, 18vw, 16rem);
+    line-height: 1;
+    letter-spacing: 0.08em;
+    color: var(--gold-bright);
+    text-shadow:
+      0 0 40px rgba(201, 168, 76, 0.3),
+      0 2px 0 rgba(0, 0, 0, 0.5);
+    margin-bottom: 0.3em;
+  }
+
+  .slide--title .subtitle {
+    font-family: var(--font-heading);
+    font-weight: 400;
+    color: var(--gold);
+    text-align: center;
+    max-width: 46ch;
+    margin-bottom: 2.6em;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4em;
+  }
+  .slide--title .subtitle__primary {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(1.4rem, 3.2vw, 2.6rem);
+    color: var(--gold-bright);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .slide--title .subtitle__secondary {
+    font-family: var(--font-heading);
+    font-weight: 400;
+    font-size: clamp(0.95rem, 1.8vw, 1.5rem);
+    color: var(--gold);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .slide--title .byline {
+    font-family: var(--font-mono);
+    font-size: clamp(0.8rem, 1.1vw, 1rem);
+    color: var(--gold);
+    opacity: 0.75;
+    letter-spacing: 0.1em;
+    text-align: center;
+  }
+
+  .slide--title .sigil {
+    position: absolute;
+    opacity: 0.09;
+    pointer-events: none;
+  }
+  .slide--title .sigil--top { top: 8vh; }
+  .slide--title .sigil--bottom { bottom: 8vh; transform: rotate(180deg); }
+
+  /* ── Slide 2 : Hook ── */
+  .slide--hook {
+    text-align: center;
+  }
+  .slide--hook .lede {
+    font-family: var(--font-heading);
+    font-size: clamp(1.4rem, 2.8vw, 2.4rem);
+    font-weight: 400;
+    color: var(--ink-light);
+    margin-bottom: 0.8em;
+    max-width: 24ch;
+  }
+  .slide--hook .big-question {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: clamp(3rem, 9vw, 8rem);
+    line-height: 1.05;
+    color: var(--gold-bright);
+    letter-spacing: 0.02em;
+    margin: 0.3em 0 0.8em;
+    text-shadow: 0 0 60px rgba(201, 168, 76, 0.25);
+  }
+  .slide--hook .you {
+    color: var(--copper);
+    font-style: italic;
+  }
+  .slide--hook .follow-ups {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: clamp(1.1rem, 2.2vw, 1.8rem);
+    max-width: 40ch;
+    color: var(--paper);
+    opacity: 0.85;
+    line-height: 1.6;
+  }
+
+  /* ── Slide 3 : Problem ── */
+  .slide--problem .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--term-amber);
+    margin-bottom: 1em;
+  }
+  .slide--problem h2 {
+    font-size: clamp(2rem, 4.5vw, 4rem);
+    font-weight: 600;
+    text-align: center;
+    max-width: 18ch;
+    margin-bottom: 1.2em;
+    color: var(--ink);
+    line-height: 1.1;
+  }
+  .slide--problem .maps-viz {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    gap: clamp(1.5rem, 5vw, 4rem);
+    margin-bottom: 2em;
+    align-items: center;
+  }
+  .map {
+    width: clamp(80px, 11vw, 140px);
+    height: clamp(80px, 11vw, 140px);
+    position: relative;
+    opacity: 0.8;
+  }
+  .map svg { width: 100%; height: 100%; }
+  .map .node { fill: var(--ink); }
+  .map .edge { stroke: var(--ink-light); stroke-width: 2; fill: none; }
+  .map--you .center { fill: var(--copper); }
+  .map--ai .center { fill: var(--term-green); }
+  .map--team .center { fill: var(--term-amber); }
+  .slide--problem .caption {
+    font-size: clamp(1rem, 1.7vw, 1.4rem);
+    max-width: 56ch;
+    text-align: center;
+    color: var(--ink);
+    line-height: 1.55;
+    margin-bottom: 1.5em;
+  }
+  .slide--problem .callout {
+    font-family: var(--font-mono);
+    font-size: clamp(0.85rem, 1.3vw, 1.05rem);
+    padding: 1.2em 1.8em;
+    border-left: 3px solid var(--term-amber);
+    background: rgba(160, 120, 40, 0.08);
+    max-width: 60ch;
+    line-height: 1.65;
+    color: var(--ink);
+  }
+  .slide--problem .callout strong {
+    color: var(--term-amber);
+    font-weight: 500;
+  }
+
+  /* ── Slide 4 : Grammar / 3×3 grid ── */
+  .slide--grammar h2 {
+    font-size: clamp(1.8rem, 3.8vw, 3.2rem);
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 1em;
+    max-width: 22ch;
+    color: var(--ink);
+    line-height: 1.15;
+  }
+  .grid-holon {
+    display: grid;
+    grid-template-columns: auto repeat(3, minmax(110px, 1fr));
+    grid-template-rows: auto repeat(3, minmax(72px, 1fr));
+    gap: 4px;
+    max-width: 780px;
+    width: 100%;
+    background: var(--ink);
+    padding: 4px;
+    border-radius: 4px;
+    margin-bottom: 1.5em;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  }
+  .grid-cell {
+    background: var(--paper-light);
+    padding: 0.75em 0.6em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-family: var(--font-body);
+    font-size: clamp(0.9rem, 1.4vw, 1.1rem);
+    color: var(--ink);
+  }
+  .grid-cell--axis {
+    background: var(--leather);
+    color: var(--gold-bright);
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: clamp(0.75rem, 1.1vw, 0.95rem);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.6em;
+  }
+  .grid-cell--row {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: clamp(0.85rem, 1.3vw, 1.05rem);
+    letter-spacing: 0.05em;
+  }
+  .grid-cell--corner { background: var(--spine); }
+  .grid-cell__combinator {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--term-amber);
+    font-size: 0.75em;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.15em;
+  }
+  .grid-cell__label {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .grid-cell--row .grid-cell__gloss {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: 0.78em;
+    color: var(--ink-light);
+    margin-top: 0.2em;
+  }
+  .slide--grammar .caption {
+    font-size: clamp(1rem, 1.6vw, 1.35rem);
+    max-width: 60ch;
+    text-align: center;
+    color: var(--ink);
+    line-height: 1.55;
+  }
+  .slide--grammar .caption em { color: var(--copper); font-style: italic; }
+
+  /* ── Slide 5 : Scale ── */
+  .slide--scale h2 {
+    font-size: clamp(2rem, 4.5vw, 4rem);
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 1.4em;
+    color: var(--ink);
+  }
+  .scale-ladder {
+    display: flex;
+    flex-direction: row;
+    gap: 0;
+    align-items: stretch;
+    margin-bottom: 1.8em;
+    max-width: 95vw;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .rung {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: clamp(0.95rem, 1.7vw, 1.35rem);
+    padding: 0.6em 1em;
+    color: var(--ink);
+    background: var(--paper-light);
+    border: 1px solid var(--ink-light);
+    border-right: none;
+    letter-spacing: 0.05em;
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .rung:first-child { border-top-left-radius: 4px; border-bottom-left-radius: 4px; }
+  .rung:last-child {
+    border-right: 1px solid var(--ink-light);
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+    background: var(--leather);
+    color: var(--gold-bright);
+  }
+  .rung::after {
+    content: "›";
+    position: absolute;
+    right: -0.4em;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--ink-light);
+    font-family: var(--font-mono);
+    z-index: 1;
+    background: var(--paper);
+    padding: 0 0.1em;
+  }
+  .rung:last-child::after { display: none; }
+
+  .slide--scale .caption {
+    font-size: clamp(1rem, 1.7vw, 1.4rem);
+    max-width: 62ch;
+    text-align: center;
+    color: var(--ink);
+    line-height: 1.55;
+    margin-bottom: 1.2em;
+  }
+  .projection-arrows {
+    display: flex;
+    gap: 1em;
+    margin-top: 0.4em;
+    flex-wrap: wrap;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: clamp(0.85rem, 1.3vw, 1.05rem);
+    color: var(--term-amber);
+  }
+  .projection-arrows span { padding: 0.3em 0.8em; background: rgba(160, 120, 40, 0.1); border-radius: 3px; }
+
+  /* ── Slide 6 : Status ── */
+  .slide--status .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--prompt);
+    margin-bottom: 0.8em;
+  }
+  .slide--status h2 {
+    font-size: clamp(2rem, 4.5vw, 3.8rem);
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 1.2em;
+    color: var(--ink);
+    max-width: 18ch;
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(1rem, 2.5vw, 2.2rem);
+    max-width: 72ch;
+    width: 100%;
+    margin-bottom: 1.8em;
+  }
+  .stat {
+    text-align: center;
+    padding: 1em 0.5em;
+    border: 1px solid var(--ink-light);
+    background: rgba(255, 250, 235, 0.4);
+    border-radius: 3px;
+  }
+  .stat__value {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+    font-weight: 900;
+    color: var(--leather);
+    line-height: 1;
+    margin-bottom: 0.15em;
+  }
+  .stat__label {
+    font-family: var(--font-mono);
+    font-size: clamp(0.75rem, 1.1vw, 0.95rem);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+  }
+  .slide--status .meta {
+    font-family: var(--font-mono);
+    font-size: clamp(0.85rem, 1.3vw, 1.05rem);
+    color: var(--ink-light);
+    margin-bottom: 1em;
+    letter-spacing: 0.05em;
+  }
+  .slide--status .caption {
+    font-size: clamp(1rem, 1.7vw, 1.4rem);
+    max-width: 58ch;
+    text-align: center;
+    color: var(--ink);
+    font-style: italic;
+    line-height: 1.55;
+  }
+  .slide--status .caption strong {
+    font-weight: 500;
+    color: var(--leather);
+    font-style: normal;
+  }
+
+  /* ── Slide 7 : Close ── */
+  .slide--close {
+    text-align: center;
+  }
+  .slide--close .finale {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: clamp(2.2rem, 5vw, 4.5rem);
+    color: var(--gold-bright);
+    line-height: 1.15;
+    max-width: 22ch;
+    margin-bottom: 0.4em;
+    text-shadow: 0 0 50px rgba(201, 168, 76, 0.3);
+  }
+  .slide--close .undersong {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: clamp(1.3rem, 2.6vw, 2.2rem);
+    color: var(--gold);
+    margin-bottom: 2em;
+    max-width: 34ch;
+  }
+  .slide--close .ask {
+    font-family: var(--font-mono);
+    font-size: clamp(0.95rem, 1.4vw, 1.2rem);
+    color: var(--paper);
+    opacity: 0.85;
+    letter-spacing: 0.05em;
+    line-height: 1.7;
+  }
+  .slide--close .ask a { color: var(--gold-bright); text-decoration: none; border-bottom: 1px solid var(--gold); }
+
+  /* ── HUD ── */
+  .hud {
+    position: fixed;
+    bottom: 0.8rem;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1.2rem;
+    pointer-events: none;
+    z-index: 10;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    opacity: 0.55;
+    mix-blend-mode: difference;
+    color: var(--paper);
+  }
+  .hud__counter { font-variant-numeric: tabular-nums; }
+  .hud__hint { opacity: 0.7; }
+
+  .progress {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: rgba(0, 0, 0, 0.15);
+    z-index: 11;
+  }
+  .progress__bar {
+    height: 100%;
+    background: var(--gold);
+    width: 0;
+    transition: width 400ms ease;
+    box-shadow: 0 0 10px rgba(201, 168, 76, 0.6);
+  }
+
+  /* ── Speaker notes overlay ── */
+  .notes {
+    position: fixed;
+    inset: auto 1.5rem 1.5rem 1.5rem;
+    max-height: 40vh;
+    background: rgba(10, 10, 21, 0.96);
+    color: var(--paper);
+    padding: 1.5rem 1.8rem;
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    border: 1px solid var(--gold);
+    border-radius: 4px;
+    overflow-y: auto;
+    z-index: 20;
+    display: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  }
+  .notes--visible { display: block; }
+  .notes__header {
+    font-family: var(--font-heading);
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-size: 0.85rem;
+    margin-bottom: 0.8rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid rgba(201, 168, 76, 0.3);
+  }
+  .notes__timing {
+    color: var(--gold-bright);
+    font-weight: 500;
+    margin-right: 0.6em;
+  }
+
+  @media (max-width: 640px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .scale-ladder .rung { font-size: 0.85rem; padding: 0.4em 0.7em; }
+  }
+
+  @media print {
+    .hud, .progress, .notes { display: none; }
+    .slide {
+      position: relative !important;
+      opacity: 1 !important;
+      page-break-after: always;
+      height: 100vh;
+      width: 100vw;
+    }
+  }
+</style>
+</head>
+<body>
+  <main class="deck" id="deck">
+
+    <!-- 1 : TITLE -->
+    <section class="slide slide--title slide--active" data-notes="(8s) Let it breathe. Hold silence. Make eye contact. When the room is yours, begin.">
+      <svg class="sigil sigil--top" width="120" height="40" viewBox="0 0 120 40" aria-hidden="true">
+        <path d="M10 20 Q60 0 110 20 Q60 40 10 20" fill="none" stroke="currentColor" stroke-width="1" />
+        <circle cx="60" cy="20" r="3" fill="currentColor" />
+      </svg>
+      <div class="title">Ur</div>
+      <div class="subtitle">
+        <div class="subtitle__primary">Universal Representation</div>
+        <div class="subtitle__secondary">Alignment Infrastructure for Human and AI Agents</div>
+      </div>
+      <div class="byline">
+        Dyllan Justice Tô-Yu · Playfaire PBC · ClawCamp 2026
+      </div>
+      <svg class="sigil sigil--bottom" width="120" height="40" viewBox="0 0 120 40" aria-hidden="true">
+        <path d="M10 20 Q60 0 110 20 Q60 40 10 20" fill="none" stroke="currentColor" stroke-width="1" />
+        <circle cx="60" cy="20" r="3" fill="currentColor" />
+      </svg>
+    </section>
+
+    <!-- 2 : HOOK -->
+    <section class="slide slide--void slide--hook" data-notes="(20s) Everyone's obsessed with aligning AI. Getting their agents to do what they want. Meanwhile — are YOU aligned? With your team? With your community? With the person you said you'd be a year ago? [PAUSE 2s — eye contact]">
+      <div class="lede">Everyone's obsessed with aligning AI.</div>
+      <div class="big-question">Are <span class="you">you</span> aligned?</div>
+      <div class="follow-ups">
+        With your team? Your business? Your community?<br />
+        With the person you said you'd be a year ago?
+      </div>
+    </section>
+
+    <!-- 3 : PROBLEM -->
+    <section class="slide slide--paper slide--problem" data-notes="(35s) You have a mind map. Your AI has one. Your team has one. They can't see each other. We drift silently from what we said we were — individuals, teams, whole communities. The AI field just gave us a name for this at the agent scale: context rot — agents drown in retrieved text, reasoning degrades. The same failure hollows out teams over a quarter, communities over a generation. Same shape. Different substrate.">
+      <div class="eyebrow">The problem</div>
+      <h2>Mind maps that can't see each other.</h2>
+      <div class="maps-viz" aria-hidden="true">
+        <div class="map map--you"><svg viewBox="0 0 100 100">
+          <line class="edge" x1="50" y1="50" x2="20" y2="20" />
+          <line class="edge" x1="50" y1="50" x2="80" y2="20" />
+          <line class="edge" x1="50" y1="50" x2="20" y2="80" />
+          <line class="edge" x1="50" y1="50" x2="85" y2="70" />
+          <line class="edge" x1="50" y1="50" x2="50" y2="90" />
+          <circle class="node" cx="20" cy="20" r="4" />
+          <circle class="node" cx="80" cy="20" r="4" />
+          <circle class="node" cx="20" cy="80" r="4" />
+          <circle class="node" cx="85" cy="70" r="4" />
+          <circle class="node" cx="50" cy="90" r="4" />
+          <circle class="node center" cx="50" cy="50" r="7" />
+        </svg></div>
+        <div class="map map--ai"><svg viewBox="0 0 100 100">
+          <line class="edge" x1="50" y1="50" x2="15" y2="35" />
+          <line class="edge" x1="50" y1="50" x2="75" y2="15" />
+          <line class="edge" x1="50" y1="50" x2="90" y2="55" />
+          <line class="edge" x1="50" y1="50" x2="70" y2="85" />
+          <line class="edge" x1="75" y1="15" x2="90" y2="30" />
+          <circle class="node" cx="15" cy="35" r="4" />
+          <circle class="node" cx="75" cy="15" r="4" />
+          <circle class="node" cx="90" cy="55" r="4" />
+          <circle class="node" cx="70" cy="85" r="4" />
+          <circle class="node" cx="90" cy="30" r="4" />
+          <circle class="node center" cx="50" cy="50" r="7" />
+        </svg></div>
+        <div class="map map--team"><svg viewBox="0 0 100 100">
+          <line class="edge" x1="50" y1="50" x2="25" y2="25" />
+          <line class="edge" x1="50" y1="50" x2="75" y2="25" />
+          <line class="edge" x1="50" y1="50" x2="10" y2="60" />
+          <line class="edge" x1="50" y1="50" x2="90" y2="70" />
+          <line class="edge" x1="25" y1="25" x2="10" y2="45" />
+          <circle class="node" cx="25" cy="25" r="4" />
+          <circle class="node" cx="75" cy="25" r="4" />
+          <circle class="node" cx="10" cy="60" r="4" />
+          <circle class="node" cx="90" cy="70" r="4" />
+          <circle class="node" cx="10" cy="45" r="4" />
+          <circle class="node center" cx="50" cy="50" r="7" />
+        </svg></div>
+      </div>
+      <p class="caption">Every person, every AI, every team carries a private mental map of shared reality. They can't see each other. Descriptions drift silently from what they describe.</p>
+      <div class="callout">
+        The AI field named this at the agent scale: <strong>context rot</strong> — agents drown in retrieved text, reasoning degrades. The same failure hollows out teams over a quarter, communities over a generation. <strong>Same shape. Different substrate.</strong>
+      </div>
+    </section>
+
+    <!-- 4 : GRAMMAR -->
+    <section class="slide slide--paper slide--grammar" data-notes="(35s) Ur is a universal grammar for mind maps. Nine structural cells — typed, local-first, readable by humans AND agents. Two mind maps in this grammar can be overlaid and projected — you see exactly where they agree, where they've drifted, where one knows what the other doesn't. [Trace the 3x3 with your hand.]">
+      <h2>A universal grammar for mind maps.</h2>
+      <div class="grid-holon" role="table" aria-label="3x3 description template">
+        <div class="grid-cell grid-cell--corner"></div>
+        <div class="grid-cell grid-cell--axis">Intrinsic · Y</div>
+        <div class="grid-cell grid-cell--axis">Relational · S</div>
+        <div class="grid-cell grid-cell--axis">Extrinsic · C</div>
+
+        <div class="grid-cell grid-cell--axis grid-cell--row">K<div class="grid-cell__gloss">what persists</div></div>
+        <div class="grid-cell"><div class="grid-cell__combinator">K × Y</div><div class="grid-cell__label">Schema</div></div>
+        <div class="grid-cell"><div class="grid-cell__combinator">K × S</div><div class="grid-cell__label">Connections</div></div>
+        <div class="grid-cell"><div class="grid-cell__combinator">K × C</div><div class="grid-cell__label">Significance</div></div>
+
+        <div class="grid-cell grid-cell--axis grid-cell--row">B<div class="grid-cell__gloss">what composes</div></div>
+        <div class="grid-cell"><div class="grid-cell__combinator">B × Y</div><div class="grid-cell__label">Messages</div></div>
+        <div class="grid-cell"><div class="grid-cell__combinator">B × S</div><div class="grid-cell__label">Interactions</div></div>
+        <div class="grid-cell"><div class="grid-cell__combinator">B × C</div><div class="grid-cell__label">Effects</div></div>
+
+        <div class="grid-cell grid-cell--axis grid-cell--row">W<div class="grid-cell__gloss">why / examines</div></div>
+        <div class="grid-cell"><div class="grid-cell__combinator">W × Y</div><div class="grid-cell__label">Purpose</div></div>
+        <div class="grid-cell"><div class="grid-cell__combinator">W × S</div><div class="grid-cell__label">Values</div></div>
+        <div class="grid-cell"><div class="grid-cell__combinator">W × C</div><div class="grid-cell__label">Meaning</div></div>
+      </div>
+      <p class="caption">Typed, local-first, readable by humans and agents. Two maps in the same grammar can be <em>overlaid and projected</em> — exact agreement, exact disagreement, visible drift.</p>
+    </section>
+
+    <!-- 5 : SCALE -->
+    <section class="slide slide--paper slide--scale" data-notes="(30s) Same nine cells describe a database table, a person, a small business, a coalition, a city. One grammar, every scale. And the same source graph projects to code, docs, RDF, ASTs — spec and implementation become renderings of one truth. Drift detectable by construction.">
+      <h2>Same grammar, every scale.</h2>
+      <div class="scale-ladder" aria-label="Scale ladder">
+        <div class="rung">Habit</div>
+        <div class="rung">You</div>
+        <div class="rung">Agent</div>
+        <div class="rung">Team</div>
+        <div class="rung">Business</div>
+        <div class="rung">Community</div>
+        <div class="rung">City</div>
+      </div>
+      <p class="caption">A database table uses two cells. A person uses all nine. A coalition uses them over a generation. One source graph, many surfaces:</p>
+      <div class="projection-arrows">
+        <span>→ code (ASTs)</span>
+        <span>→ docs</span>
+        <span>→ RDF</span>
+        <span>→ diagrams</span>
+        <span>→ prose</span>
+      </div>
+    </section>
+
+    <!-- 6 : STATUS -->
+    <section class="slide slide--paper slide--status" data-notes="(30s) Prototype running, grammar deepening. 392 holons across 16 live plans in my own graph. MCP-native, SQLite, Apache 2.0, local-first. The system describes itself in its own grammar. The AI agents building it each carry their own holon — checked by the same instruments as the humans. Dogfooding is the rework.">
+      <div class="eyebrow">Status</div>
+      <h2>Prototype running. Grammar deepening.</h2>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat__value">392</div>
+          <div class="stat__label">Holons</div>
+        </div>
+        <div class="stat">
+          <div class="stat__value">16</div>
+          <div class="stat__label">Live plans</div>
+        </div>
+        <div class="stat">
+          <div class="stat__value">1</div>
+          <div class="stat__label">Self-describing spec</div>
+        </div>
+      </div>
+      <div class="meta">MCP-native · TypeScript · SQLite · Apache 2.0 · local-first</div>
+      <p class="caption">The system describes itself in its own grammar. The agents building it each carry their own holon — checked by the same instruments as the humans. <strong>Dogfooding is the rework.</strong></p>
+    </section>
+
+    <!-- 7 : CLOSE -->
+    <section class="slide slide--void slide--close" data-notes="(22s) Everyone's asking if AI is aligned. The harder question is whether anything is. Ur gives that a structural answer — mind maps in a shared grammar, overlaid and projected, drift detectable by construction. The first city, and the prefix for primordial. The map underneath the maps. [Drop voice on last line.]">
+      <div class="finale">The first city, and the prefix for primordial.</div>
+      <div class="undersong">The map underneath the maps.</div>
+      <div class="ask">
+        Apache 2.0 · local-first · early adopters welcome<br />
+        <a href="https://dyllan.to">dyllan.to</a>
+      </div>
+    </section>
+
+  </main>
+
+  <aside class="notes" id="notes" aria-live="polite">
+    <div class="notes__header">Speaker notes</div>
+    <div id="notes-body"></div>
+  </aside>
+
+  <div class="hud" aria-hidden="true">
+    <div class="hud__counter"><span id="counter-current">1</span> / <span id="counter-total">7</span></div>
+    <div class="hud__hint">← → navigate · N notes · F fullscreen</div>
+  </div>
+  <div class="progress" aria-hidden="true">
+    <div class="progress__bar" id="progress-bar"></div>
+  </div>
+
+<script>
+(() => {
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const notesEl = document.getElementById('notes');
+  const notesBody = document.getElementById('notes-body');
+  const counterCurrent = document.getElementById('counter-current');
+  const counterTotal = document.getElementById('counter-total');
+  const progressBar = document.getElementById('progress-bar');
+  const total = slides.length;
+  counterTotal.textContent = total;
+
+  let index = 0;
+
+  const render = () => {
+    slides.forEach((s, i) => s.classList.toggle('slide--active', i === index));
+    counterCurrent.textContent = index + 1;
+    progressBar.style.width = ((index + 1) / total * 100) + '%';
+    const note = slides[index].dataset.notes || '';
+    notesBody.textContent = note;
+    // Sync URL hash for deep-linking/resume
+    history.replaceState(null, '', '#' + (index + 1));
+  };
+
+  const next = () => { if (index < total - 1) { index++; render(); } };
+  const prev = () => { if (index > 0) { index--; render(); } };
+  const first = () => { index = 0; render(); };
+  const last = () => { index = total - 1; render(); };
+
+  const toggleNotes = () => {
+    notesEl.classList.toggle('notes--visible');
+  };
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen?.();
+    } else {
+      document.exitFullscreen?.();
+    }
+  };
+
+  window.addEventListener('keydown', (e) => {
+    // Ignore if modifier pressed
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    switch (e.key) {
+      case 'ArrowRight':
+      case 'PageDown':
+      case ' ':
+        e.preventDefault(); next(); break;
+      case 'ArrowLeft':
+      case 'PageUp':
+        e.preventDefault(); prev(); break;
+      case 'Home':
+        e.preventDefault(); first(); break;
+      case 'End':
+        e.preventDefault(); last(); break;
+      case 'n': case 'N':
+        e.preventDefault(); toggleNotes(); break;
+      case 'f': case 'F':
+        e.preventDefault(); toggleFullscreen(); break;
+      case 'Escape':
+        if (notesEl.classList.contains('notes--visible')) {
+          notesEl.classList.remove('notes--visible');
+        }
+        break;
+    }
+  });
+
+  // Tap/click navigation — right half advances, left half goes back
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('a, button, .notes')) return;
+    const x = e.clientX;
+    if (x > window.innerWidth / 2) { next(); } else { prev(); }
+  });
+
+  // Touch swipe
+  let touchStart = null;
+  document.addEventListener('touchstart', (e) => {
+    touchStart = e.touches[0].clientX;
+  });
+  document.addEventListener('touchend', (e) => {
+    if (touchStart == null) return;
+    const dx = e.changedTouches[0].clientX - touchStart;
+    if (Math.abs(dx) > 40) { dx > 0 ? prev() : next(); }
+    touchStart = null;
+  });
+
+  // Init — respect hash if present
+  const hashIndex = parseInt(location.hash.slice(1), 10);
+  if (!isNaN(hashIndex) && hashIndex >= 1 && hashIndex <= total) {
+    index = hashIndex - 1;
+  }
+  render();
+})();
+</script>
+</body>
+</html>
