@@ -15,6 +15,11 @@ const { title = "Justice — Builder · Musician · Architect" } = Astro.props;
 const rawPages = await getCollection("pages");
 const sorted = rawPages.sort((a, b) => a.data.order - b.data.order);
 
+// Published writings drive any `cardsSource: writings` chapter leaves.
+const publishedWritings = (
+  await getCollection("writings", ({ data }) => import.meta.env.PROD ? !data.draft : true)
+).sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
 // Render MDX bodies to HTML strings via Container API.
 const container = await experimental_AstroContainer.create();
 container.addServerRenderer({ renderer: mdxRenderer });
@@ -43,7 +48,18 @@ const pages = await Promise.all(
       body = await container.renderToString(Content);
       sections = extractSections(body);
     }
-    return { ...data, body, sections };
+
+    // Resolve dynamic card sources at build time.
+    let cards = data.cards;
+    if (data.cardsSource === "writings") {
+      cards = publishedWritings.map((w) => ({
+        name: w.data.title,
+        description: w.data.description,
+        href: `/writings/${w.id.replace(/\.mdx$/, "")}`,
+      }));
+    }
+
+    return { ...data, body, sections, cards };
   }),
 );
 ---

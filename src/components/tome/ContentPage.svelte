@@ -60,11 +60,15 @@ $effect(() => {
     {/if}
 
     <!-- Cards (if present) -->
-    {#if page.cards}
+    {#if page.cards && page.cards.length > 0}
       <div class="cards">
         {#each page.cards as card}
-          <ProjectCard name={card.name} description={card.description}/>
+          <ProjectCard name={card.name} description={card.description} href={card.href}/>
         {/each}
+      </div>
+    {:else if page.cardsSource === 'writings'}
+      <div class="empty-state">
+        <span class="prompt">&gt;</span> no posts yet. the ink is still wet.
       </div>
     {/if}
 
@@ -205,6 +209,15 @@ $effect(() => {
 
   /* ─── Cards ─── */
   .cards { display: flex; flex-direction: column; gap: 14px; }
+
+  /* ─── Empty state (no published writings) ─── */
+  .empty-state {
+    font-family: var(--tome-font-mono);
+    color: var(--tome-term-dim);
+    font-size: 0.75rem; letter-spacing: 0.05em;
+    padding: 24px 0; opacity: 0.7;
+  }
+  .empty-state .prompt { opacity: 0.5; }
 
   /* ─── Closing ─── */
   .closing {

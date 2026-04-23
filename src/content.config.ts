@@ -10,13 +10,14 @@ import { glob } from "astro/loaders";
  * Progressive enhancement: each frontmatter field is independently
  * present or absent. No "type" switching.
  *
- *   chapter  → renders ChapterHeader above body
- *   header   → renders terminal-style label above body
- *   quote    → renders centered epigraph layout
- *   cards    → renders card grid after body
- *   lines    → renders colophon-style centered text
- *   closing  → renders terminal closing text after body
- *   backFace → marks this leaf's verso as the back cover
+ *   chapter      → renders ChapterHeader above body
+ *   header       → renders terminal-style label above body
+ *   quote        → renders centered epigraph layout
+ *   cards        → renders static card grid after body
+ *   cardsSource  → renders dynamic card grid sourced from a collection
+ *   lines        → renders colophon-style centered text
+ *   closing      → renders terminal closing text after body
+ *   backFace     → marks this leaf's verso as the back cover
  */
 const pages = defineCollection({
   loader: glob({ pattern: "**/*.mdx", base: "./src/content/pages" }),
@@ -60,6 +61,8 @@ const pages = defineCollection({
         }),
       )
       .optional(),
+    /** Populate cards dynamically from a collection at build time. */
+    cardsSource: z.enum(["writings"]).optional(),
     header: z.string().optional(),
     closing: z.string().optional(),
   }),

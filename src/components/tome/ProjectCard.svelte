@@ -1,13 +1,22 @@
 <script lang="ts">
-let { name, description } = $props();
+let { name, description, href }: { name: string; description: string; href?: string } = $props();
 </script>
 
-<div class="card">
-  <div class="name">
-    <span class="prompt">&gt;</span> {name}
+{#if href}
+  <a class="card card-link" {href}>
+    <div class="name">
+      <span class="prompt">&gt;</span> {name}
+    </div>
+    <div class="desc">{description}</div>
+  </a>
+{:else}
+  <div class="card">
+    <div class="name">
+      <span class="prompt">&gt;</span> {name}
+    </div>
+    <div class="desc">{description}</div>
   </div>
-  <div class="desc">{description}</div>
-</div>
+{/if}
 
 <style>
   .card {
@@ -15,6 +24,19 @@ let { name, description } = $props();
     border: 1px solid rgba(45, 107, 63, 0.2);
     border-radius: 2px;
     background: linear-gradient(135deg, rgba(240, 228, 204, 0.53), rgba(224, 208, 176, 0.27));
+  }
+  .card-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+  }
+  .card-link:hover,
+  .card-link:focus-visible {
+    border-color: var(--tome-term-green);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(45, 107, 63, 0.18);
+    outline: none;
   }
   .name {
     font-family: var(--tome-font-mono);

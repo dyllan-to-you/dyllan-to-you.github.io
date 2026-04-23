@@ -42,7 +42,8 @@ interface PageData {
   quote?: string;
   attribution?: string;
   lines?: { text: string; italic?: boolean; mono?: boolean }[];
-  cards?: { name: string; description: string }[];
+  cards?: { name: string; description: string; href?: string }[];
+  cardsSource?: "writings";
   header?: string;
   closing?: string;
 }
