@@ -15,9 +15,9 @@ let { variant = "front" } = $props();
     <div class="sigil-wrap">
       <CoverSigil idPrefix="cover"/>
     </div>
-    <h1>Justice</h1>
+    <h1>Dyllan Justice Tô-Yu</h1>
     <div class="gold-line"></div>
-    <p class="subtitle">Builder · Musician · Architect</p>
+    <p class="subtitle">Creative · Solarpunk · Engineer</p>
   {:else}
     <div class="sigil-muted">
       <CoverSigil idPrefix="back"/>
@@ -52,8 +52,9 @@ let { variant = "front" } = $props();
     font-family: var(--tome-font-display);
     color: var(--tome-gold);
     text-shadow: 0 0 20px rgba(201, 168, 76, 0.27), 0 2px 4px rgba(0,0,0,.5);
-    font-size: 2.2rem; letter-spacing: 0.3em;
+    font-size: 1.5rem; letter-spacing: 0.18em;
     margin: 0 0 8px; text-transform: uppercase;
+    white-space: nowrap;
   }
   .gold-line {
     width: 120px; height: 1px;
