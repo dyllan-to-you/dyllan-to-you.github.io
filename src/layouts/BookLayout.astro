@@ -1,8 +1,9 @@
 ---
-import { getCollection, render } from "astro:content";
-import mdxRenderer from "@astrojs/mdx/server.js";
-import { experimental_AstroContainer } from "astro/container";
+import { getCollection } from "astro:content";
 import Tome from "../components/tome/Tome.svelte";
+import StickyNote from "../components/post/StickyNote.svelte";
+import { extractSections } from "../lib/page";
+import { renderBody as renderWritingBody, type Writing } from "../lib/writing";
 import "../styles/guide.css";
 
 interface Props {
@@ -11,57 +12,111 @@ interface Props {
 
 const { title = "Justice — Builder · Musician · Architect" } = Astro.props;
 
-// Build the page array from the content collection, sorted by order.
+// Book pages — sorted by declared order.
 const rawPages = await getCollection("pages");
-const sorted = rawPages.sort((a, b) => a.data.order - b.data.order);
+const sortedPages = rawPages.sort((a, b) => a.data.order - b.data.order);
 
-// Published writings drive any `cardsSource: writings` chapter leaves.
+// Writings — newest first for card listing; same order for in-book pages.
 const publishedWritings = (
-  await getCollection("writings", ({ data }) => import.meta.env.PROD ? !data.draft : true)
+  await getCollection("writings", ({ data }) => (import.meta.env.PROD ? !data.draft : true))
 ).sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 
-// Render MDX bodies to HTML strings via Container API.
-const container = await experimental_AstroContainer.create();
-container.addServerRenderer({ renderer: mdxRenderer });
-
-/** Extract h2 headings from rendered HTML for TOC sections. */
-function extractSections(html: string): { id: string; text: string }[] {
-  const sections: { id: string; text: string }[] = [];
-  const re = /<h2[^>]*id="([^"]*)"[^>]*>([\s\S]*?)<\/h2>/gi;
-  for (const match of html.matchAll(re)) {
-    // Strip any inner HTML tags to get plain text
-    const text = match[2].replace(/<[^>]*>/g, "").trim();
-    if (match[1] && text) {
-      sections.push({ id: match[1], text });
-    }
-  }
-  return sections;
+/** Format a writing's date for the in-book header. */
+function fmtDate(d: Date): string {
+  return d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 }
 
-const pages = await Promise.all(
-  sorted.map(async (entry) => {
-    const { data } = entry;
-    let body = "";
-    let sections: { id: string; text: string }[] = [];
-    if (data.pageLayout !== "cover" && entry.body && entry.body.trim().length > 0) {
-      const { Content } = await render(entry);
-      body = await container.renderToString(Content);
-      sections = extractSections(body);
-    }
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
 
-    // Resolve dynamic card sources at build time.
-    let cards = data.cards;
-    if (data.cardsSource === "writings") {
-      cards = publishedWritings.map((w) => ({
-        name: w.data.title,
-        description: w.data.description,
-        href: `/writings/${w.id.replace(/\.mdx$/, "")}`,
-      }));
-    }
+/** Render a writing as the HTML body of an in-book page. Includes title,
+ *  description, date/tags, and the voice-attributed body. Styles are shared
+ *  globally below via .writing-header / .writing-body overrides. */
+function renderWritingAsBookPage(w: Writing): string {
+  const tags = w.tags.map((t) => `<span class="tag">#${escapeHtml(t)}</span>`).join(" ");
+  const subtitle = w.description ? `<p class="writing-subtitle">${escapeHtml(w.description)}</p>` : "";
+  const tagsMarkup = tags ? `<span class="tags">${tags}</span>` : "";
+  return `
+<header class="writing-header">
+  <h1 class="writing-title">${escapeHtml(w.title)}</h1>
+  ${subtitle}
+  <div class="writing-meta">
+    <time datetime="${w.date.toISOString()}">${fmtDate(w.date)}</time>
+    ${tagsMarkup}
+  </div>
+</header>
+<div class="writing-body">
+${renderWritingBody(w)}
+</div>
+`.trim();
+}
 
-    return { ...data, body, sections, cards };
-  }),
-);
+// Compose the tome page array. Writings are injected right after the
+// "writings" index page so they live as interior chapters of the book.
+type TomePage = {
+  slug: string;
+  order: number;
+  label: string;
+  toc?: string;
+  pageLayout: "cover" | "content";
+  variant?: "front" | "back";
+  chapter?: { number: string; title: string; subtitle?: string };
+  backFace?: "cover";
+  body?: string;
+  sections?: { id: string; text: string }[];
+  prompt?: string;
+  quote?: string;
+  attribution?: string;
+  lines?: { text: string; italic?: boolean; mono?: boolean }[];
+  cards?: { name: string; description: string; href?: string }[];
+  cardsSource?: "writings";
+  header?: string;
+  closing?: string;
+};
+
+const pages: TomePage[] = [];
+
+for (const entry of sortedPages) {
+  const data = entry.data;
+  let cards = data.cards;
+  if (data.cardsSource === "writings") {
+    // Cards on the writings index page link to the in-book pages that
+    // follow. Hrefs stay as permalinks for shareability; the tome engine
+    // flips in-book when the slug matches a known page.
+    cards = publishedWritings.map((w) => ({
+      name: w.data.title,
+      description: w.data.description ?? "",
+      href: `/writings/${w.id}`,
+    }));
+  }
+
+  pages.push({
+    ...data,
+    body: data.body,
+    sections: data.body ? extractSections(data.body) : [],
+    cards,
+  });
+
+  // Inject writings as book pages after the Writings index.
+  if (data.slug === "writings") {
+    for (const w of publishedWritings) {
+      pages.push({
+        slug: `writings/${w.id}`,
+        order: 0,
+        label: w.data.title,
+        toc: w.data.title,
+        pageLayout: "content",
+        header: `> writings / ${w.id}`,
+        body: renderWritingAsBookPage(w.data),
+      });
+    }
+  }
+}
 ---
 
 <html lang="en">
@@ -76,6 +131,7 @@ const pages = await Promise.all(
   </head>
   <body>
     <Tome client:load pages={pages} />
+    <StickyNote client:load />
   </body>
 </html>
 
@@ -83,5 +139,72 @@ const pages = await Promise.all(
   body {
     margin: 0;
     overflow: hidden;
+  }
+
+  /* ─── In-book writing styling ─────────────────────────────────────── */
+  .writing-header {
+    margin: 4px 0 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(184, 115, 51, 0.18);
+  }
+  .writing-title {
+    font-family: var(--tome-font-display);
+    color: var(--tome-ink);
+    font-size: 1.25rem;
+    font-weight: 500;
+    line-height: 1.2;
+    margin: 0 0 6px;
+    letter-spacing: 0.01em;
+  }
+  .writing-subtitle {
+    font-family: var(--tome-font-body);
+    font-style: italic;
+    color: var(--tome-ink-light);
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin: 0 0 10px;
+  }
+  .writing-meta {
+    font-family: var(--tome-font-mono);
+    color: var(--tome-term-dim);
+    font-size: 0.55rem;
+    letter-spacing: 0.06em;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .writing-meta .tags { display: inline-flex; gap: 6px; }
+  .writing-meta .tag { color: var(--tome-term-green); opacity: 0.75; }
+
+  .writing-body {
+    font-family: var(--tome-font-body);
+    color: var(--tome-ink);
+    font-size: 0.92rem;
+    line-height: 1.7;
+  }
+  .writing-body p { margin: 0 0 14px; }
+  .writing-body p:last-child { margin: 0; }
+  .writing-body hr {
+    width: 60px; height: 1px; border: none; margin: 18px auto;
+    background: linear-gradient(90deg, transparent, var(--tome-copper), transparent);
+  }
+  .writing-body a {
+    color: var(--tome-link);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+  }
+  .writing-body a:hover { color: var(--tome-voice-justice); }
+
+  .voice-legend {
+    font-family: var(--tome-font-mono);
+    font-size: 0.7rem;
+    line-height: 1.5;
+    color: var(--tome-term-dim);
+    padding: 10px 12px;
+    margin: 0 0 14px;
+    border: 1px solid rgba(184, 115, 51, 0.18);
+    border-radius: 2px;
+    background: rgba(224, 208, 176, 0.25);
   }
 </style>

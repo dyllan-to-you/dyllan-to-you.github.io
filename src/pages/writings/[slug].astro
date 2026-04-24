@@ -1,22 +1,18 @@
 ---
-import { getCollection, render } from "astro:content";
-import PostLayout from "../../layouts/PostLayout.astro";
+import { getCollection } from "astro:content";
+import BookLayout from "../../layouts/BookLayout.astro";
 
 export async function getStaticPaths() {
   const all = await getCollection("writings", ({ data }) =>
     import.meta.env.PROD ? !data.draft : true,
   );
   return all.map((entry) => ({
-    params: { slug: entry.id.replace(/\.mdx$/, "") },
+    params: { slug: entry.id },
     props: { entry },
   }));
 }
 
 const { entry } = Astro.props;
-const { Content } = await render(entry);
-const { title, description, date, tags } = entry.data;
 ---
 
-<PostLayout {title} {description} {date} {tags}>
-  <Content />
-</PostLayout>
+<BookLayout title={`${entry.data.title} — Justice`} />
