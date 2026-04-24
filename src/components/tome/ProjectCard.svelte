@@ -1,9 +1,31 @@
 <script lang="ts">
-let { name, description, href }: { name: string; description: string; href?: string } = $props();
+let {
+  name,
+  description,
+  href,
+  onNavigate,
+}: {
+  name: string;
+  description: string;
+  href?: string;
+  onNavigate?: () => void;
+} = $props();
+
+/* If onNavigate is provided and the click is a plain left-click (no modifiers),
+   intercept and hand off to the tome's in-book navigation. Otherwise let the
+   browser handle the anchor normally — preserves right-click, open-in-new-tab,
+   middle-click-for-new-tab, and direct-URL share semantics. */
+function handleClick(e: MouseEvent) {
+  if (!onNavigate) return;
+  if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  if ("button" in e && e.button !== 0) return;
+  e.preventDefault();
+  onNavigate();
+}
 </script>
 
 {#if href}
-  <a class="card card-link" {href}>
+  <a class="card card-link" {href} onclick={handleClick}>
     <div class="name">
       <span class="prompt">&gt;</span> {name}
     </div>

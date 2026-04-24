@@ -4,6 +4,15 @@ interface Section {
   text: string;
 }
 
+interface TocChild {
+  index: number;
+  toc: string;
+}
+
+interface TocEntry extends TocChild {
+  children?: TocChild[];
+}
+
 let {
   tocEntries,
   pageSections = new Map(),
@@ -12,7 +21,7 @@ let {
   onFlipBack,
   onScrollToSection,
 }: {
-  tocEntries: { index: number; toc: string }[];
+  tocEntries: TocEntry[];
   pageSections?: Map<number, Section[]>;
   activePage?: number;
   onNavigate: (index: number) => void;
@@ -38,19 +47,41 @@ let {
         {@const active = entry.index === activePage}
         {@const last = i === tocEntries.length - 1}
         {@const sections = pageSections.get(entry.index) ?? []}
-        {@const hasChildren = active && sections.length > 0}
+        {@const children = entry.children ?? []}
+        {@const anyChildActive = children.some((c) => c.index === activePage)}
+        {@const showChildren = children.length > 0 && (active || anyChildActive)}
+        {@const showSections = active && sections.length > 0}
+        {@const hasNested = showChildren || showSections}
         <button
           class="tree-entry"
           class:active
           onclick={() => onNavigate(entry.index)}
           aria-current={active ? 'page' : undefined}
-          aria-expanded={hasChildren ? true : undefined}
+          aria-expanded={hasNested ? true : undefined}
         >
-          <span class="branch">{last && !hasChildren ? '└──' : '├──'}</span>
+          <span class="branch">{last && !hasNested ? '└──' : '├──'}</span>
           <span class="leaf" class:leaf-active={active}>{entry.toc}</span>
-          {#if active && !hasChildren}<span class="cursor"></span>{/if}
+          {#if active && !hasNested}<span class="cursor"></span>{/if}
         </button>
-        {#if hasChildren}
+
+        {#if showChildren}
+          {#each children as child, ci}
+            {@const childActive = child.index === activePage}
+            {@const lastChild = ci === children.length - 1 && !showSections}
+            <button
+              class="tree-entry child-entry"
+              class:active={childActive}
+              onclick={() => onNavigate(child.index)}
+              aria-current={childActive ? 'page' : undefined}
+            >
+              <span class="branch">{last ? '    ' : '│   '}{lastChild ? '└──' : '├──'}</span>
+              <span class="leaf" class:leaf-active={childActive}>{child.toc}</span>
+              {#if childActive}<span class="cursor"></span>{/if}
+            </button>
+          {/each}
+        {/if}
+
+        {#if showSections}
           {#each sections as section, si}
             {@const lastSection = si === sections.length - 1}
             <button

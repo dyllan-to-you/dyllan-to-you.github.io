@@ -58,8 +58,30 @@ let { pages }: { pages: PageData[] } = $props();
 
 const ROMAN = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x"];
 
-let tocEntries = $derived(
-  pages.map((p, i) => ({ ...p, index: i })).filter((p) => p.toc),
+/* Top-level TOC entries with optional children.
+   Writings (slug starts with "writings/") nest under the writings-index page. */
+let tocEntries = $derived.by(() => {
+  const withIndex = pages.map((p, i) => ({ ...p, index: i }));
+  const writingChildren = withIndex
+    .filter((p) => p.toc && p.slug?.startsWith("writings/"))
+    .map((p) => ({ index: p.index, toc: p.toc as string, slug: p.slug }));
+  return withIndex
+    .filter((p) => p.toc && !p.slug?.startsWith("writings/"))
+    .map((p) => {
+      const base = { index: p.index, toc: p.toc as string, slug: p.slug };
+      if (p.slug === "writings" && writingChildren.length > 0) {
+        return { ...base, children: writingChildren };
+      }
+      return base;
+    });
+});
+
+/* Set of page indices that are writing-pages — used to know when a writing
+   is active so its parent's nested TOC branch stays expanded. */
+let writingIndices = $derived(
+  new Set(
+    pages.flatMap((p, i) => (p.slug?.startsWith("writings/") ? [i] : [])),
+  ),
 );
 
 /* Map page index → section list for TOC nesting */
@@ -248,6 +270,23 @@ function goBack() {
   goTo(flipped - 1);
 }
 
+/** Cards in the tome can target tome pages by href (e.g., "/writings/<slug>").
+    If the href maps to a known tome page, flip there without a full nav.
+    Unknown hrefs fall through to the browser (handled by ProjectCard). */
+function handleCardNavigate(href: string) {
+  if (!href) return;
+  try {
+    const url = new URL(href, window.location.origin);
+    if (url.origin !== window.location.origin) return; // external — let browser handle
+    const idx = indexForPath(url.pathname);
+    if (idx !== undefined && idx >= 0 && idx < total) {
+      goTo(idx);
+    }
+  } catch {
+    /* malformed href — ignore */
+  }
+}
+
 function scrollToSection(pageIndex: number, sectionId: string) {
   const scrollArea = contentRefs.get(pageIndex);
   if (!scrollArea) return;
@@ -344,8 +383,18 @@ function handleWheel(event) {
   // Axes are decoupled: vertical wheel scrolls page content, horizontal
   // wheel turns the leaf. Never the twain — keeps trackpad inertia on a
   // long read from accidentally flipping past the scroll boundary.
-  const horizontalIntent = Math.abs(event.deltaX) > Math.abs(event.deltaY);
-  if (!horizontalIntent) return; // vertical: native scroll owns it
+  //
+  // Guard is deliberately conservative. Trackpad gestures during vertical
+  // scrolling often emit a small sideways deltaX; a naive |dx|>|dy| check
+  // misreads that jitter as horizontal intent and fires a flip mid-read.
+  // Require deltaX to be both substantial (above HORIZONTAL_MIN) and
+  // clearly dominant over deltaY (HORIZONTAL_RATIO × |dy|).
+  const HORIZONTAL_MIN = 10;
+  const HORIZONTAL_RATIO = 2;
+  const absX = Math.abs(event.deltaX);
+  const absY = Math.abs(event.deltaY);
+  if (absX < HORIZONTAL_MIN) return;
+  if (absX < absY * HORIZONTAL_RATIO) return;
 
   event.preventDefault();
   if (busy) return;
@@ -439,7 +488,7 @@ onDestroy(() => clearTimeout(timer));
             {#if page.pageLayout === 'cover'}
               <CoverPage variant={page.variant}/>
             {:else}
-              <ContentPage {page} number={pageNumbers[i]} vine={vineSide[i]} registerScrollArea={(el) => registerContentRef(i, el)}/>
+              <ContentPage {page} number={pageNumbers[i]} vine={vineSide[i]} registerScrollArea={(el) => registerContentRef(i, el)} onCardNavigate={handleCardNavigate}/>
               <button class="edge-click edge-back" type="button" onclick={goBack} disabled={busy} tabindex="-1" aria-hidden="true"></button>
               <button class="edge-click edge-fwd" type="button" onclick={goForward} disabled={busy} tabindex="-1" aria-hidden="true"></button>
               <Dogear direction="forward" onclick={goForward} disabled={busy}/>

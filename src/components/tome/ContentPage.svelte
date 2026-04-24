@@ -9,11 +9,13 @@ let {
   number,
   vine,
   registerScrollArea,
+  onCardNavigate,
 }: {
   page: Record<string, unknown>;
   number: string | null;
   vine: string;
   registerScrollArea?: (el: HTMLElement | null) => void;
+  onCardNavigate?: (href: string) => void;
 } = $props();
 
 let scrollAreaEl = $state<HTMLElement | null>(null);
@@ -52,7 +54,7 @@ $effect(() => {
       </div>
     {/if}
 
-    <!-- MDX body (rendered HTML) -->
+    <!-- Page body (pre-rendered HTML from YAML) -->
     {#if page.body}
       <div class="body">
         {@html page.body}
@@ -63,7 +65,12 @@ $effect(() => {
     {#if page.cards && page.cards.length > 0}
       <div class="cards">
         {#each page.cards as card}
-          <ProjectCard name={card.name} description={card.description} href={card.href}/>
+          <ProjectCard
+            name={card.name}
+            description={card.description}
+            href={card.href}
+            onNavigate={card.href && onCardNavigate ? () => onCardNavigate(card.href) : undefined}
+          />
         {/each}
       </div>
     {:else if page.cardsSource === 'writings'}
@@ -163,7 +170,7 @@ $effect(() => {
     font-size: 0.6rem; letter-spacing: 0.1em; opacity: 0.6;
   }
 
-  /* ─── Body (MDX rendered HTML) ─── */
+  /* ─── Body (pre-rendered HTML from YAML) ─── */
   .body {
     font-family: var(--tome-font-body);
     color: var(--tome-ink);
