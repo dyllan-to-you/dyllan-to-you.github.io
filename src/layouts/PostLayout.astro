@@ -1,5 +1,6 @@
 ---
 import "../styles/guide.css";
+import StickyNote from "../components/post/StickyNote.svelte";
 
 interface Props {
   title: string;
@@ -45,6 +46,7 @@ const isoDate = date.toISOString();
           <header class="post-header">
             <div class="eyebrow">&gt; writings / post</div>
             <h1 id="post-title">{title}</h1>
+            {description && <p class="subtitle">{description}</p>}
             <div class="meta">
               <time datetime={isoDate}>{dateStr}</time>
               {tags.length > 0 && (
@@ -65,6 +67,7 @@ const isoDate = date.toISOString();
           </footer>
         </div>
       </article>
+      <StickyNote client:load />
     </div>
 
     <style is:global>
@@ -157,8 +160,16 @@ const isoDate = date.toISOString();
         font-size: 1.9rem;
         font-weight: 500;
         line-height: 1.2;
-        margin: 0 0 12px;
+        margin: 0 0 8px;
         letter-spacing: 0.01em;
+      }
+      .subtitle {
+        font-family: var(--tome-font-body);
+        font-style: italic;
+        color: var(--tome-ink-light);
+        font-size: 1.1rem;
+        line-height: 1.45;
+        margin: 0 0 16px;
       }
       .meta {
         font-family: var(--tome-font-mono);
@@ -179,7 +190,7 @@ const isoDate = date.toISOString();
       .body {
         font-family: var(--tome-font-body);
         color: var(--tome-ink);
-        font-size: 1rem;
+        font-size: 1.0625rem;
         line-height: 1.75;
       }
       .body h2 {
@@ -201,12 +212,12 @@ const isoDate = date.toISOString();
       .body p { margin: 0 0 16px; }
       .body p:last-child { margin: 0; }
       .body a {
-        color: var(--tome-term-green);
+        color: var(--tome-link);
         text-decoration: underline;
         text-decoration-thickness: 1px;
         text-underline-offset: 2px;
       }
-      .body a:hover { color: var(--tome-copper); }
+      .body a:hover { color: var(--tome-voice-justice); }
       .body hr {
         width: 80px; height: 1px; border: none; margin: 24px auto;
         background: linear-gradient(90deg, transparent, var(--tome-copper), transparent);
