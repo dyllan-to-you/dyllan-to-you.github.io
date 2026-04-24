@@ -4,9 +4,11 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
+    "dev:clean": "rm -rf .astro dist && astro dev",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
+    "sync": "astro sync",
     "test": "npx playwright test",
     "test:vision": "npx playwright test --grep @vision",
     "lint": "biome check src/",
@@ -23,6 +25,7 @@
     "svelte": "^5.28.2"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.2",
     "@biomejs/biome": "^2.4.7",
     "@playwright/test": "^1.58.2",
     "playwright": "^1.58.2"
