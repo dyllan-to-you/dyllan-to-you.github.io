@@ -21,6 +21,14 @@ import "../styles/guide.css";
    M=2 · N halves · each outer corner at every-other inner apex
          (the skipped inner apex pokes into the outer body).
 
+   Per-leaf gradient: every Sierpiński leaf across every ring is
+   colored by its own radial distance from origin — the burnt-to-
+   pale gradient blends smoothly across ring boundaries rather than
+   stepping at them.
+
+   Thin lines: no stroke expansion on fills; tiny stroke-width=0.08
+   of matching color just covers anti-aliasing hairlines.
+
    All triangles are equilateral by construction — verified via
    |apex − corner|² = 4r²sin²(π/N) = base².
    ═════════════════════════════════════════════════════════════ */
@@ -29,12 +37,23 @@ function F(N: number): number {
   return Math.cos(Math.PI / N) + Math.sqrt(3) * Math.sin(Math.PI / N);
 }
 
+/* Tangent-chord growth factor. Base chord tangent to previous ring's
+   apex circle at its midpoint; equilateral triangle over that chord
+   lands its apex at R·(1 + √3·tan(π/N)). */
+function Gt(N: number): number {
+  return 1 + Math.sqrt(3) * Math.tan(Math.PI / N);
+}
+
 type Ring = {
-  N: number;
-  alpha: number;
-  rBase: number;
-  rApex: number;
-  side: number;
+  N: number;                // total slot count (determines triangle size and angular step)
+  alpha: number;            // rotation offset (radians)
+  rBase: number;            // radius of base corners (for tangent construction: corners at R/cos(π/N) > R)
+  rApex: number;            // radius of triangle apex
+  side: number;             // triangle side length
+  drawSlots?: number[];     // if set, only these j indices are rendered (sparse ring)
+  alternating?: boolean;    // if true, render per-tooth with even/odd opacity alternation
+  crossfadeGroup?: "F" | "G"; // if set, ring belongs to an F↔G crossfade pair
+  doubleOffset?: boolean;   // if true, render 2 sets: original alpha + shifted (alpha + π/N), counter-phase opacity
 };
 
 function buildSunRings(r0: number, N1: number, M: 1 | 2, K: number, rMax: number): Ring[] {
@@ -56,6 +75,215 @@ function buildSunRings(r0: number, N1: number, M: 1 | 2, K: number, rMax: number
   return rings;
 }
 
+/* Variant E: 4 halving rings (128→64→32→16), then a sparse crown.
+   The crown keeps ring-4's triangle size (N=16 geometry, M=1 offset)
+   but draws only 8 of the 16 slots (every other). No apex gets skipped
+   — all 16 ring-4 apexes are corners of some drawn tooth — but the
+   drawn teeth's base chord still dips 1.9% below ring-4 apex circle
+   (inherent to chord-on-R construction). Fixed in variant G. */
+function buildVariantE(r0: number, rMax: number): Ring[] {
+  const rings = buildSunRings(r0, 128, 2, 4, rMax);
+  if (rings.length < 4) return rings;
+  const last = rings[rings.length - 1]; // N=16
+  const crownN = last.N;                // 16
+  const crownAlpha = last.alpha + Math.PI / last.N; // M=1 offset → corners at ring-4 apexes
+  const crownBase = last.rApex;
+  const crownApex = crownBase * F(crownN);
+  if (crownApex > rMax) return rings;
+  rings.push({
+    N: crownN,
+    alpha: crownAlpha,
+    rBase: crownBase,
+    rApex: crownApex,
+    side: 2 * crownBase * Math.sin(Math.PI / crownN),
+    drawSlots: Array.from({ length: crownN / 2 }, (_, i) => i * 2),
+  });
+  return rings;
+}
+
+/* Tangent-chord construction. Base is a chord TANGENT to the previous
+   ring's apex circle at its midpoint — chord lies entirely at r ≥ R,
+   so ring-(k+1) body never intrudes on ring-k territory. Corners sit
+   on circle R/cos(π/N), slightly outside R. Rotation offset differs
+   from chord-on-R by exactly π/N_(k+1):
+     α_(k+1) = α_k + π/N_k − π/N_(k+1)
+   This makes chord midpoints coincide with ring-k apexes (tangent
+   touching) whenever N_(k+1) divides N_k. */
+function buildSunRingsTangent(r0: number, N1: number, M: 1 | 2, K: number, rMax: number): Ring[] {
+  const rings: Ring[] = [];
+  let N = N1;
+  let R = r0;            // tangent circle for this ring
+  let alpha = 0;
+  for (let k = 0; k < K; k++) {
+    const rCorner = R / Math.cos(Math.PI / N);
+    const rApex = R * Gt(N);
+    if (rApex > rMax) break;
+    const side = 2 * R * Math.tan(Math.PI / N);
+    rings.push({ N, alpha, rBase: rCorner, rApex, side });
+    const nextN = N / M;
+    if (!Number.isInteger(nextN) || nextN < 3) break;
+    R = rApex;
+    alpha = alpha + Math.PI / N - Math.PI / nextN;
+    N = nextN;
+  }
+  return rings;
+}
+
+/* Variant G: tangent-chord all the way through. 4 halving rings, then
+   M=1 half-density crown at N=16 — same crown shape as E but with
+   tangent chord. Zero body overlap anywhere, zero halving notches at
+   the crown, only a 2% corner offset at N=16 (imperceptible at 260px). */
+function buildVariantG(r0: number, rMax: number): Ring[] {
+  const rings = buildSunRingsTangent(r0, 128, 2, 4, rMax);
+  if (rings.length < 4) return rings;
+  const last = rings[rings.length - 1]; // N=16, tangent-chord
+  const crownN = last.N;
+  const R = last.rApex;                  // crown's tangent circle
+  const crownAlpha = last.alpha;         // M=1 tangent: no α shift
+  const crownCorner = R / Math.cos(Math.PI / crownN);
+  const crownApex = R * Gt(crownN);
+  if (crownApex > rMax) return rings;
+  rings.push({
+    N: crownN,
+    alpha: crownAlpha,
+    rBase: crownCorner,
+    rApex: crownApex,
+    side: 2 * R * Math.tan(Math.PI / crownN),
+    drawSlots: Array.from({ length: crownN / 2 }, (_, i) => i * 2),
+  });
+  return rings;
+}
+
+/* Variant H: same inner rings as G, but the crown renders ALL 16 teeth
+   and each tooth's opacity alternates by j mod 2. At t=0 the 8 even
+   teeth are lit and the 8 odd teeth are dark; half a cycle later the
+   lighting flips. Because narrow (G-shape) teeth don't overlap, the
+   crossfade reads as the bright set rotating by π/8 each half-cycle.
+   Inner rings still get the radial outward-wave pulse. */
+function buildVariantH(r0: number, rMax: number): Ring[] {
+  const rings = buildSunRingsTangent(r0, 128, 2, 4, rMax);
+  if (rings.length < 4) return rings;
+  const last = rings[rings.length - 1];
+  const crownN = 16;
+  const R = last.rApex;
+  const crownAlpha = last.alpha;
+  const crownCorner = R / Math.cos(Math.PI / crownN);
+  const crownApex = R * Gt(crownN);
+  if (crownApex > rMax) return rings;
+  rings.push({
+    N: crownN,
+    alpha: crownAlpha,
+    rBase: crownCorner,
+    rApex: crownApex,
+    side: 2 * R * Math.tan(Math.PI / crownN),
+    alternating: true,  // special rendering: per-tooth opacity phase
+  });
+  return rings;
+}
+
+/* Variant K: every ring becomes sparse (drawSlots = even slot indices
+   of its N-grid) so set A draws 50% of the teeth and set B, shifted
+   by 2π/N_k (one full triangle angular width), lands cleanly in the
+   odd slots. Each ring's N triangles tile non-overlappingly across
+   the two sets; at any moment half the ring's triangles are bright
+   (one set) and half are dim, and which half cycles as the crossfade
+   runs. Per-ring delay (k·period/nRings) staggers the crossfade so
+   the alternation ripples outward through the layers. All ring types
+   — halving inner rings AND the M=1 crown — share the same
+   grammar. The crown's original drawSlots are preserved (it was
+   already sparse); inner rings get drawSlots = [0, 2, ..., N-2]. */
+function buildVariantK(r0: number, rMax: number): Ring[] {
+  const rings = buildVariantG(r0, rMax); // same geometry as G
+  return rings.map(r => {
+    if (r.drawSlots) {
+      // Already sparse (crown). Just enable doubleOffset.
+      return { ...r, doubleOffset: true };
+    }
+    // Fully-tiled inner ring. Convert to half-density (even slots of
+    // the N-grid). Set B's 2π/N shift will fill the complementary
+    // odd slots during the crossfade.
+    const evens = Array.from({ length: Math.floor(r.N / 2) }, (_, i) => i * 2);
+    return { ...r, drawSlots: evens, doubleOffset: true };
+  });
+}
+
+/* Variant L: K's teeth merged into a single full-density surface,
+   then a granular per-leaf radial wave runs across all Sierpiński
+   sub-triangles. "Combining" set A and B means just rendering the
+   full ring (all N slots, no drawSlots). Inner rings are full tiled
+   (same as G); the crown is upgraded to full N=16 (16 teeth, not 8).
+   Bucketize into 16 radial × 8 angular per ring (= 128 fine buckets
+   per ring, ~640 total) and use the bucket's global radial position
+   as its animation-delay phase. Delays are POSITIVE and span 0.9 ·
+   period so the wave sweeps outward monotonically without mod-period
+   aliasing (which was making D/E/F/G's cascade non-monotonic).
+   animation-fill-mode: backwards holds outer buckets at their first
+   keyframe during the startup delay; steady-state kicks in after one
+   period. */
+function buildVariantL(r0: number, rMax: number): Ring[] {
+  const rings = buildSunRingsTangent(r0, 128, 2, 4, rMax);
+  if (rings.length < 4) return rings;
+  const last = rings[rings.length - 1];
+  const crownN = 16;
+  const R = last.rApex;
+  const crownApex = R * Gt(crownN);
+  if (crownApex > rMax) return rings;
+  rings.push({
+    N: crownN,
+    alpha: last.alpha,
+    rBase: R / Math.cos(Math.PI / crownN),
+    rApex: crownApex,
+    side: 2 * R * Math.tan(Math.PI / crownN),
+    // No drawSlots — full 16-tooth crown (set A + set B merged).
+  });
+  return rings;
+}
+
+/* Variant J: F↔G geometric morph via opacity crossfade. Stack BOTH
+   outer rings (F's N=8 halving, G's N=16 M=1 sparse) over the shared
+   4-ring tangent-halving inner structure. CSS animations crossfade
+   the two crown rings against each other — at t=0 F is bright and G
+   is dim, halfway through it flips, and back. Since F's 8 big teeth
+   contain G's 8 narrow teeth geometrically (G midpoints coincide with
+   F midpoints at even ring-4 apexes), the crossfade looks like teeth
+   expanding/contracting in place. */
+function buildVariantJ(r0: number, rMax: number): Ring[] {
+  const rings = buildSunRingsTangent(r0, 128, 2, 4, rMax);
+  if (rings.length < 4) return rings;
+  const last = rings[rings.length - 1];
+  const R = last.rApex;
+  // F's outer ring (N=8 tangent halving)
+  const fN = 8;
+  const fAlpha = last.alpha + Math.PI / last.N - Math.PI / fN;
+  const fApex = R * Gt(fN);
+  if (fApex <= rMax) {
+    rings.push({
+      N: fN,
+      alpha: fAlpha,
+      rBase: R / Math.cos(Math.PI / fN),
+      rApex: fApex,
+      side: 2 * R * Math.tan(Math.PI / fN),
+      crossfadeGroup: "F",
+    });
+  }
+  // G's outer ring (N=16 tangent M=1, sparse 8 of 16)
+  const gN = 16;
+  const gAlpha = last.alpha;
+  const gApex = R * Gt(gN);
+  if (gApex <= rMax) {
+    rings.push({
+      N: gN,
+      alpha: gAlpha,
+      rBase: R / Math.cos(Math.PI / gN),
+      rApex: gApex,
+      side: 2 * R * Math.tan(Math.PI / gN),
+      drawSlots: Array.from({ length: gN / 2 }, (_, i) => i * 2),
+      crossfadeGroup: "G",
+    });
+  }
+  return rings;
+}
+
 function triVerts(
   ring: Ring, j: number
 ): [[number, number], [number, number], [number, number]] {
@@ -70,25 +298,28 @@ function triVerts(
   ];
 }
 
-/* Sierpiński recursion on an arbitrary (equilateral) triangle
-   down to a pixel-size threshold. Returns one concatenated d-string. */
-function sierpinskiToPixel(
-  A: [number, number],
-  B: [number, number],
-  C: [number, number],
-  minSize: number
-): string {
-  const parts: string[] = [];
+/* Sierpiński recursion. Each leaf reports its d-string, centroid
+   radial distance from origin, and centroid polar angle. */
+type Leaf = { d: string; r: number; angle: number };
+function sierpinskiLeaves(
+  A: [number, number], B: [number, number], C: [number, number], minSize: number
+): Leaf[] {
+  const out: Leaf[] = [];
   const stack: [[number, number], [number, number], [number, number]][] = [[A, B, C]];
-  while (stack.length) {
+  while (stack.length > 0) {
     const [p, q, r] = stack.pop()!;
     const dx = p[0] - q[0], dy = p[1] - q[1];
     if (dx * dx + dy * dy <= minSize * minSize) {
-      parts.push(
-        `M ${p[0].toFixed(2)} ${p[1].toFixed(2)} ` +
-        `L ${q[0].toFixed(2)} ${q[1].toFixed(2)} ` +
-        `L ${r[0].toFixed(2)} ${r[1].toFixed(2)} Z`
-      );
+      const cx = (p[0] + q[0] + r[0]) / 3;
+      const cy = (p[1] + q[1] + r[1]) / 3;
+      out.push({
+        d:
+          `M${p[0].toFixed(2)} ${p[1].toFixed(2)}` +
+          `L${q[0].toFixed(2)} ${q[1].toFixed(2)}` +
+          `L${r[0].toFixed(2)} ${r[1].toFixed(2)}Z`,
+        r: Math.sqrt(cx * cx + cy * cy),
+        angle: Math.atan2(cy, cx),
+      });
       continue;
     }
     const mPQ: [number, number] = [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
@@ -98,13 +329,12 @@ function sierpinskiToPixel(
     stack.push([mPQ, q, mQR]);
     stack.push([mPR, mQR, r]);
   }
-  return parts.join(" ");
+  return out;
 }
 
 const GRADIENT = ["#B7410E", "#CF6C1C", "#E0932C", "#D4AF37", "#F0D96D", "#F5E99F"];
-function ringColor(k: number, K: number): string {
-  if (K <= 1) return GRADIENT[0];
-  const t = k / (K - 1);
+function gradientAt(t: number): string {
+  t = Math.max(0, Math.min(1, t));
   const idx = t * (GRADIENT.length - 1);
   const i = Math.min(Math.floor(idx), GRADIENT.length - 2);
   const f = idx - i;
@@ -116,20 +346,120 @@ function ringColor(k: number, K: number): string {
   return `#${to2(r)}${to2(g)}${to2(b)}`;
 }
 
-const VARIANTS = [
-  { id: "A", title: "A · Constant N = 16, 3 rings",
-    N1: 16, M: 1 as const, K: 3,
-    desc: "each ring has 16 triangles · M=1 so every outer corner sits on a consecutive inner apex · growth factor F(16) ≈ 1.319 per ring · rings offset π/16 alternating" },
-  { id: "B", title: "B · Constant N = 32, 4 rings",
-    N1: 32, M: 1 as const, K: 4,
-    desc: "32 per ring, finer texture · F(32) ≈ 1.165, 4 rings fit · densest M=1 option" },
-  { id: "C", title: "C · Halving 64 → 32 → 16, 3 rings",
-    N1: 64, M: 2 as const, K: 3,
-    desc: "N halves each ring (M=2) · each outer corner at every-other inner apex · skipped inner apex pokes into outer body (geometric cost of halving) · growth accelerates" },
-  { id: "D", title: "D · Halving 128 → 64 → 32 → 16, 4 rings",
-    N1: 128, M: 2 as const, K: 4,
-    desc: "higher N₁ lets halving fit 4 rings · innermost very fine (128 tiny) · outermost bold (16 rays) · full fractal zoom-in" },
+/* 2D per-ring bucketizer. Splits each ring's leaves into a
+   N_LOCAL_RADIAL × N_ANGULAR grid. Each returned bucket carries its
+   radial average (for global phase/color) and angular index (for
+   angular phase jitter). Per-ring output lets each ring render in its
+   own rotator <g>. */
+const N_LOCAL_RADIAL = 6;
+const N_ANGULAR = 4;
+
+type Bucket2D = {
+  d: string;
+  rAvg: number;        // mean global radial position of leaves in this bucket
+  angularIdx: number;  // 0..N_ANGULAR-1
+};
+
+function bucketizeRing2D(
+  ring: Ring,
+  minSize: number,
+  nRadial: number = N_LOCAL_RADIAL,
+  nAngular: number = N_ANGULAR,
+): Bucket2D[] {
+  const ringMin = ring.rBase * Math.cos(Math.PI / ring.N); // chord midpoint (minimum r in this ring)
+  const ringMax = ring.rApex;
+  const ringRange = Math.max(1e-6, ringMax - ringMin);
+  const key = (ri: number, ai: number) => ri * nAngular + ai;
+  const data: Record<number, { d: string; rSum: number; count: number; ai: number }> = {};
+  const slots = ring.drawSlots ?? Array.from({ length: ring.N }, (_, j) => j);
+  for (const j of slots) {
+    const [A, B, C] = triVerts(ring, j);
+    const leaves = sierpinskiLeaves(A, B, C, minSize);
+    for (const lf of leaves) {
+      const rLocal = (lf.r - ringMin) / ringRange;
+      const ri = Math.max(0, Math.min(nRadial - 1, Math.floor(rLocal * nRadial)));
+      const aT = (lf.angle + Math.PI) / (2 * Math.PI); // [0, 1)
+      const ai = Math.max(0, Math.min(nAngular - 1, Math.floor(aT * nAngular)));
+      const k = key(ri, ai);
+      if (!data[k]) data[k] = { d: "", rSum: 0, count: 0, ai };
+      data[k].d += lf.d;
+      data[k].rSum += lf.r;
+      data[k].count++;
+    }
+  }
+  return Object.values(data).map(v => ({
+    d: v.d,
+    rAvg: v.rSum / v.count,
+    angularIdx: v.ai,
+  }));
+}
+
+/* Phase formula for per-bucket animation-delay.
+   Dominant radial term (outward wave) + small angular lag + small
+   deterministic noise. Result looks like organic radiation, not a
+   clean synchronized ring. */
+function bucketPhase(b: Bucket2D, rMin: number, rFinal: number): number {
+  const rT = (b.rAvg - rMin) / Math.max(1e-6, rFinal - rMin);
+  const radialPart = rT;
+  const angularPart = 0.10 * (b.angularIdx / N_ANGULAR);
+  // Hash(r, a) → pseudo-random [0,1) for jitter
+  const seed = b.rAvg * 137.31 + b.angularIdx * 41.7;
+  const h = Math.sin(seed) * 43758.5453;
+  const noise = h - Math.floor(h);
+  const noisePart = 0.08 * noise;
+  return radialPart + angularPart + noisePart;
+}
+
+type Variant = {
+  id: string;
+  title: string;
+  rMax: number;
+  build: (r0: number, rMax: number) => Ring[];
+  big?: boolean;
+  desc: string;
+  rotatePerRing?: boolean;  // if true, each ring rotates by π/N_k around origin
+  granular?: boolean;       // if true, use 16×8 bucketing + positive-delay outward wave
+  mixKL?: boolean;          // if true, K's sparse+doubleOffset geometry + L's wave per set, B offset by period/2
+  mixKLAlt?: boolean;       // if true, K's A/B alternation stacked on top of L's per-bucket wave, half-width shift, wider fade
+};
+
+const VARIANTS: Variant[] = [
+  { id: "D", title: "D · Halving 128 → 64 → 32 → 16, 4 rings (cover baseline)",
+    rMax: 132, build: (r0, rMax) => buildSunRings(r0, 128, 2, 4, rMax),
+    desc: "higher N₁ lets halving fit 4 rings · innermost very fine (128 tiny) · outermost bold (16 rays) · chord-on-R construction has small residual intrusions (0.12% / 0.48% / 1.9% at each jump) · this is what the cover currently uses" },
+  { id: "E", title: "E · chord-on-R halving 4 + chord-on-R sparse crown",
+    rMax: 200, big: true, build: buildVariantE,
+    desc: "4 halving rings (chord-on-R) + M=1 half-density crown at N=16 (chord-on-R). Crown teeth still have a 1.9% chord-dip intrusion into ring-4. Here to compare against G." },
+  { id: "F", title: "F · TANGENT halving 128 → 64 → 32 → 16 → 8",
+    rMax: 220, big: true, build: (r0, rMax) => buildSunRingsTangent(r0, 128, 2, 5, rMax),
+    desc: "tangent-chord construction all the way down. Zero body overlap anywhere. Halving notches grow from 0.12% (128→64) to 8.3% (16→8) — the outer notches read as visible rays of negative space between the 8 bold crown teeth." },
+  { id: "G", title: "G · TANGENT halving 4 + TANGENT M=1 sparse crown (zero-overlap, zero-notch)",
+    rMax: 200, big: true, build: buildVariantG,
+    desc: "4 tangent halving rings (128→64→32→16) plus an M=1 tangent half-density crown at N=16. Zero overlap, zero notches, 2% corner offset (imperceptible). Provably disjoint layers throughout." },
+  { id: "H", title: "H · animated · tangent halving + alternating 16-tooth crown",
+    rMax: 200, big: true, build: buildVariantH,
+    desc: "G's inner rings + a full N=16 crown where ALL 16 teeth are drawn, but each tooth's opacity phase-flips by j mod 2. Even-indexed teeth peak at one phase, odd-indexed teeth at the opposite. The radial brightness wave travels outward through the inner rings; the crown appears to rotate by π/8 each half-cycle as the bright set flips." },
+  { id: "I", title: "I · animated · per-ring differential rotation + organic wave",
+    rMax: 200, big: true, build: buildVariantG, rotatePerRing: true,
+    desc: "variant G's geometry, but each ring sits in its own rotator <g> that oscillates between 0° and π/N_k (half the triangle's angular width). Outer rings swing 11.25°; inner rings barely 1.4° — differential rotation shears the fractal as it breathes. On top of that, the radial wave is now 2D-bucketized (radial × angular) with hash noise per bucket, so the brightness pulse flows outward as organic fingers rather than a clean ring." },
+  { id: "J", title: "J · animated · F↔G geometric crossfade",
+    rMax: 220, big: true, build: buildVariantJ,
+    desc: "both F's and G's outer crowns stacked over the shared tangent-halving inner structure. CSS opacity crossfade animates between them — at t=0 the 8 big F-teeth are bright and G is dim; halfway through G's 8 narrow teeth are bright and F is dim. Since G midpoints coincide with F midpoints at even ring-4 apexes, the crossfade reads as the teeth morphing between wide-tall and narrow-short in place." },
+  { id: "K", title: "K · animated · per-ring sparse teeth with outward-cascading alternation",
+    rMax: 200, big: true, build: buildVariantK,
+    desc: "every ring is sparse (half-density: drawSlots = even slots of N-grid). Each ring renders twice — set A at its own alpha, set B at alpha + 2π/N_k. The 2π/N_k shift is exactly one triangle width, so set B's triangles land in the odd slots of set A's N-grid. Together the two sets tile the full N positions non-overlappingly. Counter-phase opacity on the parent <g> crossfades A↔B; per-ring delay cascades outward through the layers. No smooth rotation, no transform — all opacity. Visible at every ring level: which half of the teeth are bright cycles as the crossfade runs, and the cycling staggers outward from center to edge." },
+  { id: "L", title: "L · animated · per-leaf granular radial wave along the color gradient",
+    rMax: 200, big: true, build: buildVariantL, granular: true,
+    desc: "K's teeth merged into a single full-density surface — inner rings fully tiled, crown upgraded to 16 teeth (set A + set B combined). Every ring is bucketized at 16 radial × 8 angular (= 128 buckets/ring, ~640 total), and each bucket's animation-delay is a function of its GLOBAL radial position — the same axis as the color gradient. A continuous wave of brightness sweeps outward through every Sierpiński leaf in the fractal. Positive delays with span 0.9·period + animation-fill-mode: backwards → monotonic outward cascade without the modulo-aliasing that blurs D/E/F/G's wave. This is the 'radiating out' reading at the sub-triangle level." },
+  { id: "M", title: "M · animated · K's sparse two-set teeth + L's wave, B offset by period/2",
+    rMax: 200, big: true, build: buildVariantK, mixKL: true,
+    desc: "K's geometry (each ring sparse with set A at even slots and set B at odd slots, non-overlapping interleave) + L's per-leaf radial wave applied separately to each set. Set A's wave runs with delay = rT · 0.9·period. Set B's wave runs with delay = rT · 0.9·period + 0.5·period — a half-cycle behind. Two continuous outward waves chase each other through the interleaved tooth pattern: even-slot teeth peak first at each radial position, odd-slot teeth peak a half-cycle later. The wave never stops (no quiet gap between cycles because A and B fill each other's troughs), and every tooth peaks twice per period — once when its set's wave passes through." },
+  { id: "N", title: "N · animated · K's A/B alternation × L's wave, half-width shift, wider fade",
+    rMax: 200, big: true, build: buildVariantK, mixKLAlt: true,
+    desc: "K's ring-level A↔B alternation STACKED on top of L's per-bucket radial wave via SVG's multiplicative opacity inheritance. Parent <g class=\"n-set-a/b\"> oscillates counter-phase at 6s with per-ring cascade (K-style); inside each parent, per-bucket paths run L's outward wave at 5s with wider keyframes (0.15 → 1 → 0.15). Shift is π/N_k — HALF a triangle's angular width — so set A and set B overlap by half, and during the ring-level A/B crossfade the overlap regions alpha-composite brighter, making teeth appear to slide by half a width between A-state and B-state while the radial wave sweeps outward through whichever set is currently bright. Two animations at different periods (5 vs 6) beat at LCM 30s, so the pattern evolves continuously without obvious repetition." },
 ];
+
+const MIN_SIZE = 1.0;
 ---
 
 <html lang="en">
@@ -143,29 +473,215 @@ const VARIANTS = [
 </head>
 <body>
   <h1>Hatman sun · rule-strict Sierpiński</h1>
-  <p class="sub">every ring's base corners align with the prior ring's apexes · derived from F(N) = cos(π/N) + √3·sin(π/N)</p>
+  <p class="sub">per-leaf gradient · thin lines · rule enforced: every ring's base corners align with the prior ring's apexes · F(N) = cos(π/N) + √3·sin(π/N)</p>
 
   {VARIANTS.map((variant) => {
-    const rings = buildSunRings(70, variant.N1, variant.M, variant.K, 132);
+    const rings = variant.build(70, variant.rMax);
+    const rFinal = rings.length > 0
+      ? Math.max(...rings.map(r => r.rApex))
+      : 70;
+    const WAVE_PERIOD = 5; // seconds; radial outward pulse duration
+    // Large variants use a 400-unit viewBox (±200); standard use 240 (±120 offset from photo center).
+    const vb = variant.big ? "-200 -200 400 400" : "-40 -40 240 240";
+    const tr = variant.big ? "translate(0 0)" : "translate(80 80)";
+    // Summarize ring structure for the status line.
+    const ringSummary = rings
+      .map(r => {
+        if (r.alternating) return `${r.N}↔`;
+        if (r.doubleOffset) return r.drawSlots ? `${r.drawSlots.length}×2/${r.N}` : `${r.N}×2`;
+        if (r.crossfadeGroup) return `${r.crossfadeGroup}:${r.drawSlots ? r.drawSlots.length + "/" + r.N : r.N}`;
+        if (r.drawSlots) return `${r.drawSlots.length}/${r.N}`;
+        return `${r.N}`;
+      })
+      .join(" → ");
     return (
-      <section class="hero">
+      <section class={variant.big ? "hero hero-large" : "hero"}>
         <h3>{variant.title}</h3>
-        <div class="leather-slot hero-slot">
+        <div class={variant.big ? "leather-slot hero-slot hero-slot-large" : "leather-slot hero-slot"}>
           <div class="photo-wrap hero-wrap">
             <div class="corona tight"></div>
-            <svg class="overlay" viewBox="-40 -40 240 240" aria-hidden="true">
-              <g transform="translate(80 80)">
-                {rings.map((ring, k) => {
-                  const fill = ringColor(k, rings.length);
+            <svg class={variant.big ? "overlay overlay-large" : "overlay"} viewBox={vb} aria-hidden="true">
+              <g transform={tr} shape-rendering="geometricPrecision">
+                {rings.map((ring, ringIdx) => {
+                  // Alternating crown (variant H): render each tooth as its own path with even/odd phase.
+                  if (ring.alternating) {
+                    return (
+                      <g class="alt-ring">
+                        {Array.from({ length: ring.N }, (_, j) => {
+                          const [A, B, C] = triVerts(ring, j);
+                          const leaves = sierpinskiLeaves(A, B, C, MIN_SIZE);
+                          const d = leaves.map(lf => lf.d).join("");
+                          const centroidR = (ring.rBase + ring.rApex) / 2;
+                          const t = (centroidR - 70) / Math.max(1e-6, rFinal - 70);
+                          const color = gradientAt(t);
+                          const delay = j % 2 === 0 ? 0 : -WAVE_PERIOD / 2;
+                          return (
+                            <path d={d} fill={color} stroke={color}
+                                  stroke-width="0.08" stroke-linejoin="miter"
+                                  style={`animation-delay: ${delay}s`}/>
+                          );
+                        })}
+                      </g>
+                    );
+                  }
+                  // Mix K+L alternation (variant N): K's parent A/B alternation
+                  // stacked on top of L's per-bucket radial wave via SVG opacity
+                  // inheritance. Half-width shift (π/N_k) so A and B overlap.
+                  // Parent period 6s (alternation); child period 5s (wave);
+                  // they beat at LCM 30s for non-repeating feel.
+                  if (ring.doubleOffset && variant.mixKLAlt) {
+                    const nRings = rings.length;
+                    const ALT_PERIOD = 6;
+                    const layerDelay = (ringIdx * ALT_PERIOD) / Math.max(1, nRings);
+                    const bucketsA = bucketizeRing2D(ring, MIN_SIZE, 12, 6);
+                    const ringB: Ring = { ...ring, alpha: ring.alpha + Math.PI / ring.N }; // HALF-width shift
+                    const bucketsB = bucketizeRing2D(ringB, MIN_SIZE, 12, 6);
+                    const WAVE_SPAN = WAVE_PERIOD * 0.9;
+                    return (
+                      <g class="mix-n-ring">
+                        <g class="mix-n-set-a" style={`animation-delay: ${layerDelay.toFixed(3)}s`}>
+                          {bucketsA.map(b => {
+                            const rT = (b.rAvg - 70) / Math.max(1e-6, rFinal - 70);
+                            const color = gradientAt(rT);
+                            const delay = rT * WAVE_SPAN;
+                            return (
+                              <path d={b.d} fill={color} stroke={color}
+                                    stroke-width="0.08" stroke-linejoin="miter"
+                                    style={`animation-delay: ${delay.toFixed(3)}s`}/>
+                            );
+                          })}
+                        </g>
+                        <g class="mix-n-set-b" style={`animation-delay: ${layerDelay.toFixed(3)}s`}>
+                          {bucketsB.map(b => {
+                            const rT = (b.rAvg - 70) / Math.max(1e-6, rFinal - 70);
+                            const color = gradientAt(rT);
+                            const delay = rT * WAVE_SPAN;
+                            return (
+                              <path d={b.d} fill={color} stroke={color}
+                                    stroke-width="0.08" stroke-linejoin="miter"
+                                    style={`animation-delay: ${delay.toFixed(3)}s`}/>
+                            );
+                          })}
+                        </g>
+                      </g>
+                    );
+                  }
+                  // Mix K+L (variant M): K's sparse+doubleOffset geometry + L's
+                  // granular per-bucket radial wave applied separately to each
+                  // set. Set B's delay is offset by period/2 so it's counter-phase
+                  // at every radial position — two outward waves chasing each
+                  // other through interleaved tooth slots.
+                  if (ring.doubleOffset && variant.mixKL) {
+                    const bucketsA = bucketizeRing2D(ring, MIN_SIZE, 16, 8);
+                    const ringB: Ring = { ...ring, alpha: ring.alpha + 2 * Math.PI / ring.N };
+                    const bucketsB = bucketizeRing2D(ringB, MIN_SIZE, 16, 8);
+                    const MIX_SPAN = WAVE_PERIOD * 0.9;
+                    const SET_B_OFFSET = WAVE_PERIOD * 0.5;
+                    return (
+                      <g class="mix-ring">
+                        {bucketsA.map(b => {
+                          const rT = (b.rAvg - 70) / Math.max(1e-6, rFinal - 70);
+                          const color = gradientAt(rT);
+                          const delay = rT * MIX_SPAN;
+                          return (
+                            <path d={b.d} fill={color} stroke={color}
+                                  stroke-width="0.08" stroke-linejoin="miter"
+                                  style={`animation-delay: ${delay.toFixed(3)}s`}/>
+                          );
+                        })}
+                        {bucketsB.map(b => {
+                          const rT = (b.rAvg - 70) / Math.max(1e-6, rFinal - 70);
+                          const color = gradientAt(rT);
+                          const delay = rT * MIX_SPAN + SET_B_OFFSET;
+                          return (
+                            <path d={b.d} fill={color} stroke={color}
+                                  stroke-width="0.08" stroke-linejoin="miter"
+                                  style={`animation-delay: ${delay.toFixed(3)}s`}/>
+                          );
+                        })}
+                      </g>
+                    );
+                  }
+                  // Doubled-offset ring (variant K): render set A (own alpha) and
+                  // set B (alpha + 2π/N = FULL triangle angular width) with
+                  // counter-phase opacity. For sparse rings, set B lands in the
+                  // gaps of set A → 2N teeth tiling non-overlappingly. For
+                  // fully-tiled rings, set B coincides with set A geometrically;
+                  // the counter-phase animation creates a subtle alpha-composite
+                  // dimming during crossfade midpoint without positional shift.
+                  if (ring.doubleOffset) {
+                    const nRings = rings.length;
+                    const DOUBLE_PERIOD = 6; // seconds per full A↔B cycle
+                    const layerDelay = (ringIdx * DOUBLE_PERIOD) / Math.max(1, nRings);
+                    const bucketsA = bucketizeRing2D(ring, MIN_SIZE);
+                    const ringB: Ring = { ...ring, alpha: ring.alpha + 2 * Math.PI / ring.N };
+                    const bucketsB = bucketizeRing2D(ringB, MIN_SIZE);
+                    return (
+                      <g class="doubled-ring">
+                        <g class="set-a" style={`animation-delay: ${layerDelay.toFixed(3)}s`}>
+                          {bucketsA.map(b => {
+                            const color = gradientAt((b.rAvg - 70) / Math.max(1e-6, rFinal - 70));
+                            return (
+                              <path d={b.d} fill={color} stroke={color}
+                                    stroke-width="0.08" stroke-linejoin="miter"/>
+                            );
+                          })}
+                        </g>
+                        <g class="set-b" style={`animation-delay: ${layerDelay.toFixed(3)}s`}>
+                          {bucketsB.map(b => {
+                            const color = gradientAt((b.rAvg - 70) / Math.max(1e-6, rFinal - 70));
+                            return (
+                              <path d={b.d} fill={color} stroke={color}
+                                    stroke-width="0.08" stroke-linejoin="miter"/>
+                            );
+                          })}
+                        </g>
+                      </g>
+                    );
+                  }
+                  // Granular (variant L): fine bucketize + positive-delay outward wave
+                  // phased by global radial position. Wave is purely radial (along the
+                  // color gradient), no angular or noise; delays span 0.9·period so
+                  // peaks don't alias back to t=0.
+                  if (variant.granular) {
+                    const buckets = bucketizeRing2D(ring, MIN_SIZE, 16, 8);
+                    const GRAN_SPAN = WAVE_PERIOD * 0.9;
+                    return (
+                      <g class="ring-granular">
+                        {buckets.map((b) => {
+                          const rT = (b.rAvg - 70) / Math.max(1e-6, rFinal - 70);
+                          const color = gradientAt(rT);
+                          const delay = rT * GRAN_SPAN;
+                          return (
+                            <path d={b.d} fill={color} stroke={color}
+                                  stroke-width="0.08" stroke-linejoin="miter"
+                                  style={`animation-delay: ${delay.toFixed(3)}s`}/>
+                          );
+                        })}
+                      </g>
+                    );
+                  }
+                  // Normal ring: 2D-bucketize, wrap in a ring-group (optionally rotator).
+                  const buckets = bucketizeRing2D(ring, MIN_SIZE);
+                  const groupClasses = [
+                    "ring-group",
+                    variant.rotatePerRing ? "ring-rotator" : "",
+                    ring.crossfadeGroup === "F" ? "crossfade-f" : "",
+                    ring.crossfadeGroup === "G" ? "crossfade-g" : "",
+                  ].filter(Boolean).join(" ");
+                  const endRotDeg = 180 / ring.N;
+                  const groupStyle = variant.rotatePerRing
+                    ? `--end-rot: ${endRotDeg.toFixed(3)}deg`
+                    : "";
                   return (
-                    <g>
-                      {Array.from({ length: ring.N }).map((_, j) => {
-                        const [A, B, C] = triVerts(ring, j);
-                        const d = sierpinskiToPixel(A, B, C, 1.5);
+                    <g class={groupClasses} style={groupStyle}>
+                      {buckets.map((b) => {
+                        const phase = bucketPhase(b, 70, rFinal);
+                        const color = gradientAt((b.rAvg - 70) / Math.max(1e-6, rFinal - 70));
                         return (
-                          <path d={d} fill={fill} stroke={fill}
-                                stroke-width="0.25" stroke-linejoin="miter"
-                                opacity="0.95"/>
+                          <path d={b.d} fill={color} stroke={color}
+                                stroke-width="0.08" stroke-linejoin="miter"
+                                style={`animation-delay: -${(phase * WAVE_PERIOD).toFixed(3)}s`}/>
                         );
                       })}
                     </g>
@@ -177,7 +693,7 @@ const VARIANTS = [
           </div>
         </div>
         <div class="hero-note">
-          {variant.desc} · <em>rings built: {rings.length}/{variant.K}</em>
+          {variant.desc} · <em>rings: {ringSummary}</em> · <em>r_final ≈ {rFinal.toFixed(1)}</em>
         </div>
       </section>
     );
@@ -185,14 +701,15 @@ const VARIANTS = [
 
   {/* ═════════════════════════════════════════════════════════════
        V · Interactive — same rule, live parameters
+       (large overlay; R_MAX is a slider so you can explore K ≥ 5)
        ═════════════════════════════════════════════════════════════ */}
-  <section class="hero v5">
-    <h3>V · Interactive — rule enforced</h3>
-    <div class="leather-slot hero-slot">
+  <section class="hero hero-large v5">
+    <h3>V · Interactive — rule enforced · per-leaf gradient</h3>
+    <div class="leather-slot hero-slot hero-slot-large">
       <div class="photo-wrap hero-wrap">
         <div class="corona tight"></div>
-        <svg id="v5-svg" class="overlay" viewBox="-40 -40 240 240" aria-hidden="true">
-          <g id="v5-root" transform="translate(80 80)"></g>
+        <svg id="v5-svg" class="overlay overlay-large" viewBox="-200 -200 400 400" aria-hidden="true">
+          <g id="v5-root" transform="translate(0 0)" shape-rendering="geometricPrecision"></g>
         </svg>
         <img src="/hatman.jpg" alt="Hatman"/>
       </div>
@@ -204,12 +721,12 @@ const VARIANTS = [
           <option value="8">8</option>
           <option value="12">12</option>
           <option value="16">16</option>
-          <option value="24" selected>24</option>
+          <option value="24">24</option>
           <option value="32">32</option>
           <option value="48">48</option>
           <option value="64">64</option>
           <option value="96">96</option>
-          <option value="128">128</option>
+          <option value="128" selected>128</option>
           <option value="192">192</option>
           <option value="256">256</option>
         </select>
@@ -217,19 +734,29 @@ const VARIANTS = [
       <label>
         <span class="slabel">Span multiplier M</span>
         <select id="s-m">
-          <option value="1" selected>1 · constant N (corners at consecutive inner apexes)</option>
-          <option value="2">2 · halving (corners at every-other inner apex)</option>
+          <option value="1">1 · constant N (corners at consecutive inner apexes)</option>
+          <option value="2" selected>2 · halving (corners at every-other inner apex)</option>
         </select>
       </label>
       <label>
         <span class="slabel">Rings requested K</span>
-        <input type="range" id="s-k" min="1" max="8" step="1" value="4"/>
-        <span class="svalue" id="v-k">4</span>
+        <input type="range" id="s-k" min="1" max="8" step="1" value="5"/>
+        <span class="svalue" id="v-k">5</span>
+      </label>
+      <label>
+        <span class="slabel">Max radius r_max</span>
+        <input type="range" id="s-rmax" min="100" max="200" step="5" value="200"/>
+        <span class="svalue" id="v-rmax">200</span>
       </label>
       <label>
         <span class="slabel">Min pixel (recursion)</span>
-        <input type="range" id="s-min" min="0.5" max="5" step="0.5" value="1.5"/>
-        <span class="svalue" id="v-min">1.5</span>
+        <input type="range" id="s-min" min="0.5" max="3" step="0.25" value="1.0"/>
+        <span class="svalue" id="v-min">1.0</span>
+      </label>
+      <label>
+        <span class="slabel">Stroke width</span>
+        <input type="range" id="s-sw" min="0" max="0.5" step="0.02" value="0.08"/>
+        <span class="svalue" id="v-sw">0.08</span>
       </label>
     </div>
     <div class="hero-note" id="v5-status">—</div>
@@ -239,7 +766,7 @@ const VARIANTS = [
     (() => {
       const GRADIENT = ["#B7410E", "#CF6C1C", "#E0932C", "#D4AF37", "#F0D96D", "#F5E99F"];
       const R_PHOTO = 70;
-      const R_MAX = 132;
+      const NUM_BUCKETS = 32;
 
       function F(N) {
         return Math.cos(Math.PI / N) + Math.sqrt(3) * Math.sin(Math.PI / N);
@@ -273,14 +800,19 @@ const VARIANTS = [
         ];
       }
 
-      function sierpinskiToPixel(A, B, C, minSize) {
-        const parts = [];
+      function sierpinskiLeaves(A, B, C, minSize) {
+        const out = [];
         const stack = [[A, B, C]];
         while (stack.length) {
           const [p, q, r] = stack.pop();
           const dx = p[0] - q[0], dy = p[1] - q[1];
           if (dx * dx + dy * dy <= minSize * minSize) {
-            parts.push(`M ${p[0].toFixed(2)} ${p[1].toFixed(2)} L ${q[0].toFixed(2)} ${q[1].toFixed(2)} L ${r[0].toFixed(2)} ${r[1].toFixed(2)} Z`);
+            const cx = (p[0] + q[0] + r[0]) / 3;
+            const cy = (p[1] + q[1] + r[1]) / 3;
+            out.push({
+              d: `M${p[0].toFixed(2)} ${p[1].toFixed(2)}L${q[0].toFixed(2)} ${q[1].toFixed(2)}L${r[0].toFixed(2)} ${r[1].toFixed(2)}Z`,
+              r: Math.sqrt(cx*cx + cy*cy),
+            });
             continue;
           }
           const mPQ = [(p[0]+q[0])/2, (p[1]+q[1])/2];
@@ -290,12 +822,11 @@ const VARIANTS = [
           stack.push([mPQ, q, mQR]);
           stack.push([mPR, mQR, r]);
         }
-        return parts.join(" ");
+        return out;
       }
 
-      function ringColor(k, K) {
-        if (K <= 1) return GRADIENT[0];
-        const t = k / (K - 1);
+      function gradientAt(t) {
+        t = Math.max(0, Math.min(1, t));
         const idx = t * (GRADIENT.length - 1);
         const i = Math.min(Math.floor(idx), GRADIENT.length - 2);
         const f = idx - i;
@@ -307,16 +838,28 @@ const VARIANTS = [
         return `#${to2(r)}${to2(g)}${to2(b)}`;
       }
 
-      function render(rings, minSize) {
-        const out = [];
-        rings.forEach((ring, k) => {
-          const fill = ringColor(k, rings.length);
+      function render(rings, minSize, strokeWidth) {
+        if (rings.length === 0) return "";
+        const rFinal = rings[rings.length - 1].rApex;
+        const range = Math.max(1e-6, rFinal - R_PHOTO);
+        const ds = Array.from({length: NUM_BUCKETS}, () => "");
+        for (const ring of rings) {
           for (let j = 0; j < ring.N; j++) {
             const [A, B, C] = triVerts(ring, j);
-            const d = sierpinskiToPixel(A, B, C, minSize);
-            out.push(`<path d="${d}" fill="${fill}" stroke="${fill}" stroke-width="0.25" stroke-linejoin="miter" opacity="0.95"/>`);
+            const leaves = sierpinskiLeaves(A, B, C, minSize);
+            for (const lf of leaves) {
+              const t = (lf.r - R_PHOTO) / range;
+              const bi = Math.max(0, Math.min(NUM_BUCKETS - 1, Math.floor(t * NUM_BUCKETS)));
+              ds[bi] += lf.d;
+            }
           }
-        });
+        }
+        const out = [];
+        for (let i = 0; i < NUM_BUCKETS; i++) {
+          if (!ds[i]) continue;
+          const color = gradientAt(i / (NUM_BUCKETS - 1));
+          out.push(`<path d="${ds[i]}" fill="${color}" stroke="${color}" stroke-width="${strokeWidth}" stroke-linejoin="miter" opacity="0.96"/>`);
+        }
         return out.join("");
       }
 
@@ -326,18 +869,23 @@ const VARIANTS = [
         N1: parseInt(document.getElementById('s-n1').value, 10),
         M:  parseInt(document.getElementById('s-m').value, 10),
         K:  parseInt(document.getElementById('s-k').value, 10),
+        rMax: parseInt(document.getElementById('s-rmax').value, 10),
         minSize: parseFloat(document.getElementById('s-min').value),
+        sw: parseFloat(document.getElementById('s-sw').value),
       });
       const update = () => {
         const p = read();
         document.getElementById('v-k').textContent = p.K;
-        document.getElementById('v-min').textContent = p.minSize.toFixed(1);
-        const rings = buildSunRings(R_PHOTO, p.N1, p.M, p.K, R_MAX);
-        root.innerHTML = render(rings, p.minSize);
+        document.getElementById('v-rmax').textContent = p.rMax;
+        document.getElementById('v-min').textContent = p.minSize.toFixed(2);
+        document.getElementById('v-sw').textContent = p.sw.toFixed(2);
+        const rings = buildSunRings(R_PHOTO, p.N1, p.M, p.K, p.rMax);
+        root.innerHTML = render(rings, p.minSize, p.sw);
         const ringCounts = rings.map(r => r.N).join(" → ");
-        status.innerHTML = `rings built: <em>${rings.length}/${p.K}</em> · counts: <em>${ringCounts || "(none fit)"}</em> · last apex: <em>${rings.length ? rings[rings.length-1].rApex.toFixed(1) : "—"}</em>`;
+        const rFinal = rings.length ? rings[rings.length-1].rApex.toFixed(1) : "—";
+        status.innerHTML = `rings built: <em>${rings.length}/${p.K}</em> · counts: <em>${ringCounts || "(none fit)"}</em> · r_final: <em>${rFinal}</em>`;
       };
-      ['s-n1','s-m','s-k','s-min'].forEach(id => {
+      ['s-n1','s-m','s-k','s-rmax','s-min','s-sw'].forEach(id => {
         document.getElementById(id).addEventListener('input', update);
       });
       update();
@@ -346,8 +894,10 @@ const VARIANTS = [
 
 
   <div class="notes-block">
-    <p><b>The rule is now an invariant, not a wish.</b></p>
-    <p>Every ring's geometry — radii, triangle sizes, offsets — is <em>derived</em> from the single constraint that each next-ring base corner coincides with an apex of the previous ring. There are no free parameters beyond (r₀, N₁, M, K, minSize).</p>
+    <p><b>The rule is an invariant, not a wish.</b></p>
+    <p>Every ring's geometry — radii, triangle sizes, offsets — is <em>derived</em> from the single constraint that each next-ring base corner coincides with an apex of the previous ring. There are no free parameters beyond (r₀, N₁, M, K, r_max, minSize).</p>
+    <p><b>Per-leaf gradient:</b> every Sierpiński leaf is colored by its own radial distance from the center, then packed into 32 radial buckets so adjacent rings blend rather than step. Each bucket becomes one concatenated <code>&lt;path&gt;</code> — 32 paths total per variant regardless of leaf count.</p>
+    <p><b>Thin lines:</b> <code>stroke-width="0.08"</code> matching the fill color closes sub-pixel hairline cracks without painting over the intended Sierpiński negative space. The "lines" you see are the removed-middle triangles at each recursion level, not stroke.</p>
     <p><b>Key formulas:</b><br/>
     — side<sub>k</sub> = 2·r<sub>k</sub><sup>base</sup>·sin(π/N<sub>k</sub>)<br/>
     — r<sub>k</sub><sup>apex</sup> = r<sub>k</sub><sup>base</sup> · (cos(π/N<sub>k</sub>) + √3·sin(π/N<sub>k</sub>)) = r · F(N)<br/>
@@ -356,8 +906,44 @@ const VARIANTS = [
     — N<sub>k+1</sub> = N<sub>k</sub> / M &nbsp;(M=1 or M=2)</p>
     <p><b>Growth factors F(N):</b></p>
     <p>F(8) = 1.587 · F(16) = 1.319 · F(24) = 1.212 · F(32) = 1.165 · F(48) = 1.108 · F(64) = 1.080 · F(96) = 1.053 · F(128) = 1.041 · F(256) = 1.020</p>
-    <p><b>Budget note:</b> total growth from r=70 to r=132 = 1.886×. For K rings with constant N, you need F(N)<sup>K</sup> ≤ 1.886 → max rings depends on N. Higher N → more rings fit. For halving, growth is F(N<sub>1</sub>)·F(N<sub>1</sub>/2)·F(N<sub>1</sub>/4)·... which accelerates as N shrinks, so only 3–4 halving rings fit even with large N₁.</p>
-    <p><b>Why previous variants broke the rule:</b> they specified explicit triangle heights or used touching-bases on chords (not on arcs), so corner positions were off the prior-ring apex circle. The new construction makes apex positions PRIMARY and derives everything else.</p>
+    <p><b>Radial budget per variant (r₀ = 70):</b><br/>
+    — D (128→64→32→16, K=4): r_final ≈ 70·1.0422·1.0838·1.1650·1.3188 = <em>121.5</em> · fits within r_max = 132<br/>
+    — E (128→64→32→16, crown N=16 sparse 8/16): r_final ≈ 121.5·1.3188 = <em>160.3</em> · crown keeps ring-4 triangle size</p>
+    <p><b>Does chord-on-R construction always intrude on the prior layer?</b> Yes — at every transition, not just halving jumps. The chord between two points on a circle always dips inside the circle; the region above the chord but below the arc (the <em>sagitta sliver</em>) is simultaneously in ring-(k+1)'s body AND in ring-k territory.</p>
+    <p><b>Sagitta depth per transition</b> (how far ring-(k+1)'s chord dips below r_k<sup>apex</sup>): equals r_k<sup>apex</sup> · (1 − cos(π/N_(k+1))).<br/>
+    — any transition into N=128: <em>0.030%</em><br/>
+    — into N=64: <em>0.12%</em><br/>
+    — into N=32: <em>0.48%</em><br/>
+    — into N=16: <em>1.9%</em><br/>
+    — into N=8: <em>7.6%</em></p>
+    <p>At the M=2 halving <em>corner angles</em>, skipped ring-k apexes poke through by even more because they sit at arc midpoints (not chord midpoints). On the 16→8 jump, ~30% of each ring-k triangle body rises above the ring-(k+1) chord.</p>
+    <p><b>Fix: tangent chord (variant F, G).</b> Move ring-(k+1) corners outward so the chord is <em>tangent</em> to r_k<sup>apex</sup> at the midpoint.<br/>
+    — Corners on circle R/cos(π/N) · slight radial offset = R·(1/cos(π/N) − 1)<br/>
+    — Chord midpoint tangent to R (zero dip)<br/>
+    — Ring-(k+1) body entirely at r ≥ R · <em>provably no overlap with ring-k (which is entirely at r ≤ R)</em><br/>
+    — Growth factor G(N) = 1 + √3·tan(π/N); side length = 2R·tan(π/N)<br/>
+    — Rotation: α_(k+1) = α_k + π/N_k − π/N_(k+1)</p>
+    <p><b>Tangent-halving notches (variant F):</b> at each M=2 halving jump, adjacent ring-(k+1) chords meet at a shared corner directly above a skipped ring-k apex. That shared corner is at R/cos(2π/N_k) while the skipped apex sits at R — leaving a radial <em>notch</em> of size R·(1/cos(2π/N_k) − 1):<br/>
+    — 128→64: <em>0.12%</em> · invisible<br/>
+    — 64→32: <em>0.48%</em> · invisible<br/>
+    — 32→16: <em>1.9%</em> · barely visible<br/>
+    — 16→8: <em>8.3%</em> · obviously visible (the eight teeth look separated by visible gaps)</p>
+    <p><b>Best of both (variant G):</b> tangent chord throughout, halving inside (notches 0.12% / 0.48% / 1.9% — all invisible), then M=1 half-density crown at N=16 instead of halving to N=8. M=1 tangent has <em>zero</em> notches because every ring-k apex tangents a drawn-tooth chord midpoint. Only cost: 2% corner offset at the crown, imperceptible at this scale.</p>
+    <p><b>Option β — arc-base fangs</b> (not implemented yet): literally replace the chord with the arc of circle r_k<sup>apex</sup>. Zero overlap, zero notches, perfectly arc-tiled bases. Downside: the shape is a "fang" not a triangle, and Sierpiński subdivision on a fang produces a mix of sub-fangs (along the arc base) and regular triangles (toward the apex) — implementable but breaks the "everything is a standard Sierpiński triangle" invariant. Happy to build this if you want to see it.</p>
+    <p><b>Option δ — non-halving integer ratios</b>: M doesn't have to be 2. N=144 can go 144→72→24 (M=2, M=3) for dramatic coarsening. N=120 supports 120→60→20→10→5 for varied five-ring progressions. Tangent-chord math works for any integer M dividing N.</p>
+    <p><b>Animation grammar.</b> One keyframe, varying <code>animation-delay</code>. Four independent layers compose.</p>
+    <p><b>(1) 2D radial wave (all variants).</b> Every ring's leaves are 2D-bucketized into a local-radial × angular grid (6×4 per ring). Per bucket:<br/>
+    — <code>phase = r_global/r_final  +  0.10·(angularIdx/4)  +  0.08·hash(r, a)</code><br/>
+    — <code>animation-delay = −phase · 5s</code><br/>
+    Radial term dominates (the outward wave). Angular term adds a slight per-sector lag. Hash-noise breaks the ring into organic fingers. All paths run the same <code>@keyframes radiateOut</code>; the delays spread them in time.</p>
+    <p><b>(2) Alternating crown (variant H).</b> 16 teeth at N=16 full density, each tooth's opacity phase-flipped by j mod 2. Even peaks at phase 0, odd at phase π. Reads as the 8 bright teeth rotating π/8 each half-cycle.</p>
+    <p><b>(3) Per-ring differential rotation (variant I).</b> Each ring sits in a <code>&lt;g class="ring-rotator"&gt;</code> with an inline CSS custom property <code>--end-rot</code> set to 180°/N_k. The group oscillates between 0° and that value via CSS transform. N=128 swings 1.4°, N=16 swings 11.25°. The fractal shears as it breathes — inner rings barely move, outer rings sweep visibly. Combined with (1) the effect is organic, non-synchronized radiation.</p>
+    <p><b>(4) F↔G crossfade (variant J).</b> Both F's N=8 halving crown and G's N=16 sparse crown render over the shared inner structure; CSS counter-phase opacity animations (<code>.crossfade-f</code>, <code>.crossfade-g</code>) fade them in and out. Since G midpoints coincide with F midpoints at even ring-4 apexes, the crossfade reads as teeth morphing between wide-tall and narrow-short in place. Opacity-crossfade is the cheap proxy for true vertex interpolation — SVG <code>&lt;animate&gt;</code> can't interpolate paths with different leaf counts, and precomputed same-depth keyframes would be visually muddy.</p>
+    <p><b>(5) Per-ring sparse teeth + outward cascade (variant K).</b> Every ring is <em>sparse</em>: drawSlots = even slots of the ring's N-grid (so half the teeth are drawn, gaps at the odd slots). Each ring renders twice — set A at its own alpha, set B at alpha + 2π/N_k (one full triangle angular width, which is exactly the width of one gap). Set B's teeth land cleanly in set A's gaps; together they tile the full N positions without overlap. The sets sit as sibling <code>&lt;g class="set-a"&gt;</code> / <code>&lt;g class="set-b"&gt;</code> with counter-phase opacity animations on the parent <code>&lt;g&gt;</code> (SVG inherits opacity multiplicatively → descendant paths need no animation of their own). Keyframes <code>setPulseA</code> (1→0.05→1) and <code>setPulseB</code> (0.05→1→0.05) ensure A+B≈1.05 at every phase; total ring brightness stays roughly constant but <em>which half</em> of the teeth are bright cycles continuously.</p>
+    <p>Per-ring animation-delay is positive and monotone: <code>delay_k = k · period / nRings</code>, with <code>animation-fill-mode: backwards</code> holding outer rings at their first keyframe during their startup. This staggers the A↔B cycle across rings — inner rings' alternation leads, outer rings lag. A wave of "which teeth are bright" ripples outward through every layer. Same grammar at every ring level — inner halving rings AND the crown — because every ring is now sparse in the same way. Shift = triangle width = 2π/N_k; no transform, no geometry interpolation, all opacity.</p>
+    <p><b>(6) Granular per-leaf radial wave along the color gradient (variant L).</b> K's set A + set B merged into a single tiled surface — all rings full density, crown upgraded to 16 teeth. Bucketize each ring at <b>16 radial × 8 angular</b> (128 fine buckets/ring, ~640 total across the fractal) and give each bucket an <em>animation-delay proportional to its global radial position</em>: <code>delay_bucket = r_norm · 0.9 · period</code>. The axis of the delay is the axis of the color gradient — so the wave literally sweeps along the burnt-orange-to-pale-yellow spectrum, with inner (burnt) leaves peaking first and outer (pale) leaves peaking last.</p>
+    <p>Why positive delays with span 0.9·period (and not negative delays like D/E/F/G)? Negative delays with span ≥ period alias modulo the period — at phase_formula = 1 (outermost), <code>delay = -period</code> is identical to <code>delay = 0</code>, so inner and outer peak simultaneously. This is why D/E/F/G's radial wave never reads as a clean outward sweep; the peak travels middle → (inner AND outer) → middle non-monotonically. Positive delays with span &lt; period avoid aliasing: inner delay 0 → peaks at t = 0.5·period; outer delay 0.9·period → peaks at t = 1.4·period; next inner peak at 1.5·period. A continuous wave with only a 0.1·period gap between "outer peaks" and "next inner peaks" — reads as nearly-continuous outward flow. The cost: a startup lag equal to max delay (0.9·period ≈ 4.5s) during which outer buckets hold their first-keyframe opacity via <code>animation-fill-mode: backwards</code>.</p>
+    <p>Granularity: with 128 buckets per ring, each bucket contains a small handful of Sierpiński leaves at similar radial position. Adjacent leaves fade near-simultaneously; the wave appears smooth across thousands of individual sub-triangles. This is the "super granular at the sub-triangle level" interpretation — every tiny leaf participates in the continuous outward flow, phased by its position on the color gradient.</p>
   </div>
 </body>
 
@@ -397,6 +983,9 @@ const VARIANTS = [
     border-radius: 8px;
     box-shadow: 0 0 40px rgba(201, 168, 76, 0.08);
   }
+  .hero-large {
+    max-width: 720px;
+  }
   .hero h3 {
     font-family: var(--tome-font-heading, var(--tome-font-display));
     margin: 0 0 1rem;
@@ -419,6 +1008,9 @@ const VARIANTS = [
     aspect-ratio: 1;
     max-width: 420px;
     margin: 0 auto;
+  }
+  .hero-slot-large {
+    max-width: 600px;
   }
 
   .photo-wrap {
@@ -445,6 +1037,133 @@ const VARIANTS = [
     pointer-events: none;
     overflow: visible;
     z-index: 2;
+  }
+  .overlay-large {
+    inset: -130px;
+    width: calc(100% + 260px);
+    height: calc(100% + 260px);
+  }
+
+  /* ─── Radial outward wave (applies to all 2D-bucketized paths) ───
+     Each bucket's animation-delay is set inline based on its 2D phase
+     (radial dominant + angular + hash-noise), so the opacity pulse
+     flows from inner to outer with organic fingers. */
+  .ring-group path {
+    animation: radiateOut 5s linear infinite;
+  }
+  @keyframes radiateOut {
+    0%   { opacity: 0.45; }
+    50%  { opacity: 1.00; }
+    100% { opacity: 0.45; }
+  }
+
+  /* ─── Granular per-bucket radial wave (variant L) ───
+     Positive animation-delay (inner=0, outer=0.9·period) + fill-mode
+     backwards. Wave sweeps outward monotonically over ~0.9·period per
+     cycle, with a brief quiet gap before the next wave starts. Each
+     bucket is one of ~640 phase-distinct paths across the fractal. */
+  .ring-granular path {
+    animation: radiateOut 5s linear infinite;
+    animation-fill-mode: backwards;
+  }
+
+  /* ─── Mix of K + L (variant M) ───
+     Two outward waves (set A and set B) running at positive delays
+     with offset of period/2 between them. No quiet gap between waves
+     since they fill each other's troughs. */
+  .mix-ring path {
+    animation: radiateOut 5s linear infinite;
+    animation-fill-mode: backwards;
+  }
+
+  /* ─── K's A/B × L's wave (variant N) ───
+     Parent <g> carries K's slow A↔B counter-phase alternation at 6s
+     with per-ring cascade (via inline animation-delay). Inside each
+     parent, paths carry L's per-bucket radial wave at 5s with wider
+     fade keyframes. SVG multiplies opacity parent × child. Different
+     periods (6 vs 5) beat at 30s for a non-repeating compound. */
+  .mix-n-set-a, .mix-n-set-b {
+    animation-duration: 6s;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
+    animation-fill-mode: backwards;
+  }
+  .mix-n-set-a { animation-name: setPulseA; }
+  .mix-n-set-b { animation-name: setPulseB; }
+  .mix-n-ring path {
+    animation: radiateOutWide 5s linear infinite;
+    animation-fill-mode: backwards;
+  }
+  @keyframes radiateOutWide {
+    0%   { opacity: 0.15; }
+    50%  { opacity: 1.00; }
+    100% { opacity: 0.15; }
+  }
+
+  /* ─── Per-ring differential rotation (variant I) ───
+     Each ring oscillates between 0° and π/N_k via --end-rot custom
+     property. Outer rings (small N) rotate more than inner (large N). */
+  .ring-rotator {
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+    animation: halfRot 8s ease-in-out infinite;
+  }
+  @keyframes halfRot {
+    0%, 100% { transform: rotate(0deg); }
+    50%      { transform: rotate(var(--end-rot, 0deg)); }
+  }
+
+  /* ─── Alternating crown teeth (variant H) ───
+     Even-indexed teeth peak at phase 0; odd-indexed at phase π. */
+  .alt-ring path {
+    animation: altFlip 5s ease-in-out infinite;
+  }
+  @keyframes altFlip {
+    0%   { opacity: 1; }
+    50%  { opacity: 0.1; }
+    100% { opacity: 1; }
+  }
+
+  /* ─── F↔G crossfade (variant J) ───
+     F's N=8 outer crown and G's N=16 sparse crown share geometry but
+     fade in counter-phase. Overrides the radial wave for crown paths. */
+  .crossfade-f path {
+    animation: crossfadeF 7s ease-in-out infinite !important;
+  }
+  .crossfade-g path {
+    animation: crossfadeG 7s ease-in-out infinite !important;
+  }
+  @keyframes crossfadeF {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.08; }
+  }
+  @keyframes crossfadeG {
+    0%, 100% { opacity: 0.08; }
+    50%      { opacity: 1; }
+  }
+
+  /* ─── Doubled-offset rings (variant K) ───
+     Each ring has two sets: set-A at own alpha, set-B at alpha + π/N.
+     Counter-phase opacity on the parent <g> — SVG multiplies opacity
+     down to descendant paths automatically, so no per-path animation
+     needed. Positive animation-delay set inline creates per-ring
+     cascade; animation-fill-mode: backwards holds initial keyframe
+     during the startup delay so the cascade emerges cleanly. */
+  .set-a, .set-b {
+    animation-duration: 6s;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
+    animation-fill-mode: backwards;
+  }
+  .set-a { animation-name: setPulseA; }
+  .set-b { animation-name: setPulseB; }
+  @keyframes setPulseA {
+    0%, 100% { opacity: 1;    }
+    50%      { opacity: 0.05; }
+  }
+  @keyframes setPulseB {
+    0%, 100% { opacity: 0.05; }
+    50%      { opacity: 1;    }
   }
 
   .corona {
@@ -492,7 +1211,7 @@ const VARIANTS = [
     grid-template-columns: 1fr 1fr;
     gap: 0.6rem 1rem;
     margin: 1.25rem auto 0;
-    max-width: 480px;
+    max-width: 600px;
     font-family: var(--tome-font-mono);
     font-size: 0.75rem;
     color: var(--tome-paper);
@@ -548,4 +1267,3 @@ const VARIANTS = [
   }
 </style>
 </html>
-
