@@ -1,0 +1,28 @@
+slug: now
+order: 5
+label: Now
+toc: now
+header: "cat ~/now"
+closing: "last updated: 2026-04-15"
+body: |-
+  <h2 id="building">building</h2>
+
+  <p>Playfaire PBC — solo founder, full-time. The specification grammar is operational. The agent orchestration is operational. Now: shipping the first product (Verve MVP), launching this site, and applying for grants.</p>
+
+  <hr />
+
+  <h2 id="thinking-about">thinking about</h2>
+
+  <p>How AI agents coordinate through shared representations instead of alongside each other. What falls out when you derive an ontology instead of designing one. Whether the psychonaut-systems-thinker-who-builds-formal-ontologies niche is a viable personal brand or just a very specific way to be unemployable.</p>
+
+  <hr />
+
+  <h2 id="listening-to">listening to</h2>
+
+  <p>Looping, layering, deconstructing. Always building the next set.</p>
+
+  <hr />
+
+  <h2 id="reading">reading</h2>
+
+  <p>Too many tabs. Not enough books.</p>
