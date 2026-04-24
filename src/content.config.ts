@@ -1,82 +1,27 @@
-import { defineCollection, z } from "astro:content";
+import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
+import { PageSchema } from "./lib/page";
+import { WritingSchema } from "./lib/writing";
 
 /**
- * Page collection — book pages as MDX.
+ * Page collection — book pages as YAML.
  *
- * Frontmatter carries book-engine metadata. The MDX body renders to
- * HTML via Container API and is displayed inside the page frame.
- *
- * Progressive enhancement: each frontmatter field is independently
- * present or absent. No "type" switching.
- *
- *   chapter      → renders ChapterHeader above body
- *   header       → renders terminal-style label above body
- *   quote        → renders centered epigraph layout
- *   cards        → renders static card grid after body
- *   cardsSource  → renders dynamic card grid sourced from a collection
- *   lines        → renders colophon-style centered text
- *   closing      → renders terminal closing text after body
- *   backFace     → marks this leaf's verso as the back cover
+ * Each page carries tome-engine frontmatter (chapter, header, quote, cards,
+ * cardsSource, lines, closing, backFace) plus an optional pre-rendered HTML
+ * body. Progressive enhancement — every field is independently present.
  */
 const pages = defineCollection({
-  loader: glob({ pattern: "**/*.mdx", base: "./src/content/pages" }),
-  schema: z.object({
-    slug: z.string(),
-    order: z.number(),
-    label: z.string(),
-    toc: z.string().optional(),
-    /** "cover" for leather exterior pages, "content" for everything else. Named
-     *  pageLayout (not layout) because Astro reserves "layout" in MDX frontmatter. */
-    pageLayout: z.enum(["cover", "content"]).default("content"),
-    variant: z.enum(["front", "back"]).optional(),
-    chapter: z
-      .object({
-        number: z.string(),
-        title: z.string(),
-        subtitle: z.string().optional(),
-      })
-      .optional(),
-    backFace: z.enum(["cover"]).optional(),
-    // Epigraph
-    prompt: z.string().optional(),
-    quote: z.string().optional(),
-    attribution: z.string().optional(),
-    // Colophon
-    lines: z
-      .array(
-        z.object({
-          text: z.string(),
-          italic: z.boolean().optional(),
-          mono: z.boolean().optional(),
-        }),
-      )
-      .optional(),
-    // Cards
-    cards: z
-      .array(
-        z.object({
-          name: z.string(),
-          description: z.string(),
-        }),
-      )
-      .optional(),
-    /** Populate cards dynamically from a collection at build time. */
-    cardsSource: z.enum(["writings"]).optional(),
-    header: z.string().optional(),
-    closing: z.string().optional(),
-  }),
+  loader: glob({ pattern: "**/*.yaml", base: "./src/content/pages" }),
+  schema: PageSchema,
 });
 
+/**
+ * Writings collection — voice-attributed essays as YAML holographs.
+ * See src/lib/writing.ts for schema + renderer.
+ */
 const writings = defineCollection({
-  loader: glob({ pattern: "**/*.mdx", base: "./src/content/writings" }),
-  schema: z.object({
-    title: z.string(),
-    description: z.string(),
-    date: z.coerce.date(),
-    draft: z.boolean().default(false),
-    tags: z.array(z.string()).default([]),
-  }),
+  loader: glob({ pattern: "**/*.yaml", base: "./src/content/writings" }),
+  schema: WritingSchema,
 });
 
 export const collections = { pages, writings };

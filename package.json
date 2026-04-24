@@ -17,7 +17,6 @@
     "format:check": "biome format src/"
   },
   "dependencies": {
-    "@astrojs/mdx": "^5.0.3",
     "@astrojs/rss": "^4.0.18",
     "@astrojs/svelte": "^8.0.5",
     "astro": "^6.1.6",
