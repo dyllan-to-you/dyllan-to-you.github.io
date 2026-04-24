@@ -52,35 +52,47 @@ let { pages }: { pages: PageData[] } = $props();
 
 /* ═══════════════════════════════════════════════
      Derived page data
+     (wrapped in $derived so Svelte 5 doesn't warn about
+     top-level $props reads capturing the initial value)
   ═══════════════════════════════════════════════ */
 
-const tocEntries = pages.map((p, i) => ({ ...p, index: i })).filter((p) => p.toc);
+const ROMAN = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x"];
+
+let tocEntries = $derived(
+  pages.map((p, i) => ({ ...p, index: i })).filter((p) => p.toc),
+);
 
 /* Map page index → section list for TOC nesting */
-const pageSections: Map<number, Section[]> = new Map();
-pages.forEach((p, i) => {
-  if (p.sections && p.sections.length > 0) {
-    pageSections.set(i, p.sections);
-  }
+let pageSections: Map<number, Section[]> = $derived.by(() => {
+  const map = new Map<number, Section[]>();
+  pages.forEach((p, i) => {
+    if (p.sections && p.sections.length > 0) {
+      map.set(i, p.sections);
+    }
+  });
+  return map;
 });
 
 /* Refs to content page scroll-areas for scroll-to-section */
 let contentRefs: Map<number, HTMLElement> = new Map();
 
-const ROMAN = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x"];
-let contentIndex = 0;
-const pageNumbers = pages.map((p) => (p.pageLayout !== "cover" ? ROMAN[contentIndex++] : null));
+let pageNumbers = $derived.by(() => {
+  let idx = 0;
+  return pages.map((p) => (p.pageLayout !== "cover" ? ROMAN[idx++] : null));
+});
 
-const vineSide = pages.map((_, i) => (i % 2 === 1 ? "right" : "left"));
+let vineSide = $derived(
+  pages.map((_, i) => (i % 2 === 1 ? "right" : "left")),
+);
 
 /* ═══════════════════════════════════════════════
-     Constants
+     Constants (total is derived since it depends on pages)
   ═══════════════════════════════════════════════ */
 
-const total = pages.length;
 const DEPTH = 2;
-const DEPTH_OVERLAY = (total + 1) * DEPTH;
-const DEPTH_UI = (total + 2) * DEPTH;
+let total = $derived(pages.length);
+let DEPTH_OVERLAY = $derived((total + 1) * DEPTH);
+let DEPTH_UI = $derived((total + 2) * DEPTH);
 
 /* ═══════════════════════════════════════════════
      Engine state
@@ -127,10 +139,16 @@ $effect(() => {
   return () => window.removeEventListener("resize", check);
 });
 
-let previousPortrait = isPortrait;
+/* Track orientation flips to reset state. previousPortrait stays non-reactive
+   (we only want to snapshot the last value the effect saw). */
+let previousPortrait: boolean | undefined;
 
 $effect(() => {
   const current = isPortrait;
+  if (previousPortrait === undefined) {
+    previousPortrait = current;
+    return;
+  }
   if (previousPortrait === current) return;
   previousPortrait = current;
   animation = null;
@@ -142,7 +160,7 @@ $effect(() => {
      URL routing
   ═══════════════════════════════════════════════ */
 
-const slugs = pages.map((p) => p.slug ?? "");
+let slugs = $derived(pages.map((p) => p.slug ?? ""));
 
 // "back" is a virtual slug: the closed-back state (flipped === total).
 // It has no page in the registry — the back cover is the verso of the
@@ -323,21 +341,16 @@ function handleKeydown(event) {
 }
 
 function handleWheel(event) {
-  // If the wheel target is inside a scroll-area that can still scroll
-  // in the wheel direction, let native scroll handle it.
-  const scrollEl = event.target.closest?.(".scroll-area");
-  if (scrollEl) {
-    const { scrollTop, scrollHeight, clientHeight } = scrollEl;
-    const atTop = scrollTop <= 0;
-    const atBottom = scrollTop + clientHeight >= scrollHeight - 1;
-    const scrollingDown = event.deltaY > 0;
-    if (!(scrollingDown ? atBottom : atTop)) return;
-  }
+  // Axes are decoupled: vertical wheel scrolls page content, horizontal
+  // wheel turns the leaf. Never the twain — keeps trackpad inertia on a
+  // long read from accidentally flipping past the scroll boundary.
+  const horizontalIntent = Math.abs(event.deltaX) > Math.abs(event.deltaY);
+  if (!horizontalIntent) return; // vertical: native scroll owns it
 
   event.preventDefault();
   if (busy) return;
-  if (event.deltaY > 0 || event.deltaX > 0) goForward();
-  else if (event.deltaY < 0 || event.deltaX < 0) goBack();
+  if (event.deltaX > 0) goForward();
+  else if (event.deltaX < 0) goBack();
 }
 
 /* Wheel must be non-passive so we can conditionally preventDefault
