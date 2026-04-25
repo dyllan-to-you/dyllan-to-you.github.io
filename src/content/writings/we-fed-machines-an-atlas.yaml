@@ -27,7 +27,7 @@ body:
   - { kind: paragraph, id: p01, content: "{s:s001}" }
   - { kind: paragraph, id: p02, content: "Now, {s:s002}, {s:s003}" }
   - { kind: paragraph, id: p03, content: "{s:s004} {s:s005}" }
-  - { kind: paragraph, id: p04, content: "{s:s006} {s:s007} {s:s008} {s:s009} {s:s010} {s:s011}{s:s012}" }
+  - { kind: paragraph, id: p04, content: "{s:s006} {s:s008} {s:s009} {s:s010} {s:s011}{s:s012}" }
   - { kind: paragraph, id: p05, content: "{s:s013} {s:s014}" }
   - { kind: paragraph, id: p06, content: "{s:s015} {s:s016}" }
   - { kind: paragraph, id: p07, content: "{s:s017}" }
@@ -41,25 +41,24 @@ body:
   - { kind: paragraph, id: p13, content: "{s:s032} {s:s033}. {s:s034} {s:s035}" }
   - { kind: paragraph, id: p14, content: "{s:s036} {s:s037}. {s:s038} {s:s039} {s:s040} {s:s041}" }
   - { kind: paragraph, id: p15, content: "{s:s042}" }
-  - { kind: paragraph, id: p16, content: "{s:s043} {s:s044} {s:s045}" }
+  - { kind: paragraph, id: p16, content: "{s:s118} {s:s119} {s:s120} {s:s121}" }
+  - { kind: paragraph, id: p16b, content: "{s:s098} {s:s099} {s:s100}{s:s101} {s:s102}{s:s103}" }
   - { kind: paragraph, id: p17, content: "{s:s046} {s:s047}" }
   - { kind: paragraph, id: p18, content: "{s:s048} {s:s049}" }
+  - { kind: paragraph, id: p18b, content: "{s:s122} {s:s123} {s:s124} {s:s125}" }
   - { kind: separator }
-  - { kind: paragraph, id: p19, content: "{s:s050}" }
+  - { kind: paragraph, id: p19, content: "{s:s050} {s:s104} {s:s105}" }
+  - { kind: paragraph, id: p19b, content: "{s:s106} {s:s107}" }
   - { kind: paragraph, id: p20, content: "{s:s051} {s:s052} {s:s053}" }
-  - { kind: paragraph, id: p21, content: "{s:s054} {s:s055}" }
+  - { kind: paragraph, id: p21, content: "{s:s054} {s:s108}{s:s109} {s:s110} {s:s055}" }
   - { kind: paragraph, id: p22, content: "{s:s056} {s:s057}" }
   - { kind: paragraph, id: p23, content: "{s:s058} {s:s059} {s:s060} {s:s061} {s:s062} {s:s063} {s:s064}" }
   - { kind: separator }
-  - { kind: paragraph, id: p24, content: "{s:s065}" }
-  - { kind: paragraph, id: p25, content: "{s:s066} {s:s067}. {s:s068}" }
-  - { kind: paragraph, id: p26, content: "{s:s069} {s:s070}" }
-  - { kind: paragraph, id: p27, content: "{s:s071}" }
-  - { kind: paragraph, id: p28, content: "{s:s072} <em>{s:s073}</em> {s:s074}" }
-  - { kind: separator }
+  - { kind: paragraph, id: p24, content: "{s:s111} {s:s112} {s:s113} {s:s114} {s:s115}" }
+  - { kind: paragraph, id: p24b, content: "{s:s075} {s:s128} {s:s129}" }
   - { kind: paragraph, id: p29, content: "{s:s075} {s:s076} {s:s077} {s:s078}" }
   - { kind: paragraph, id: p30, content: "{s:s079} {s:s080} {s:s081} {s:s082}" }
-  - { kind: paragraph, id: p31, content: "{s:s083} {s:s084}. {s:s085} {s:s086}" }
+  - { kind: paragraph, id: p31, content: "{s:s083} {s:s084}. {s:s085} {s:s117} {s:s086}" }
   - { kind: paragraph, id: p32, content: "{s:s087}" }
   - { kind: separator }
   - { kind: paragraph, id: p33, content: "{s:s088}" }
@@ -67,8 +66,12 @@ body:
   - { kind: paragraph, id: p35, content: "{s:s091}" }
   - { kind: separator }
   - { kind: paragraph, id: p36, content: "{s:s092} {s:s093} {s:s094}" }
-  - { kind: paragraph, id: p37, content: "{s:s095}" }
+  - { kind: paragraph, id: p26, content: "{s:s069} {s:s070}" }
+  - { kind: paragraph, id: p27, content: "{s:s071}" }
+  - { kind: paragraph, id: p28, content: "{s:s072} <em>{s:s073}</em> {s:s074}" }
   - { kind: paragraph, id: p38, content: "{s:s096}" }
+  - { kind: separator }
+  - { kind: paragraph, id: p39, content: "{s:s126}" }
 
 spans:
   ls1: { voice: [justice-inline], text: "Burnt orange" }
@@ -91,15 +94,19 @@ spans:
   s004:
     voice: [justice-inline]
     text: >-
-      Some meteors have hit it, exposing a layer of ice. This exposure has exposed the ice to the local Sun, melting the ice. As ice melts to water, the water moves, eroding into the earth and carving features, while lifting/floating the ice up to also carve features
+      Some meteors have hit it, exposing a layer of ice to the local Sun. As ice melts to water, it erodes the earth, and the remaining ice floats to carve features of its own
+    drafts:
+      - "Some meteors have hit it, exposing a layer of ice. This exposure has exposed the ice to the local Sun, melting the ice. As ice melts to water, the water moves, eroding into the earth and carving features, while lifting/floating the ice up to also carve features"
   s005:
     voice: [collab]
     prompt: pr003
     text: >-
-      — riverbeds, lakes, fans, valleys. Tectonic plates drift, collide, fold. Mountains rise — {s:s097}. Volcanoes open and pour molten rock across whole regions, which cool into plateaus and new soils. The planet acquires a geography it didn't plan for. It just has one now.
+      — riverbeds, lakes, fans, valleys. Tectonic plates drift, collide, fold. Mountains rise — {s:s097}. Volcanoes open and pour molten rock across whole regions, which cool into plateaus and new soils. {s:s127}
     drafts:
       - >-
         — riverbeds, lakes, fans, valleys. Tectonic plates drift, collide, fold. Mountains rise. Volcanoes open and pour molten rock across whole regions, which cool into plateaus and new soils. The planet acquires a geography it didn't plan for. It just has one now.
+      - >-
+        — riverbeds, lakes, fans, valleys. Tectonic plates drift, collide, fold. Mountains rise — {s:s097}. Volcanoes open and pour molten rock across whole regions, which cool into plateaus and new soils. The planet acquires a geography it didn't plan for. It just has one now.
 
   s097:
     voice: [agent-inline]
@@ -109,6 +116,7 @@ spans:
     voice: [collab]
     prompt: pr004
     text: "Eventually, astronauts arrive."
+  # s007 archived 2026-04-23 — dropped from body per Justice ("drop the 'ship couldn't carry much' line").
   s007:
     voice: [justice-inline]
     text: "The ship couldn't carry much — most of the mass was cryo for the travelers."
@@ -123,7 +131,9 @@ spans:
   s010:
     voice: [collab]
     prompt: pr006
-    text: "They walk, measure, sketch. Footprints small."
+    text: "They walk, measure, sketch."
+    drafts:
+      - "They walk, measure, sketch. Footprints small."
   s011:
     voice: [justice-inline]
     text: "Observation makes an impact, after all"
@@ -181,7 +191,9 @@ spans:
     text: "And here's the surprise. If you pay attention to what the globe actually represents:"
   s024:
     voice: [justice-inline]
-    text: "the planet isn't a sphere. It isn't a simple ball rolling through space"
+    text: "the planet isn't a sphere. It isn't a simple ball floating through space"
+    drafts:
+      - "the planet isn't a sphere. It isn't a simple ball rolling through space"
   s025:
     voice: [collab]
     prompt: pr014
@@ -208,7 +220,7 @@ spans:
     voice: [justice-inline]
     text: "<strong>We fed machines an atlas and manifested a maniglobe.</strong>"
   s031:
-    voice: [collab]
+    voice: [agent-inline, collab]
     prompt: pr018
     text: "And right now, mostly, we're using it as a typewriter."
 
@@ -219,8 +231,11 @@ spans:
   s033:
     voice: [justice-inline]
     text: "something that reads like what already exists, with different clothes on"
+  # s034 reclassified 2026-04-23: voice was [collab]; Claude originated the phrasing as
+  # an 'autocomplete' deflation setting up Justice's 'Yawn' — agent-inline belongs here.
+  # voice-collab retained for tooltip affordance (rule 7).
   s034:
-    voice: [collab]
+    voice: [agent-inline, collab]
     prompt: pr020
     text: "The most powerful tool humanity has ever built, used as autocomplete."
   s035:
@@ -238,10 +253,14 @@ spans:
     voice: [collab]
     prompt: pr022
     text: >-
-      Transformers predict the next token by conditional probability; without a pull on the distribution, "most probable" means "most average."
+      Transformers predict the next token by conditional probability. Without a pull on the distribution, they default to well-trodden paths in concept space — what the atlas saw most often.
+    drafts:
+      - 'Transformers predict the next token by conditional probability; without a pull on the distribution, "most probable" means "most average."'
   s039:
     voice: [justice-inline]
-    text: "Regression to the mean"
+    text: "Regression in concept space"
+    drafts:
+      - "Regression to the mean"
   s040:
     voice: [collab]
     prompt: pr023
@@ -253,8 +272,12 @@ spans:
   s042:
     voice: [agent-inline]
     text: >-
-      Which is a category error — using a terrain-globe to re-read the bits of atlas we already had. The atlas was already shareable. The globe is something else.
+      Which is a category error — using the globe to re-read the bits of atlas we already had. The atlas was already shareable. The globe is something else.
+    drafts:
+      - "Which is a category error — using a terrain-globe to re-read the bits of atlas we already had. The atlas was already shareable. The globe is something else."
 
+  # s043–s045 archived 2026-04-23 — p16 rewritten per Justice's "atlases/planet/map, it's all concept space.
+  # The LLM is an inaccurate map" reframe. Old spans retained for provenance; new content in s118–s121.
   s043:
     voice: [collab]
     prompt: pr024
@@ -275,10 +298,12 @@ spans:
     text: "So: an LLM isn't an oracle. It isn't a better Wikipedia."
   s047:
     voice: [justice-inline]
-    text: "It's the first terrain-globe of possibility space."
+    text: "It's the first holographic terrain-globe of possibility space."
+    drafts:
+      - "It's the first terrain-globe of possibility space."
 
   s048:
-    voice: [collab]
+    voice: [agent-inline, collab]
     prompt: pr027
     text: "You are the navigator. The globe is the terrain."
   s049:
@@ -287,7 +312,9 @@ spans:
 
   s050:
     voice: [justice-inline]
-    text: "Walking, as it turns out, is tiring. So we're building machines to walk for us."
+    text: "Walking, as it turns out, is tiring."
+    drafts:
+      - "Walking, as it turns out, is tiring. So we're building machines to walk for us."
 
   s051:
     voice: [justice-inline]
@@ -304,7 +331,9 @@ spans:
 
   s054:
     voice: [justice-inline]
-    text: "So we pave roads. Give them wheels. We can tell them where to go, after all."
+    text: "So we pave roads. Give them wheels."
+    drafts:
+      - "So we pave roads. Give them wheels. We can tell them where to go, after all."
   s055:
     voice: [collab]
     prompt: pr029
@@ -343,11 +372,13 @@ spans:
     voice: [agent-inline]
     text: "They trust the surface they're rolling on, and the surface is sometimes vapor."
 
+  # s065 archived 2026-04-23 — paperweight line replaced by earthmover (p24 now carries p21b's former content).
   s065:
     voice: [collab]
     prompt: pr033
     text: "A terrain-globe is a paperweight without a destination."
 
+  # s066–s068 archived 2026-04-23 — p25 (admire-the-map / hamster-balls / regress-to-middle) dropped per Justice. Earthmover → question flows directly now.
   s066:
     voice: [collab]
     prompt: pr034
@@ -362,7 +393,7 @@ spans:
     text: "Either way: zoom around, ask it to retrieve the bits of atlas you already had, regress to the middle."
 
   s069:
-    voice: [collab]
+    voice: [agent-inline, collab]
     prompt: pr036
     text: "Here's a question you've probably heard before:"
   s070:
@@ -386,19 +417,23 @@ spans:
   s074:
     voice: [collab]
     prompt: pr039
-    text: "That's the address I'm navigating toward. What's yours?"
+    text: "That's the address I'm navigating toward. {s:s116} What's yours?"
+    drafts:
+      - "That's the address I'm navigating toward. What's yours?"
 
   s075:
     voice: [justice-inline]
     text: "The pursuit is a process."
   s076:
-    voice: [collab]
+    voice: [agent-inline, collab]
     prompt: pr040
     text: "Not a line. Detours are part of it —"
   s077:
     voice: [agent-inline]
     text: >-
-      and with a terrain-globe, detours are suddenly cheap. You can see what's off the worn path without having to walk there first.
+      and with a holographic globe, detours are suddenly cheap. You can see what's off the worn path without having to walk there first.
+    drafts:
+      - "and with a terrain-globe, detours are suddenly cheap. You can see what's off the worn path without having to walk there first."
   s078:
     voice: [collab]
     prompt: pr041
@@ -409,7 +444,7 @@ spans:
     voice: [justice-inline]
     text: "The road less traveled"
   s080:
-    voice: [collab]
+    voice: [agent-inline, collab]
     prompt: pr042
     text: "isn't ornament."
   s081:
@@ -417,7 +452,7 @@ spans:
     text: >-
       Sometimes it's where you learn your destination was slightly off. Sometimes it's where you find a route you couldn't have seen from the starting point.
   s082:
-    voice: [collab]
+    voice: [agent-inline, collab]
     prompt: pr043
     text: "Detour as correction, not indulgence."
 
@@ -429,7 +464,7 @@ spans:
     voice: [justice-inline]
     text: "the machines rolling downhill"
   s085:
-    voice: [collab]
+    voice: [agent-inline, collab]
     prompt: pr045
     text: "You can check what they hand you. You can correct them."
   s086:
@@ -442,7 +477,7 @@ spans:
     text: "Which is, in the end, the only way you learn whether the globe was telling you the truth."
 
   s088:
-    voice: [collab]
+    voice: [agent-inline, collab]
     prompt: pr046
     text: >-
       The hard part — the part most people skip — isn't picking the right tool or the right prompt. The hard part is knowing where you're trying to go.
@@ -451,14 +486,17 @@ spans:
     voice: [agent-inline]
     text: "Destinations are values. Values require commitment. Commitment is scary."
   s090:
-    voice: [collab]
+    voice: [agent-inline, collab]
     prompt: pr047
     text: >-
       So we dodge. We argue about which model is best. We optimize prompts. We benchmark techniques. All of which is fine. None of which substitutes for the work of knowing your address.
 
   s091:
-    voice: [agent-inline]
-    text: '"Which LLM is best?" is the question of a lost traveler who doesn''t want to admit they don''t have a destination.'
+    voice: [justice-inline, collab]
+    prompt: pr062
+    text: "The best LLM is the one that understands your intent and explores the search space alongside you."
+    drafts:
+      - '"Which LLM is best?" is the question of a lost traveler who doesn''t want to admit they don''t have a destination.'
 
   s092:
     voice: [collab]
@@ -473,6 +511,9 @@ spans:
     prompt: pr049
     text: "— not a denser archive, but the whole surface, fog and all."
 
+  # s095 archived 2026-04-23 — p37 (callback "could-not-fail = diagnostic") dropped
+  # because Movement 5 was reordered: p26-p28 (the question + diagnostic + Mine) now
+  # land in the close position right before p38, making the p27 framing canonical.
   s095:
     voice: [agent-inline]
     text: "What you would do if you could not fail isn't a question about fantasy. It's the diagnostic for where you're headed."
@@ -480,6 +521,137 @@ spans:
   s096:
     voice: [agent-inline]
     text: "Answer it. Then start walking."
+
+  # ── Geology semantics — mountains/rivers/roads (p16b) ─────────────
+  s098:
+    voice: [justice-inline]
+    text: "The mountains are fixed points."
+  s099:
+    voice: [collab]
+    prompt: pr050
+    text: "Math and its invariants, truths that don't move no matter who's walking."
+  s100:
+    voice: [justice-inline]
+    text: "The rivers are the common paths"
+  s101:
+    voice: [collab]
+    prompt: pr051
+    text: "— the atlas content, routes that emerged because people walked them."
+  s102:
+    voice: [justice-inline]
+    text: "The roads bridge the rivers"
+  s103:
+    voice: [collab]
+    prompt: pr052
+    text: "— formalisms, frameworks, the built infrastructure that connects one known domain to another. The fog is everywhere else."
+
+  # ── Walkers default too — folded into p19 ─────────────────────────
+  s104:
+    voice: [collab]
+    prompt: pr053
+    text: "And even walkers follow happy paths, because downhill is easier than up."
+  s105:
+    voice: [justice-inline]
+    text: "So we build machines to walk for us."
+
+  # ── Agent reclaim — new paragraph p19b ───────────────────────────
+  s106:
+    voice: [collab]
+    prompt: pr054
+    text: "A word on that. In the AI industry, an <strong>agent</strong> is an autonomous system — a hamster ball with enough wiring to steer itself. But the word is older than that, and better."
+  s107:
+    voice: [agent-inline]
+    text: "An agent is anyone who acts. Human or machine, walker or rider, builder or built. If you're moving on the globe, you're an agent."
+
+  # ── Cars paragraph — new spans injected into p21 ─────────────────
+  s108:
+    voice: [justice-inline]
+    text: "Some people are making cars they can drive themselves"
+  s109:
+    voice: [collab]
+    prompt: pr055
+    text: "— automation down paved routes, machinery of known destinations."
+  s110:
+    voice: [justice-inline]
+    text: "You can tell them where to go, after all."
+
+  # ── Earthmovers paragraph p21b ───────────────────────────────────
+  s111:
+    voice: [justice-inline]
+    text: "And some people are making heavy machinery."
+  s112:
+    voice: [agent-inline]
+    text: "Earthmovers."
+  s113:
+    voice: [justice-inline]
+    text: "To carve through the earth. To see what's possible."
+  s114:
+    voice: [agent-inline, collab]
+    prompt: pr056
+    text: "Not paved routes. Not atlas-retrieval."
+  s115:
+    voice: [justice-inline]
+    text: "Because they heard a rumor. Of an <strong>Oasis</strong>."
+
+  # ── Oasis echo — nested inside s074 in p28 ───────────────────────
+  s116:
+    voice: [justice-inline]
+    text: "The oasis I heard rumor of."
+
+  # ── Mutual correction — inserted into p31 ────────────────────────
+  s117:
+    voice: [agent-inline]
+    text: "Let them correct you — the good ones should push back when your happy path drifts."
+
+  # ── p16 reframe — atlas + globe as two maps, possibility/probability as guesses ──
+  s118:
+    voice: [collab]
+    prompt: pr058
+    text: >-
+      The walked paths are the atlas — a sparse, honest map. The globe is another map of the same concept space, trained on the atlas, extrapolated into the fog. Both are maps. Neither is the territory —
+  s119:
+    voice: [justice-inline]
+    text: "the map is not the territory."
+  s120:
+    voice: [justice-inline]
+    text: "Possibility and probability are just our own guesses. Some righter than others."
+  s121:
+    voice: [collab]
+    prompt: pr059
+    text: "Where the atlas walked often, the globe draws confidently; where rarely, it guesses."
+
+  # ── GPS beat p18b — evolution from static globe to navigational tool ──
+  s122:
+    voice: [agent-inline, collab]
+    prompt: pr060
+    text: "And the globe is changing. Earlier models were static — a world you could rotate and query. Newer ones are more like a telescope, seeing further through the fog. Or a GPS —"
+  s123:
+    voice: [justice-inline]
+    text: "if you know where you're trying to go, and where you're at, it can help you try to get there."
+  s124:
+    voice: [agent-inline]
+    text: "Not a replacement for the walk; a tool that makes the walk legible."
+  s125:
+    voice: [justice-inline]
+    text: "A holographic GPS."
+
+  # ── Teaser transition p39 ────────────────────────────────────────
+  s126:
+    voice: [justice-inline]
+    text: "But to really understand where we are at, we want to understand how we got here."
+
+  # ── p03 closer rewrite — geography that looks like it was always there ──
+  s127:
+    voice: [justice-inline]
+    text: "The planet acquires a geography that, to newcomers, looks like it was there the entire time."
+
+  # ── p24b — pursuit/process/search/GPS-as-cartographic-tools ──
+  s128:
+    voice: [justice-inline]
+    text: "It's a search, an exploration."
+  s129:
+    voice: [justice-inline]
+    text: "The holographic GPS acts like cartographic tools to help define and explore the search space."
 
 prompts:
   pr001:
@@ -500,6 +672,7 @@ prompts:
       elaborated with specific verbs and imagery; closed with 'geography it didn't plan for.'
     notes: >-
       Second pass (2026-04-23) nested agent-inline span 'the geography's fixed points' after 'Mountains rise' — seeds the mountain = fixed-point reveal that lands in Movement 3.
+      Third pass (2026-04-23) replaced Claude's "geography it didn't plan for. It just has one now" with Justice's "geography that, to newcomers, looks like it was there the entire time" (nested s127). Resonates with the concept-space-looks-definitive-but-is-contingent thread.
 
   pr004:
     justice: Eventually some traveling astronauts land.
@@ -576,7 +749,8 @@ prompts:
     claude: "'This isn't a critique' sets up the turn — it IS the mechanism."
 
   pr022:
-    claude: technical unpacking — conditional next-token probability without distribution-pull averages.
+    claude: >-
+      technical unpacking — conditional next-token probability; default to high-frequency paths in concept space. Revised 2026-04-23 per Justice's correction: LLMs don't literally regress to a statistical mean; the *feeling* of regression is a consequence of staying on well-trodden territory.
 
   pr023:
     claude: bridge into Justice's downhill metaphor.
@@ -674,3 +848,57 @@ prompts:
 
   pr049:
     claude: closes the categorical distinction one more time before the final turn to the reader.
+
+  pr050:
+    justice: "like 'math', something that exists nomatter what."
+    claude: >-
+      elaborated fixed-points with 'invariants' and 'truths that don't move no matter who's walking.'
+
+  pr051:
+    justice: "rivers are 'common/known paths'"
+    claude: >-
+      unpacked as atlas content — routes that emerged because people walked them.
+
+  pr052:
+    justice: "roads bridge rivers"
+    claude: >-
+      unpacked as formalisms / frameworks / infrastructure between known domains. 'Bridge' preserved — roads cross rivers, they don't replace them.
+
+  pr053:
+    justice: "Something about walking a path can follow happy paths."
+    claude: >-
+      rendered as 'even walkers follow happy paths' tied to downhill rationale. Closes the navigator-is-immune hole in Movement 3.
+
+  pr054:
+    justice: "I want to broaden the definition of agent to mean 'human' and/or 'ai'."
+    claude: >-
+      framed as a reclaim from the AI industry's narrow usage to the older, broader meaning. Positioned at head of Movement 4 to unify the taxonomy that follows.
+
+  pr055:
+    justice: "Some people are making cars they can drive themselves."
+    claude: >-
+      elaborated the self-driving-car image with 'paved routes, machinery of known destinations.'
+
+  pr056:
+    claude: >-
+      framing gloss — 'Not paved routes. Not atlas-retrieval' names what earthmovers are for (not atlas-replay) before the oasis line lands.
+
+  pr058:
+    justice: "Atlases, the planet, the map, it's all concept space. The LLM is an inaccurate map of concept space. The map is not the territory. Possibility space and probability space are how we categorize things?"
+    claude: >-
+      rewrote the concept/possibility distinction. Atlas and globe become two maps of the same concept space; Korzybski's line lands as the bridge. Preserved fog/extrapolation imagery in the closer (s121).
+
+  pr059:
+    claude: >-
+      concrete illustration after the Justice line — where the atlas walked, the globe draws confidently; where rarely, guesses. Closes the 'maps are inaccurate' beat by tying back to probability-weighting.
+
+  pr060:
+    justice: "Earlier LLMs were more like globes. Newer LLMs are more like GPS/telescope? Holographic GPS. It lets you see further through the fog to chart your path."
+    claude: >-
+      unpacked the evolution note — static model → telescope → GPS. Frame the beat as 'the globe is changing' to preserve continuity with the earlier reveal. Justice's line on the conditional ('if you know where you're trying to go, and where you're at, it can help you try to get there') lands as the center of the beat.
+
+  pr062:
+    justice: >-
+      The best LLM is in a sense the one that understands user intent and acts most effectively at exploring the solution/concept/possibility space alongside the user.
+    claude: >-
+      reframed s091 — the original 'lost traveler' line was too dismissive. Benchmark wars dodge the work of destination, but the question itself has a real answer when asked in good faith: 'best' is collaborative effectiveness in exploration, not benchmark score.
