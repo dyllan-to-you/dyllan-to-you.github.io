@@ -7,6 +7,7 @@ interface Section {
 interface TocChild {
   index: number;
   toc: string;
+  slug?: string;
 }
 
 interface TocEntry extends TocChild {
@@ -28,18 +29,33 @@ let {
   onFlipBack?: () => void;
   onScrollToSection?: (pageIndex: number, sectionId: string) => void;
 } = $props();
+
+/** Build the URL for a given entry. Cover front (no slug) lives at "/". */
+function hrefFor(slug: string | undefined): string {
+  return slug ? `/${slug}` : "/";
+}
+
+/** Intercept left-click without modifier keys; let middle-click,
+ *  Cmd/Ctrl/Shift+click fall through to the browser so users can
+ *  open in a new tab/window like any normal link. */
+function handleNav(e: MouseEvent, idx: number) {
+  if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+  e.preventDefault();
+  onNavigate(idx);
+}
 </script>
 
 <div class="page" onclick={(e) => { if (e.target.closest('button')) return; onFlipBack?.(); }} role="presentation">
   <nav class="toc" aria-label="Table of contents">
     <div class="terminal-chrome">
-      <button
+      <a
         class="path"
         class:path-active={activePage === 0}
-        onclick={() => onNavigate(0)}
+        href="/"
+        onclick={(e) => handleNav(e, 0)}
         aria-label="Return to front cover"
         aria-current={activePage === 0 ? 'page' : undefined}
-      >~/dyllan.to</button>
+      >~/dyllan.to</a>
     </div>
     <div class="tree">
       <div class="tree-root">.</div>
@@ -52,32 +68,34 @@ let {
         {@const showChildren = children.length > 0 && (active || anyChildActive)}
         {@const showSections = active && sections.length > 0}
         {@const hasNested = showChildren || showSections}
-        <button
+        <a
           class="tree-entry"
           class:active
-          onclick={() => onNavigate(entry.index)}
+          href={hrefFor(entry.slug)}
+          onclick={(e) => handleNav(e, entry.index)}
           aria-current={active ? 'page' : undefined}
           aria-expanded={hasNested ? true : undefined}
         >
           <span class="branch">{last && !hasNested ? '└──' : '├──'}</span>
           <span class="leaf" class:leaf-active={active}>{entry.toc}</span>
           {#if active && !hasNested}<span class="cursor"></span>{/if}
-        </button>
+        </a>
 
         {#if showChildren}
           {#each children as child, ci}
             {@const childActive = child.index === activePage}
             {@const lastChild = ci === children.length - 1 && !showSections}
-            <button
+            <a
               class="tree-entry child-entry"
               class:active={childActive}
-              onclick={() => onNavigate(child.index)}
+              href={hrefFor(child.slug)}
+              onclick={(e) => handleNav(e, child.index)}
               aria-current={childActive ? 'page' : undefined}
             >
               <span class="branch">{last ? '    ' : '│   '}{lastChild ? '└──' : '├──'}</span>
               <span class="leaf" class:leaf-active={childActive}>{child.toc}</span>
               {#if childActive}<span class="cursor"></span>{/if}
-            </button>
+            </a>
           {/each}
         {/if}
 
@@ -147,6 +165,8 @@ let {
     border-radius: 2px;
     transition: background 0.2s, opacity 0.2s;
     opacity: 0.85;
+    text-decoration: none;
+    display: inline-block;
   }
 
   .path:hover {
@@ -193,6 +213,8 @@ let {
     line-height: 1.4;
     transition: background 0.2s;
     position: relative;
+    text-decoration: none;
+    color: inherit;
   }
 
   .tree-entry:hover {

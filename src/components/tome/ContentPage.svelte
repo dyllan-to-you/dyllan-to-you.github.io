@@ -128,6 +128,11 @@ $effect(() => {
     mask-image: linear-gradient(to bottom, black calc(100% - 32px), transparent);
     -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 32px), transparent);
     padding-bottom: 32px;
+    /* Re-enable text selection inside the readable content area; the tome
+       root disables selection globally to prevent stray drags during page
+       flips, but the prose itself should be selectable. */
+    user-select: text;
+    -webkit-user-select: text;
   }
 
   /* Subtle scrollbar that matches the parchment aesthetic */
