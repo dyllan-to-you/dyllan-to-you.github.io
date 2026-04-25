@@ -8,4 +8,12 @@ export default defineConfig({
   markdown: {
     rehypePlugins: [rehypeSlug],
   },
+  vite: {
+    server: {
+      watch: {
+        usePolling: true,
+        interval: 200,
+      },
+    },
+  },
 });
