@@ -8,6 +8,7 @@ interface TocChild {
   index: number;
   toc: string;
   slug?: string;
+  meta?: string;
 }
 
 interface TocEntry extends TocChild {
@@ -55,10 +56,10 @@ function handleNav(e: MouseEvent, idx: number) {
         onclick={(e) => handleNav(e, 0)}
         aria-label="Return to front cover"
         aria-current={activePage === 0 ? 'page' : undefined}
-      >~/dyllan.to</a>
+      ><span class="prompt-glyph">❦</span>/dyllan.to</a>
     </div>
     <div class="tree">
-      <div class="tree-root">.</div>
+      <div class="tree-root">❧</div>
       {#each tocEntries as entry, i}
         {@const active = entry.index === activePage}
         {@const last = i === tocEntries.length - 1}
@@ -76,9 +77,10 @@ function handleNav(e: MouseEvent, idx: number) {
           aria-current={active ? 'page' : undefined}
           aria-expanded={hasNested ? true : undefined}
         >
-          <span class="branch">{last && !hasNested ? '└──' : '├──'}</span>
+          <span class="branch">{last && !hasNested ? '╰─' : '├─'}</span>
           <span class="leaf" class:leaf-active={active}>{entry.toc}</span>
-          {#if active && !hasNested}<span class="cursor"></span>{/if}
+          {#if active && !hasNested}<span class="cursor">✦</span>{/if}
+          {#if entry.meta}<span class="meta">{entry.meta}</span>{/if}
         </a>
 
         {#if showChildren}
@@ -92,9 +94,10 @@ function handleNav(e: MouseEvent, idx: number) {
               onclick={(e) => handleNav(e, child.index)}
               aria-current={childActive ? 'page' : undefined}
             >
-              <span class="branch">{last ? '    ' : '│   '}{lastChild ? '└──' : '├──'}</span>
+              <span class="branch">{last ? '   ' : '╎  '}{lastChild ? '╰─' : '├─'}</span>
               <span class="leaf" class:leaf-active={childActive}>{child.toc}</span>
-              {#if childActive}<span class="cursor"></span>{/if}
+              {#if childActive}<span class="cursor">✦</span>{/if}
+              {#if child.meta}<span class="meta">{child.meta}</span>{/if}
             </a>
           {/each}
         {/if}
@@ -106,11 +109,10 @@ function handleNav(e: MouseEvent, idx: number) {
               class="tree-entry section-entry"
               onclick={() => onScrollToSection?.(entry.index, section.id)}
             >
-              <span class="branch">{last ? '    ' : '│   '}{lastSection ? '└──' : '├──'}</span>
+              <span class="branch">{last ? '   ' : '╎  '}{lastSection ? '╰─' : '├─'}</span>
               <span class="leaf section-leaf">{section.text}</span>
             </button>
           {/each}
-          {#if active}<span class="cursor section-cursor"></span>{/if}
         {/if}
       {/each}
     </div>
@@ -155,7 +157,7 @@ function handleNav(e: MouseEvent, idx: number) {
   .path {
     font-family: var(--tome-font-mono);
     color: var(--tome-term-green);
-    font-size: 0.65rem;
+    font-size: var(--tome-text-chrome);
     letter-spacing: 0.04em;
     background: none;
     border: none;
@@ -164,7 +166,7 @@ function handleNav(e: MouseEvent, idx: number) {
     cursor: pointer;
     border-radius: 2px;
     transition: background 0.2s, opacity 0.2s;
-    opacity: 0.85;
+    opacity: 0.95;
     text-decoration: none;
     display: inline-block;
   }
@@ -184,6 +186,13 @@ function handleNav(e: MouseEvent, idx: number) {
     opacity: 1;
   }
 
+  .prompt-glyph {
+    color: var(--tome-copper);
+    margin-right: 2px;
+    font-size: var(--tome-text-body);
+    vertical-align: -1px;
+  }
+
   .tree {
     font-family: var(--tome-font-mono);
     color: var(--tome-ink);
@@ -192,10 +201,11 @@ function handleNav(e: MouseEvent, idx: number) {
   }
 
   .tree-root {
-    color: var(--tome-term-dim);
-    font-size: 0.75rem;
-    padding: 0 0 0 2px;
-    line-height: 1.4;
+    color: var(--tome-copper);
+    opacity: 0.6;
+    font-size: var(--tome-text-body);
+    padding: 0 0 2px 2px;
+    line-height: 1.5;
     letter-spacing: 0.02em;
   }
 
@@ -204,13 +214,13 @@ function handleNav(e: MouseEvent, idx: number) {
     align-items: center;
     background: none;
     border: none;
-    padding: 0 6px 0 2px;
-    margin: 0;
+    padding: 2px 8px;
+    margin: 0 -8px;
     cursor: pointer;
     border-radius: 2px;
     text-align: left;
     font-family: inherit;
-    line-height: 1.4;
+    line-height: 1.5;
     transition: background 0.2s;
     position: relative;
     text-decoration: none;
@@ -227,32 +237,50 @@ function handleNav(e: MouseEvent, idx: number) {
   }
 
   .tree-entry.active {
-    background: rgba(45, 107, 63, 0.08);
+    background: rgba(45, 107, 63, 0.1);
+    box-shadow: inset 2px 0 0 var(--tome-term-green);
   }
 
   .branch {
-    color: var(--tome-term-dim);
-    font-size: 0.75rem;
+    color: var(--tome-copper);
+    opacity: 0.6;
+    font-size: var(--tome-text-chrome);
     white-space: pre;
     flex-shrink: 0;
     user-select: none;
-    margin-right: 6px;
+    margin-right: 8px;
+  }
+
+  .child-entry .branch {
+    opacity: 0.5;
   }
 
   .leaf {
     color: var(--tome-ink);
-    font-size: 0.75rem;
+    font-size: var(--tome-text-chrome);
     letter-spacing: 0.02em;
     transition: color 0.2s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .leaf-active {
+    color: var(--tome-term-green);
+    text-shadow: 0 0 8px rgba(45, 107, 63, 0.3);
+  }
+
+  .child-entry .leaf {
+    color: var(--tome-ink-light);
+    font-size: var(--tome-text-caption);
+  }
+  .child-entry .leaf-active {
     color: var(--tome-term-green);
   }
 
   .section-leaf {
     color: var(--tome-term-dim);
-    font-size: 0.65rem;
+    font-size: var(--tome-text-caption);
     letter-spacing: 0.03em;
   }
 
@@ -261,27 +289,32 @@ function handleNav(e: MouseEvent, idx: number) {
   }
 
   .tree-entry:hover .leaf {
-    color: rgba(45, 107, 63, 0.8);
+    color: var(--tome-term-green);
+  }
+
+  .meta {
+    margin-left: auto;
+    padding-left: 10px;
+    font-size: var(--tome-text-caption);
+    color: var(--tome-term-dim);
+    letter-spacing: 0.04em;
+    opacity: 0.7;
+    flex-shrink: 0;
   }
 
   .cursor {
-    display: inline-block;
-    width: 6px;
-    height: 12px;
-    margin-left: 3px;
-    vertical-align: middle;
-    background: var(--tome-term-green);
-    opacity: 0.7;
-    animation: blink 1s step-end infinite;
+    color: var(--tome-term-green);
+    font-size: var(--tome-text-body);
+    margin-left: 6px;
+    flex-shrink: 0;
+    animation: flicker 1.6s ease-in-out infinite;
+    text-shadow: 0 0 6px rgba(45, 107, 63, 0.5);
   }
 
-  .section-cursor {
-    display: none;
-  }
-
-  @keyframes blink {
-    0%, 100% { opacity: 0.7; }
-    50% { opacity: 0; }
+  @keyframes flicker {
+    0%, 100% { opacity: 0.95; transform: translateY(0); }
+    35% { opacity: 0.6; transform: translateY(-0.5px); }
+    65% { opacity: 1; transform: translateY(0.3px); }
   }
 
 </style>
