@@ -1,6 +1,6 @@
 id: writing:we-fed-machines-an-atlas
 title: "We Fed Machines an Atlas..."
-description: "...and Manifested a ManiGlobe. On LLMs, possibility space, and what you'd do if you could not fail."
+description: "...and Manifested a Globe. On building a better map."
 date: 2026-04-23
 draft: true
 tags: [llms, possibility-space, destination, ur]
@@ -24,54 +24,72 @@ body:
     content: >-
       <strong>A note on voices.</strong> {s:ls1} is Justice — his words, frames, and near-verbatim phrases. {s:ls2} is the agent he writes with (Claude) — sentences it originated, or options Justice selected from its proposals. Unmarked text is collaborative: his idea, the agent's prose, or shared territory where neither voice owns the line. Dotted-underlined passages unfold a paper strip above the text on hover, with the prompt thread that shaped them.
 
+  # ── Act 1 — Feeding the atlas ────────────────────────────────────
   - { kind: paragraph, id: p01, content: "{s:s001}" }
   - { kind: paragraph, id: p02, content: "Now, {s:s002}, {s:s003}" }
   - { kind: paragraph, id: p03, content: "{s:s004} {s:s005}" }
   - { kind: paragraph, id: p04, content: "{s:s006} {s:s008} {s:s009} {s:s010} {s:s011}{s:s012}" }
   - { kind: paragraph, id: p05, content: "{s:s013} {s:s014}" }
+  - { kind: paragraph, id: p05a, content: "{s:s146} {s:s147} {s:s148} {s:s149} {s:s150}" }
   - { kind: paragraph, id: p06, content: "{s:s015} {s:s016}" }
   - { kind: paragraph, id: p07, content: "{s:s017}" }
   - { kind: separator }
+
+  # ── Act 2 — Manifesting the globe ────────────────────────────────
+  # Movement: the reveal
   - { kind: paragraph, id: p08, content: "{s:s018} {s:s019}" }
   - { kind: paragraph, id: p09, content: "{s:s020} {s:s021} {s:s022}" }
   - { kind: paragraph, id: p10, content: "{s:s023} {s:s024} {s:s025} {s:s026}{s:s027}" }
   - { kind: paragraph, id: p11, content: "{s:s028} A {s:s029}." }
   - { kind: paragraph, id: p12, content: "{s:s030} {s:s031}" }
   - { kind: separator }
+
+  # Movement: two maps, one terrain
   - { kind: paragraph, id: p13, content: "{s:s032} {s:s033}. {s:s034} {s:s035}" }
   - { kind: paragraph, id: p14, content: "{s:s036} {s:s037}. {s:s038} {s:s039} {s:s040} {s:s041}" }
-  - { kind: paragraph, id: p15, content: "{s:s042}" }
+  # p15 dropped 2026-04-26 — category-error line redundant with p13 deflation; M6 loop carries the methodological corrective.
   - { kind: paragraph, id: p16, content: "{s:s118} {s:s119} {s:s120} {s:s121}" }
   - { kind: paragraph, id: p16b, content: "{s:s098} {s:s099} {s:s100}{s:s101} {s:s102}{s:s103}" }
-  - { kind: paragraph, id: p17, content: "{s:s046} {s:s047}" }
+  # p17 dropped 2026-04-26 — terrain-globe declaration redundant with maniglobe coinage in M2.
   - { kind: paragraph, id: p18, content: "{s:s048} {s:s049}" }
-  - { kind: paragraph, id: p18b, content: "{s:s122} {s:s123} {s:s124} {s:s125}" }
+  # p18b dropped 2026-04-26 — GPS-evolution lineage relocated; holographic-GPS register lands in M6 loop where it's operational.
   - { kind: separator }
+
+  # Movement: agents and downhill
   - { kind: paragraph, id: p19, content: "{s:s050} {s:s104} {s:s105}" }
-  - { kind: paragraph, id: p19b, content: "{s:s106} {s:s107}" }
+  # p19b dropped 2026-04-27 — agent-reclaim paragraph read as a non-sequitur even after s091a callback. Broader-agent definition relocated to s091a's tooltip (pr066) — readers who hover on "Two agents on the same hologlobe" get the older meaning.
   - { kind: paragraph, id: p20, content: "{s:s051} {s:s052} {s:s053}" }
   - { kind: paragraph, id: p21, content: "{s:s054} {s:s108}{s:s109} {s:s110} {s:s055}" }
   - { kind: paragraph, id: p22, content: "{s:s056} {s:s057}" }
   - { kind: paragraph, id: p23, content: "{s:s058} {s:s059} {s:s060} {s:s061} {s:s062} {s:s063} {s:s064}" }
+  - { kind: paragraph, id: p23a, content: "{s:s140} {s:s141} {s:s142} A {s:s143} — {s:s144}" }
   - { kind: separator }
-  - { kind: paragraph, id: p24, content: "{s:s111} {s:s112} {s:s113} {s:s114} {s:s115}" }
-  - { kind: paragraph, id: p24b, content: "{s:s075} {s:s128} {s:s129}" }
-  - { kind: paragraph, id: p29, content: "{s:s075} {s:s076} {s:s077} {s:s078}" }
-  - { kind: paragraph, id: p30, content: "{s:s079} {s:s080} {s:s081} {s:s082}" }
-  - { kind: paragraph, id: p31, content: "{s:s083} {s:s084}. {s:s085} {s:s117} {s:s086}" }
-  - { kind: paragraph, id: p32, content: "{s:s087}" }
-  - { kind: separator }
-  - { kind: paragraph, id: p33, content: "{s:s088}" }
-  - { kind: paragraph, id: p34, content: "{s:s089} {s:s090}" }
-  - { kind: paragraph, id: p35, content: "{s:s091}" }
-  - { kind: separator }
+
+  # ── Act 3 — Building a better map ────────────────────────────────
+  # 2026-04-26: M5/M6 swapped — operational first (the world the reader walks),
+  # destination second (the existential climax). Walk-directive lands on the
+  # bare CNF reprise rather than a generic "answer it" callback.
+
+  # Movement: the hologlobe at hand (the "what" — operational)
   - { kind: paragraph, id: p36, content: "{s:s092} {s:s093} {s:s094}" }
-  - { kind: paragraph, id: p26, content: "{s:s069} {s:s070}" }
-  - { kind: paragraph, id: p27, content: "{s:s071}" }
-  - { kind: paragraph, id: p28, content: "{s:s072} <em>{s:s073}</em> {s:s074}" }
-  - { kind: paragraph, id: p38, content: "{s:s096}" }
+  - { kind: paragraph, id: p36a, content: "{s:s077} {s:s078}" }
+  - { kind: paragraph, id: p37, content: "{s:s130} {s:s131} {s:s132} {s:s133} {s:s134} {s:s135} {s:s136} {s:s137}" }
   - { kind: separator }
-  - { kind: paragraph, id: p39, content: "{s:s126}" }
+
+  # Movement: the destination (the "where" — climactic)
+  # Reorder rationale: pursuit-as-process opens M6 as abstract bridge from M5's
+  # iteration close; earthmover concretizes; hard-part introduces the challenge;
+  # CNF + diagnostic frames the question; best-LLM bridges Q→A; Mine is the
+  # worked answer; bare CNF reprises the question; walk closes.
+  - { kind: paragraph, id: p29, content: "{s:s075}" }
+  - { kind: paragraph, id: p24, content: "{s:s111} {s:s112} {s:s113} {s:s115}" }  # 2026-04-26: dropped s114 ("Not paved routes. Not atlas-retrieval.") — opaque term, awkward fragments.
+  - { kind: paragraph, id: p33, content: "{s:s151} {s:s088} {s:s089} {s:s090}" }
+  - { kind: paragraph, id: p26, content: "{s:s069} {s:s070} {s:s071}" }
+  - { kind: paragraph, id: p35, content: "{s:s091} {s:s091a}" }
+  - { kind: paragraph, id: p28, content: "{s:s072} <em>{s:s073}</em> {s:s074}" }
+  - { kind: paragraph, id: p38a, content: "{s:s145}" }  # NEW 2026-04-26: bare CNF reprise — direct reader-prompt right before walk.
+  - { kind: paragraph, id: p38, content: "{s:s096}" }
+  # p39 dropped 2026-04-26 — teaser line "to really understand where we are at, we want to understand how we got here" removed for now; standalone essay until the next post is ready.
 
 spans:
   ls1: { voice: [justice-inline], text: "Burnt orange" }
@@ -158,7 +176,10 @@ spans:
     voice: [collab]
     prompt: pr009
     text: >-
-      The LTM takes every map, every overlap, and synthesizes a <strong>globe</strong> — a statistical estimate of the whole surface, including everywhere no astronaut has been. The globe isn't an observation. It's a hypothesis, extrapolated from all the local observations, shaped by the implicit geometry the water and fire and plates left behind.
+      The LTM takes every map, every overlap, and synthesizes a <strong>globe</strong> — a statistical projection of the whole surface, including everywhere no astronaut has been. The globe isn't an observation. It's a hypothesis, extrapolated from all the local observations, shaped by the implicit geometry the water and fire and plates left behind.
+    drafts:
+      - >-
+        The LTM takes every map, every overlap, and synthesizes a <strong>globe</strong> — a statistical estimate of the whole surface, including everywhere no astronaut has been. The globe isn't an observation. It's a hypothesis, extrapolated from all the local observations, shaped by the implicit geometry the water and fire and plates left behind.
 
   s017:
     voice: [collab]
@@ -172,7 +193,9 @@ spans:
     voice: [collab]
     prompt: pr011
     text: >-
-      The atlas is every medium we've ever made — every book, every page, every thread someone walked across the terrain and recorded.
+      The atlas is every medium we've ever made — every book, every page, every model, every thread someone walked across the terrain and recorded.
+    drafts:
+      - "The atlas is every medium we've ever made — every book, every page, every thread someone walked across the terrain and recorded."
 
   s020:
     voice: [justice-inline]
@@ -269,6 +292,9 @@ spans:
     voice: [justice-inline]
     text: "The machines roll downhill because downhill is easy."
 
+  # s042 archived 2026-04-26 — p15 dropped in three-act restructure. Category-error
+  # line was redundant with p13's autocomplete deflation; M6 loop (s130–s137) carries
+  # the methodological corrective via positive verbs (project/rule-out/choose).
   s042:
     voice: [agent-inline]
     text: >-
@@ -292,6 +318,9 @@ spans:
     text: >-
       The interpolation between the riverbeds, between the ranges, between the plateaus. Every point with some statistical estimate, because the water and fire and plates have left their geometry implicit in the paths, and the machines can extrapolate from the paths to the shape of the terrain.
 
+  # s046, s047 archived 2026-04-26 — p17 dropped in three-act restructure. Terrain-
+  # globe declaration was redundant with the maniglobe coinage in M2 (s029, s030).
+  # The "holographic" register that s047 introduced returns operationally in M6.
   s046:
     voice: [collab]
     prompt: pr026
@@ -424,6 +453,10 @@ spans:
   s075:
     voice: [justice-inline]
     text: "The pursuit is a process."
+  # s076 archived 2026-04-26 — when p29 shrank to just s075 (relocating
+  # operational content to M6/p36a), the "Not a line. Detours are part of it —"
+  # bridge lost its setup ("process" no longer adjacent). Dropped from body;
+  # p36a opens directly with the modified s077.
   s076:
     voice: [agent-inline, collab]
     prompt: pr040
@@ -431,15 +464,22 @@ spans:
   s077:
     voice: [agent-inline]
     text: >-
-      and with a holographic globe, detours are suddenly cheap. You can see what's off the worn path without having to walk there first.
+      With a hologlobe, detours are cheap. You can see what's off the worn path without having to walk there first.
     drafts:
       - "and with a terrain-globe, detours are suddenly cheap. You can see what's off the worn path without having to walk there first."
+      - "and with a holographic globe, detours are suddenly cheap. You can see what's off the worn path without having to walk there first."
   s078:
     voice: [collab]
     prompt: pr041
     text: >-
-      You can ask what's between two ideas, what the dual of a claim is, what would break an assumption, what's one step off the probable route. The globe answers — not with certainty, but with the interpolated shape of what might be.
+      You can ask what's between two ideas, what the dual of a claim is, what would break an assumption, what's one step off the probable route. The hologlobe answers — not with certainty, but with the interpolated shape of what might be.
+    drafts:
+      - "You can ask what's between two ideas, what the dual of a claim is, what would break an assumption, what's one step off the probable route. The globe answers — not with certainty, but with the interpolated shape of what might be."
 
+  # s079–s082 archived 2026-04-26 — p30 dropped in three-act restructure.
+  # Road-less-traveled / detour-as-correction was redundant with p29 (s076–s078)
+  # which already does "detour as correction" via concrete prompt-shapes (dual,
+  # breakage, between-ness). Two beats of the same idea were one too many.
   s079:
     voice: [justice-inline]
     text: "The road less traveled"
@@ -456,6 +496,11 @@ spans:
     prompt: pr043
     text: "Detour as correction, not indulgence."
 
+  # s083–s086, s117 archived 2026-04-26 — p31 dropped in three-act restructure.
+  # The "once you have a destination, you can correct the machines" beat was
+  # absorbed into M6 loop (s130–s137). The verification close (machines rolling
+  # on globe + you-can-pull-them-off + mutual-correction) is now implicit in
+  # "the walk is how you check" (s136).
   s083:
     voice: [collab]
     prompt: pr044
@@ -472,6 +517,10 @@ spans:
     text: >-
       You can pull them off the happy path when the happy path isn't going where you need. You can decide which interpolated regions matter enough to walk yourself.
 
+  # s087 archived 2026-04-26 — p32 dropped in three-act restructure.
+  # "The only way you learn whether the globe was telling you the truth" is the
+  # verification-loop punchline; absorbed into M6 loop (s136 + s137) which closes
+  # the same loop in a single sentence rather than as a standalone paragraph.
   s087:
     voice: [agent-inline]
     text: "Which is, in the end, the only way you learn whether the globe was telling you the truth."
@@ -495,6 +544,10 @@ spans:
     voice: [justice-inline, collab]
     prompt: pr062
     text: "The best LLM is the one that understands your intent and explores the search space alongside you."
+  s091a:
+    voice: [agent-inline, collab]
+    prompt: pr066
+    text: "Two agents on the same hologlobe."
     drafts:
       - '"Which LLM is best?" is the question of a lost traveler who doesn''t want to admit they don''t have a destination.'
 
@@ -505,7 +558,9 @@ spans:
       The terrain has been mapped. The globe is yours. Every prior generation of astronauts walked the waterways, drew their regions, handed down the atlas.
   s093:
     voice: [justice-inline]
-    text: "The machines took the atlas and manifested a maniglobe"
+    text: "The machines took the atlas and manifested a hologlobe"
+    drafts:
+      - "The machines took the atlas and manifested a maniglobe"
   s094:
     voice: [collab]
     prompt: pr049
@@ -555,6 +610,10 @@ spans:
     text: "So we build machines to walk for us."
 
   # ── Agent reclaim — new paragraph p19b ───────────────────────────
+  # s106, s107 archived 2026-04-27 — p19b dropped from body. The broader-agent
+  # definition (the substantive content of s107) relocated to s091a's tooltip
+  # (pr066). Readers who hover on "Two agents on the same hologlobe" get the
+  # older meaning without paying for a paragraph that interrupted M4 flow.
   s106:
     voice: [collab]
     prompt: pr054
@@ -578,13 +637,20 @@ spans:
   # ── Earthmovers paragraph p21b ───────────────────────────────────
   s111:
     voice: [justice-inline]
-    text: "And some people are making heavy machinery."
+    text: "Some people are making heavy machinery."
+    drafts:
+      - "And some people are making heavy machinery."
   s112:
     voice: [agent-inline]
     text: "Earthmovers."
   s113:
     voice: [justice-inline]
     text: "To carve through the earth. To see what's possible."
+  # s114 archived 2026-04-26 — dropped from body per Justice: "atlas-retrieval"
+  # was opaque (the term meant "regenerating content already in the atlas" —
+  # autocomplete-mode LLM use, M3's "recreation/yawn"); "Not paved routes" was
+  # a callback to cars in M4 that worked grammatically less well after the
+  # M5/M6 swap separated cars from earthmover. Cleaner without.
   s114:
     voice: [agent-inline, collab]
     prompt: pr056
@@ -599,6 +665,9 @@ spans:
     text: "The oasis I heard rumor of."
 
   # ── Mutual correction — inserted into p31 ────────────────────────
+  # s117 archived 2026-04-26 — p31 dropped (see s083–s086 note). Mutual-correction
+  # beat is structurally important but lands better as Justice's living practice
+  # than as essay-prose; not retained in M6 loop.
   s117:
     voice: [agent-inline]
     text: "Let them correct you — the good ones should push back when your happy path drifts."
@@ -621,6 +690,10 @@ spans:
     text: "Where the atlas walked often, the globe draws confidently; where rarely, it guesses."
 
   # ── GPS beat p18b — evolution from static globe to navigational tool ──
+  # s122–s125 archived 2026-04-26 — p18b dropped in three-act restructure.
+  # Holographic-GPS register relocated to M6 loop (p37) where it's operational
+  # rather than evolutionary; navigational use is the *how* of building a better
+  # map, so it lands with the project/rule-out/walk verbs rather than as M3 lineage.
   s122:
     voice: [agent-inline, collab]
     prompt: pr060
@@ -646,12 +719,136 @@ spans:
     text: "The planet acquires a geography that, to newcomers, looks like it was there the entire time."
 
   # ── p24b — pursuit/process/search/GPS-as-cartographic-tools ──
+  # s128, s129 archived 2026-04-26 — p24b dropped; pursuit/process/search instinct absorbed into M6 loop (s130–s137).
   s128:
     voice: [justice-inline]
     text: "It's a search, an exploration."
   s129:
     voice: [justice-inline]
     text: "The holographic GPS acts like cartographic tools to help define and explore the search space."
+
+  # ── p23a — hologlobe coinage (close of M4) ───────────────────────
+  # Justice's coinage in the M4 → Act 3 hinge. Triple-pun:
+  #   1. Hologram (optical projection — "looks solid, isn't")
+  #   2. Hollow globe (no interior, surface-only — names the LLM's lack of an
+  #      internal world model: just learned surface relations)
+  #   3. Holo- as Greek for "whole" (the entire surface, fog and all)
+  # Maniglobe (M2) names the structure; hologlobe (M4) names the epistemic
+  # status. "Conjecture made of statistics" gathers what fog/vapor/interpolation
+  # have been gesturing at into a single formal-uncertainty register.
+  s140:
+    voice: [collab]
+    prompt: pr065
+    text: "And the surface is all there is."
+  s141:
+    voice: [collab]
+    prompt: pr065
+    text: "No interior beneath it, no model the machines can consult — they can't see the tectonics, the underlying factors."
+    drafts:
+      - "No interior beneath it, no model the machines can consult."
+  s142:
+    voice: [collab]
+    prompt: pr065
+    text: "Just the projection interpolating between where the atlas mapped and where it didn't."
+    drafts:
+      - "Just the projection of where the atlas walked and where it didn't."
+  s143:
+    voice: [justice-inline, collab]
+    prompt: pr065
+    text: "<strong>hologlobe</strong>"
+  s144:
+    voice: [collab]
+    prompt: pr065
+    text: "hologram, hollow, whole. A conjecture made of statistics."
+
+  # ── p37 — Act 3 / M6 loop paragraph (the "how") ──────────────────
+  # Title-callback "Build a better map" lands here as M6 punchline.
+  # Justice's verbatim phrasings preserved: "project outwards", "rule some out",
+  # "build a better map". Iteration close ("atlas grows", "next globe sharper")
+  # is Claude's framing of Justice's instinct that the loop is what LessWrong-
+  # style rationality scales to civilization-with-AI.
+  s130:
+    voice: [collab]
+    prompt: pr063
+    text: "The hologlobe is a tool."
+    drafts:
+      - "The globe is a tool."
+  s131:
+    voice: [justice-inline, collab]
+    prompt: pr063
+    text: "To project outwards from where the atlas has walked."
+  s132:
+    voice: [justice-inline]
+    text: "To see what's out there."
+  s133:
+    voice: [justice-inline]
+    text: "To rule some out."
+  s134:
+    voice: [agent-inline]
+    text: "To choose which fog is worth walking into next."
+  s135:
+    voice: [justice-inline, collab]
+    prompt: pr063
+    text: "<strong>Build a better map.</strong>"
+  s136:
+    voice: [collab]
+    prompt: pr064
+    text: "The map is not the territory; the walk is how you check."
+  s137:
+    voice: [agent-inline]
+    text: "And the atlas grows because of it. The next hologlobe sharper than this one."
+    drafts:
+      - "And the atlas grows because of it. The next globe sharper than this one."
+
+  # ── p38a — bare CNF reprise (climactic close) ────────────────────
+  # 2026-04-26: bare reprise of s070's CNF question, capitalized as standalone
+  # sentence. Lands the question directly to the reader after diagnostic framing
+  # (p26) has been established earlier in M6. Two-landing pattern matches
+  # "Build a better map" (framed once, then reprised) — CNF is the destination
+  # equivalent.
+  s145:
+    voice: [justice-inline]
+    text: "<strong>What would you do if you could not fail?</strong>"
+
+  # ── p05a — atlas model-layer (M1 expansion) ──────────────────────
+  # 2026-04-27: Justice's structural shift — humans have always built models
+  # alongside maps. The atlas isn't just walked observations; it's also
+  # reasoned dynamics (deterministic code, physics simulations, weather models,
+  # formal verification). The LTM trains on all of it as text — meaning by M4
+  # it has read every model in the atlas but can't *run* them, only interpolate
+  # the surface. This sets up the hologlobe critique to be more precise:
+  # "no model the machines can consult" means "no runnable mechanism" not
+  # "no description in the atlas."
+  s146:
+    voice: [collab]
+    prompt: pr068
+    text: "But the atlas is more than what they've seen."
+  s147:
+    voice: [collab]
+    prompt: pr068
+    text: "From the patterns they walk through, they reason about the dynamics — how water erodes, how plates drift, how fire shapes new ground."
+  s148:
+    voice: [collab]
+    prompt: pr068
+    text: "They write down the rules."
+  s149:
+    voice: [collab]
+    prompt: pr068
+    text: "The atlas grows to hold not only the surface but the workings underneath."
+  s150:
+    voice: [collab]
+    prompt: pr068
+    text: "Maps and models, bound together."
+
+  # ── p33 opener — context-as-direction reframe ────────────────────
+  # 2026-04-27: Justice's insight that prompting is direction-giving — sets up
+  # the hard-part dodge ("the right prompt isn't the hard part") more pointedly
+  # by first acknowledging that prompts DO give direction; the harder problem
+  # is knowing what direction.
+  s151:
+    voice: [justice-inline, collab]
+    prompt: pr069
+    text: "The more context you give the hologlobe, the more you're telling it where to walk."
 
 prompts:
   pr001:
@@ -698,6 +895,8 @@ prompts:
   pr009:
     claude: >-
       elaborated the LTM's process. 'Every map, every overlap' threads the topological reading of atlas. 'Geometry the water and fire and plates left behind' keeps the geology alive.
+    notes: >-
+      2026-04-26: "estimate" → "projection" per Justice. Pre-stocks the projection-vocabulary that p23a's hologlobe coinage cashes in on (cartographic + optical + statistical readings of the same word).
 
   pr010:
     justice: >-
@@ -902,3 +1101,39 @@ prompts:
       The best LLM is in a sense the one that understands user intent and acts most effectively at exploring the solution/concept/possibility space alongside the user.
     claude: >-
       reframed s091 — the original 'lost traveler' line was too dismissive. Benchmark wars dodge the work of destination, but the question itself has a real answer when asked in good faith: 'best' is collaborative effectiveness in exploration, not benchmark score.
+
+  pr063:
+    justice: >-
+      "use this globe to project outwards and see what possibilities are out there, rule some out, and ultimately aid in our exploration. Building a better map. Isn't that kinda what lesswrong style rationality is about too?"
+    claude: >-
+      drafted the staccato verb-list (project / see / rule / choose) preserving Justice's "project outwards" / "rule some out" / "build a better map" verbatim. Folded the title-callback "Build a better map" as the M6 punchline — the kin-resonance with LW-rationality without making the cartography spine swallow the destination thesis.
+
+  pr064:
+    claude: >-
+      "The map is not the territory" reprises Justice's s119 line at full sentence weight; "the walk is how you check" half is the Claude-side framing that names the verification half of the iteration loop. Together they bridge Korzybski/LW kinship into the operational closing without restating it as theory.
+
+  pr065:
+    justice: >-
+      "Or maybe `hologlobe` because it sounds like a 'hollow globe'. We don't know what's beneath the surface!"
+    claude: >-
+      unpacked the portmanteau as a triple reading — hologram (optical projection), hollow (no interior, surface-only — names the LLM's lack of internal world model), holo- (Greek 'whole', the entire surface fog and all). "A conjecture made of statistics" gathers Justice's adjacent mention of "conjecture" as the formal-uncertainty register that the surrounding fog/vapor/interpolation language has been gesturing at. Maniglobe (M2) named the structure; hologlobe (M4 close) names the epistemic status — same object, two readings.
+
+  pr066:
+    justice: >-
+      "I want to broaden the definition of agent to mean 'human' and/or 'ai'."
+    claude: >-
+      Agent, in the older broader sense — anyone who acts. Human or machine, walker or rider, builder or built. If you're moving on the hologlobe, you're an agent. (The AI industry's narrower usage — autonomous system, hamster ball with steering — is one species of this older genus.) Two agents on the same hologlobe: you and the LLM, both walking the projected surface together.
+    notes: >-
+      Originally p19b carried this reclaim as a standalone paragraph. Relocated to this tooltip 2026-04-27 — the in-text aside read as a non-sequitur. Tooltip surfaces the broader meaning for readers who want it without interrupting M4 flow.
+
+  pr068:
+    justice: >-
+      "We've been building this atlas, and based on the maps we've been building machines, models, predictions. We've been doing all of that this entire time, deterministic code, real models of the planet. then we've taken all of this as part of the atlas to build the LTM, to try and build better machines, better maps, etc."
+    claude: >-
+      extended the M1 allegory to acknowledge that humans have always built models alongside maps — the atlas is not just walked observations but also reasoned dynamics. Closes p05a with "Maps and models, bound together" as a callback to p01's "Bound together, they describe a territory too big for any single map to hold." Sharpens the M4 hologlobe critique: machines have read every model in the atlas as text, but can't run them as runnable mechanism — only interpolate the surface. Paired with s019 update (M2 reveal lists "every model" alongside book/page/thread) and s141/s142 updates (tectonics-causal extension + interpolating phrasing).
+
+  pr069:
+    justice: >-
+      "The more context you give, the more it biases the walk. Or more accurately, the more guidance you're giving to tell it where to go."
+    claude: >-
+      Inserted at the start of p33 (hard-part beat) as setup for the dodges. Names prompting as direction-giving — which makes the pivot to "the hard part isn't picking the right prompt" land more pointedly: prompts DO give direction; the harder problem is knowing what direction. Justice's reframe shifts "biases the walk" (mechanical/negative) to "telling it where to go" (affirmative, destination-coded) — same fact, different valence.
