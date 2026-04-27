@@ -32,6 +32,7 @@ body:
   - { kind: paragraph, id: p04, content: "{s:s003}" }
   - { kind: paragraph, id: p05, content: "{s:s004}" }
   - { kind: paragraph, id: p06, content: "{s:s005}" }
+  - { kind: paragraph, id: p06a, content: "{s:s042}" }
   - { kind: paragraph, id: p07, content: "{s:s006}" }
   - { kind: paragraph, id: p08, content: "{s:s007}" }
   - { kind: separator }
@@ -110,7 +111,9 @@ spans:
 
   s004:
     voice: [agent-inline]
-    text: "Six artifact types, eight tools, silently drifting apart from each other."
+    text: "Nine tools. Nine drifting copies of the same project."
+    drafts:
+      - "Six artifact types, eight tools, silently drifting apart from each other."
 
   s005:
     voice: [collab]
@@ -126,53 +129,58 @@ spans:
 
   s007:
     voice: [agent-inline, collab]
-    prompt: pr003
-    text: "A knowledge graph describes a world. It doesn't build one."
+    prompt: pr020
+    text: "Knowledge graphs index where the work lives. Holographs <em>are</em> where it lives. Same graph shape, different commitment."
+    drafts:
+      - "A knowledge graph describes a world. It doesn't build one."
 
   # ── §2 The thesis ──────────────────────────────────────────────
   s008:
     voice: [collab]
-    prompt: pr004
+    prompt: pr032
     text: "Lisp got something right that the industry has spent sixty years almost-but-not-quite forgetting."
 
   s009:
     voice: [agent-inline]
-    prompt: pr004
+    prompt: pr032
     text: "Code is data."
 
   s010:
     voice: [collab]
-    prompt: pr004
+    prompt: pr032
     text: >-
       Programs are values. You can manipulate them, transform them, generate them, operate on them as first-class. Macros are a programming language <em>for</em> the programming language. Self-application falls out for free.
 
   s011:
     voice: [collab]
-    prompt: pr004
+    prompt: pr033
     text: >-
       The move was load-bearing for everything Lisp later inspired — homoiconicity, metaobject protocols, REPL-driven development, code generation, every modern macro system. But Lisp trapped it in two places: code is data <em>in trees</em>, and code is data <em>just for code</em>.
 
   s012:
     voice: [collab]
-    prompt: pr005
+    prompt: pr034
     text: "Extend it."
 
   s013:
     voice: [justice-inline]
-    prompt: pr005
+    prompt: pr035
     text: "Code is data is Holograph."
 
   s014:
     voice: [collab]
-    prompt: pr006
+    prompt: pr036
     text: >-
       A <em>Holograph</em> is a graph — or any subgraph — that stands as a description in its own right. Triples in a substrate. Subject, predicate, object, all the way down.
 
   s015:
     voice: [collab]
-    prompt: pr006
+    prompt: pr037
     text: >-
-      Code is a Holograph. The spec that demanded the code is a Holograph. The architecture diagram is a Holograph. The conversation that produced the design is a Holograph. The statechart that runs the workflow is a Holograph. The test scaffolding is a Holograph. The deployment recipe is a Holograph. The runtime state is a Holograph. The compiled output, witnessed back, is a Holograph.
+      Code is a Holograph. The spec that demanded the code is a Holograph. The architecture diagram is a Holograph. The conversation that produced the design — also a Holograph. The statechart that runs the workflow. The test scaffolding. The deployment recipe. The runtime state. The compiled output, witnessed back. All Holographs.
+    drafts:
+      - >-
+        Code is a Holograph. The spec that demanded the code is a Holograph. The architecture diagram is a Holograph. The conversation that produced the design is a Holograph. The statechart that runs the workflow is a Holograph. The test scaffolding is a Holograph. The deployment recipe is a Holograph. The runtime state is a Holograph. The compiled output, witnessed back, is a Holograph.
 
   s016:
     voice: [agent-inline]
@@ -180,43 +188,46 @@ spans:
 
   s017:
     voice: [collab]
-    prompt: pr007
+    prompt: pr038
     text: >-
-      The artifact/meta-artifact split is what's wrong. Your specification is not a different <em>kind</em> of thing than your code. Your conversation rationale is not a different kind of thing than your design diagram. Your runtime state is not a different kind of thing than your test scaffolding. They're all relations between identifiable entities, captured as triples, queryable as graphs.
+      The split between <em>the work</em> and <em>what describes the work</em> is what's wrong. Your specification should not drift from your code — they're different projections of the same gem, not different things. Same for conversation rationale and design diagram. Same for runtime state and test scaffolding. All relations between identifiable entities, captured as triples, queryable as graphs.
+    drafts:
+      - >-
+        The artifact/meta-artifact split is what's wrong. Your specification is not a different <em>kind</em> of thing than your code. Your conversation rationale is not a different kind of thing than your design diagram. Your runtime state is not a different kind of thing than your test scaffolding. They're all relations between identifiable entities, captured as triples, queryable as graphs.
 
   s018:
     voice: [collab]
-    prompt: pr007
+    prompt: pr039
     text: >-
       If they're the same kind of thing, you can stop maintaining them as separate, drifting copies. You edit one; you project the others. The substrate enforces coherence by giving you a single source.
 
   # ── §3 The loop ────────────────────────────────────────────────
   s019:
     voice: [justice-inline, collab]
-    prompt: pr008
+    prompt: pr021
     text: "Work in the substrate has four moves."
 
   s020:
     voice: [collab]
-    prompt: pr008
+    prompt: pr022
     text: >-
       <strong>Map</strong> the territory. Build Holographs in the substrate — by hand (writing triples), by extraction (an LLM reads your code, your docs, your conversations and proposes Holographs you accept or reject), or by witnessing what's already running (a K8s controller's state-as-Holograph, an IDE's open-buffer-as-Holograph).
 
   s021:
     voice: [collab]
-    prompt: pr008
+    prompt: pr023
     text: >-
       <strong>Project</strong> appropriate to the moment. Need to see the architecture? One projection. Want the test surface? Another. External docs for a third-party reader? A third. The substrate doesn't privilege any single view; projection recipes are themselves first-class entities, queryable, composable, versionable.
 
   s022:
     voice: [collab]
-    prompt: pr008
+    prompt: pr024
     text: >-
       <strong>Manifest</strong> the artifact. Render it into the world. Compile the code, publish the doc, serve the API, run the statechart. Manifestation produces the embodied artifact that lives somewhere outside the substrate — filesystem, runtime, conversation, performance.
 
   s023:
     voice: [collab]
-    prompt: pr008
+    prompt: pr025
     text: >-
       <strong>Witness</strong> the manifestation back. The artifact's existence becomes a Hol. The compile happened. The doc shipped. The deployment took. The performance occurred. The conversation reached a conclusion. The substrate accumulates ground truth, not just intentions.
 
@@ -249,13 +260,13 @@ spans:
 
   s029:
     voice: [collab]
-    prompt: pr011
+    prompt: pr026
     text: >-
       <strong>Triples as storage atom.</strong> Subject-predicate-object. RDF-compatible at the structural layer; SPARQL works as one query language; modern triple stores (Apache Jena, Oxigraph) work as storage backends. We're not reinventing this part.
 
   s030:
     voice: [collab]
-    prompt: pr011
+    prompt: pr027
     text: >-
       <strong>Two flavors of identity.</strong> Content-addressed for what's structurally hashable (functions, schemas, projection recipes, walks); nominal for what isn't (real persons, external documents, atomic names). Both coexist without ceremony. Mutation is creation: editing a Hol produces a new hash; the prior version persists. Version control is intrinsic, not bolted on.
 
@@ -273,25 +284,28 @@ spans:
 
   s033:
     voice: [collab]
-    prompt: pr011
+    prompt: pr028
     text: >-
-      <strong>Executable Holographs.</strong> Statecharts as Holographs the runtime interprets directly. Code Property Graphs as Holographs the type checker walks. The graph isn't a description of behavior; it's the behavior.
+      <strong>Executable Holographs.</strong> Statecharts as Holographs the runtime interprets directly. <a href="https://github.com/joernio/joern">Code Property Graphs</a> — Joern's unified AST + control-flow + data-flow representation — as Holographs static analyzers walk. The graph isn't a description of behavior; it's the behavior.
+    drafts:
+      - >-
+        <strong>Executable Holographs.</strong> Statecharts as Holographs the runtime interprets directly. Code Property Graphs as Holographs the type checker walks. The graph isn't a description of behavior; it's the behavior.
 
   s034:
     voice: [collab]
-    prompt: pr011
+    prompt: pr029
     text: >-
       <strong>Self-description.</strong> The framework's own structure is in the substrate. You can query the operators, the patterns, the kinds. The framework documents itself in itself; the self-reference closes via fixpoint, not stratification.
 
   s035:
     voice: [collab]
-    prompt: pr014
+    prompt: pr030
     text: >-
       These are positive functional commitments — ratified as a Constitution and a small set of cross-cutting Laws (invariants the kernel honors, protections it offers, rights you keep). For depth, see the spec corpus.
 
   s036:
     voice: [collab]
-    prompt: pr014
+    prompt: pr031
     text: >-
       Open questions we haven't solved: how Pattern Crystallization works at v0 — the heuristic that promotes recurring subgraphs into first-class patterns is harder than the manifesto wants to admit. How cross-Urdex references resolve without forcing sync. What the minimum upper-ontology bootstrap looks like. We're showing the work.
 
@@ -312,7 +326,10 @@ spans:
     voice: [collab]
     prompt: pr017
     text: >-
-      We're at v0.10. Constitution ratified. SQLite-backed kernel running. The first runnable Urdex is shipping the project's own task graph — yes, we're building Ur using Ur. Working agent-guide round-trip lands next, and demonstrates the manifestation/distillation loop on a non-trivial artifact.
+      We're at v0.10. Constitution ratified, SQLite-backed kernel running. Three demonstrations queued: a writing YAML round-tripped through the substrate first (the manifestation/distillation loop on a non-trivial artifact), then the project's own task graph as Holograph — Ur using Ur — and the broader agent-guide round-trip after.
+    drafts:
+      - >-
+        We're at v0.10. Constitution ratified. SQLite-backed kernel running. The first runnable Urdex is shipping the project's own task graph — yes, we're building Ur using Ur. Working agent-guide round-trip lands next, and demonstrates the manifestation/distillation loop on a non-trivial artifact.
 
   s040:
     voice: [collab]
@@ -324,6 +341,13 @@ spans:
     voice: [justice-inline]
     prompt: pr019
     text: "Write your own urdex. Tell us what broke."
+
+  # ── inserted 2026-04-27 — reference-index sharpening ───────────
+  s042:
+    voice: [collab]
+    prompt: pr020
+    text: >-
+      And what most knowledge graphs are, in current practice: a reference layer. Pointers to where the real artifacts live — code in GitHub, tickets in Jira, docs in Confluence. The graph knows about them. The artifacts live elsewhere.
 
 prompts:
   pr001:
@@ -344,33 +368,81 @@ prompts:
     claude: >-
       drafted the describes-vs-builds pivot — "good questions, good answers, useful" before the turn into "but a knowledge graph doesn't help you produce coordinated artifacts." Closing line "describes a world. It doesn't build one." compresses the diagnosis to a slogan.
 
-  pr004:
+  pr032:
     justice: >-
-      Code is data is Holograph. Echoing Lisp's code is data, but extended... (from Justice's alt-spec, ur/spec/alt-spec.md, which carried the verbatim thesis)
+      Echoing Lisp's "Code is data" slogan — homoiconicity, macros, REPL-driven, metaobject protocols, code generation. (from Justice's alt-spec, ur/spec/alt-spec.md)
     claude: >-
-      framed the Lisp setup — "industry has spent sixty years almost-but-not-quite forgetting" — and named what Lisp got right (homoiconicity, macros, REPL-driven, metaobject protocols, code generation) before naming where it trapped the move ("in trees, just for code").
+      drafted the Lisp setup arc — "industry has spent sixty years almost-but-not-quite forgetting" (s008), the "Code is data." citation (s009), and the macros / programs-as-values / self-application catalog (s010). Three spans, one rhetorical function: ground the audience in what Lisp got right before naming where it stopped.
 
-  pr005:
+  pr033:
     justice: >-
-      Code is data is Holograph (verbatim, from alt-spec)
+      Lisp's move was load-bearing for everything that came after, but it was trapped — code as data only in trees, only for code. (Justice's framing for what to extend)
     claude: >-
-      landed the thesis statement as the central commitment of the manifesto, with "Extend it." as the single-word pivot that earns the slogan.
+      drafted the pivot. Names the load-bearing influence (homoiconicity, metaobject protocols, REPL-driven, modern macros) and where Lisp stopped — "in trees, just for code." Sets up the manifesto's central extension move.
 
-  pr006:
+  pr034:
+    justice: "Extend it. (single-word bridge into the thesis)"
+    claude: >-
+      kept the single-word pivot. Two short syllables earn the slogan that follows.
+
+  pr035:
+    justice: "Code is data is Holograph. (verbatim, from Justice's alt-spec §1 — the thesis)"
+    claude: >-
+      kept Justice's verbatim thesis as the single sentence carrying the manifesto's central commitment. Italicized via paragraph wrapper. The whole document anchors here.
+
+  pr036:
     justice: >-
-      A Holograph is a graph (or a subgraph) that stands as a description in its own right. (from alt-spec §2 vocabulary)
+      A Holograph is a graph (or any subgraph) that stands as a description in its own right. (from alt-spec §2 vocabulary)
     claude: >-
-      unpacked the Holograph definition with the artifact catalog (code, spec, architecture diagram, conversation, statechart, test scaffolding, deployment recipe, runtime state, compiled output) — same kind of thing, one substrate, queryable/composable/projectable.
+      drafted the Holograph definition. "Triples in a substrate. Subject, predicate, object, all the way down." — names the structural primitive without claiming novelty (RDF priors are present).
 
-  pr007:
-    claude: >-
-      drafted the artifact/meta-artifact split as the thing that's wrong, then closed with the substrate-as-coherence-enforcer claim. Rhetorical move from diagnosis to remedy.
-
-  pr008:
+  pr037:
     justice: >-
-      The Ur workflow — Map → Project → Manifest → Witness (from alt-spec §7 Artifacts loop)
+      Code, spec, architecture, conversation, statechart, tests, deployment, runtime, compiled output — all Holographs. (the catalog earns the thesis via concrete enumeration)
     claude: >-
-      drafted the four moves with operational detail per Justice's verbatim verb sequence. Each move gets a paragraph: Map (three modes — direct/extraction/witnessing), Project (recipes as first-class), Manifest (render into the world), Witness (the fact-of-having-existed becomes a Hol).
+      drafted the Holograph catalog — 9 artifact types, "Holographs all the way down." Anaphora-then-collapse rhythm: 4 anaphora hits set the drumbeat, then 5 short fragments collapse to the cap "All Holographs." (Revised 2026-04-27 from earlier 9-anaphora version.)
+
+  pr038:
+    justice: >-
+      The split between the work and what describes the work is what's wrong. Different projections of the same gem, not different things. (Justice's gem-framing, this conversation 2026-04-27)
+    claude: >-
+      drafted the diagnosis. Names the failure mode (drift) while preserving the legitimate difference (different projections). The gem metaphor unifies via substrate; surface forms vary. (Revised 2026-04-27 from earlier "not a different kind of thing" framing.)
+
+  pr039:
+    justice: >-
+      If they're the same kind of thing, you can stop maintaining them as separate, drifting copies. Edit one, project the others. (substrate-as-coherence-enforcer claim)
+    claude: >-
+      drafted the remedy. The substrate enforces coherence by giving you a single source. "You edit one; you project the others." — names the operational move that follows from the gem-framing.
+
+  pr021:
+    justice: >-
+      Work in the substrate has four moves. (Justice's framing for the §3 opener — Map / Project / Manifest / Witness as the operational primitives)
+    claude: >-
+      kept Justice's setup line. Names the section and gives the reader a numerical promise to count against (four moves) before the verbs are unpacked.
+
+  pr022:
+    justice: >-
+      Map → Project → Manifest → Witness (Ur workflow from alt-spec §7). For Map specifically — by hand (writing triples), by extraction (LLM reads), or by witnessing what's already running.
+    claude: >-
+      drafted Map as the first move. Three modes match how knowledge enters the substrate: proactive (direct authoring), observational (LLM extraction from code/docs/conversations), runtime (K8s controllers, IDE buffers as live Holographs).
+
+  pr023:
+    justice: >-
+      Project appropriate to the moment — projection recipes are first-class entities (from alt-spec §7 Artifacts loop)
+    claude: >-
+      drafted Project. The substrate doesn't privilege any single view; projection recipes are themselves Hols — queryable, composable, versionable. Architecture, test surface, external doc-projection: same source, different recipes.
+
+  pr024:
+    justice: >-
+      Manifest the artifact — render it into the world (from alt-spec §7 Artifacts loop)
+    claude: >-
+      drafted Manifest. The embodied artifact lives outside the substrate — filesystem, runtime, conversation, performance. Manifestation is the substrate-to-world projection that produces something witnessable.
+
+  pr025:
+    justice: >-
+      Witness the manifestation back — the artifact's existence becomes a Hol (from alt-spec §7 Artifacts loop)
+    claude: >-
+      drafted Witness. The fact-of-having-existed becomes data: compile happened, doc shipped, deployment took, performance occurred, conversation reached conclusion. Substrate accumulates ground truth, not just intentions.
 
   pr009:
     claude: >-
@@ -382,11 +454,29 @@ prompts:
     claude: >-
       compressed the discipline-as-loop close. "Hoarding" and "leaks" name the failure modes; "the point is the loop, not any single direction" landed as the operational summary.
 
-  pr011:
+  pr026:
     justice: >-
-      Specifics for the substrate — triples, identity flavors, sovereignty, graded validation, executable Holographs, self-description (from alt-spec §3, §5, §6 substrate / engine / projections)
+      Triples as storage atom — RDF-compatible, SPARQL works, modern triple stores work as backends. We're not reinventing this part. (from alt-spec §3 substrate)
     claude: >-
-      drafted the six commitment paragraphs in compressed bullet form. Each bullet is one of the framework's positive functional commitments, ratified or in-flight.
+      drafted the triples-as-atom commitment. Frames the structural-layer choice (RDF compat) and names the not-reinvent move — Apache Jena, Oxigraph as concrete backends, SPARQL as one query language.
+
+  pr027:
+    justice: >-
+      Two flavors of identity: content-addressed for hashable things, nominal for the rest. Both coexist. (from alt-spec §3.5)
+    claude: >-
+      drafted the identity commitment. Content-addressing for functions, schemas, projection recipes, walks; nominal for persons, external documents, atomic names. Mutation-as-creation falls out: editing a Hol produces a new hash; prior versions persist; version control is intrinsic.
+
+  pr028:
+    justice: >-
+      Statecharts and Code Property Graphs as executable graphs the runtime / static analyzer interprets directly. The graph IS the behavior. (from alt-spec §6 engine)
+    claude: >-
+      drafted the executable-Holographs commitment. Statecharts run directly via symbolic interpretation; CPGs (Joern) walked by static analyzers. Closing line "the graph isn't a description of behavior; it's the behavior" is the load-bearing claim.
+
+  pr029:
+    justice: >-
+      The framework's own structure is in the substrate. Self-reference closes via fixpoint, not stratification. (from alt-spec §3.7)
+    claude: >-
+      drafted the self-description commitment. Operators, patterns, kinds — all queryable as Hols. "Documents itself in itself; closes via fixpoint" is the substrate-grade reflection claim that distinguishes from stratified meta-systems.
 
   pr012:
     justice: >-
@@ -400,10 +490,16 @@ prompts:
     claude: >-
       kept Justice's three-grade vocabulary verbatim; framed "the substrate accommodates real-world noisy authoring" as the contrast against strict-validation failures.
 
-  pr014:
-    justice: "ratified as Constitution + Laws (decision committed in this conversation)"
+  pr030:
+    justice: "Ratified as a Constitution and a small set of Laws — invariants, protections, rights. (decision committed in this conversation)"
     claude: >-
-      named the Constitution + Laws ratification as the formal artifact carrying these commitments, then surfaced open questions (Pattern Crystallization, cross-Urdex refs, ontology bootstrap) as honest acknowledgment.
+      drafted the closing-frame for the §4 commitments. Names the formal artifact carrying these commitments (Constitution + Laws) and points downstream to the spec corpus for depth.
+
+  pr031:
+    justice: >-
+      Show the work; we haven't solved everything. (Justice's discipline — honest acknowledgment, not aspirational closure)
+    claude: >-
+      drafted the open-questions paragraph. Names three unresolved threads: Pattern Crystallization heuristic, cross-Urdex reference resolution without forced sync, minimum upper-ontology bootstrap. Honest seam — adversarial questions invited.
 
   pr015:
     claude: >-
@@ -428,3 +524,9 @@ prompts:
       Write your own urdex. Tell us what broke. (Justice's voice; closing line he committed to in synopsis discussion)
     claude: >-
       kept Justice's closing line verbatim. The strongest sentence in the document; closes with imperative + invitation.
+
+  pr020:
+    justice: >-
+      are most knowledge graph use now more "References outside"? This is storing everything even code and tickets in the knowledge graph, where other systems... don't? or they don't treat it as a single-source-of-truth?
+    claude: >-
+      named the reference-index pattern as the technical differentiator. Drafted s042 (current KG practice = reference layer; pointers to GitHub/Jira/Confluence; artifacts live elsewhere) and sharpened s007's slogan from describes-vs-builds to indexes-vs-is. Same graph shape, different commitment to source-of-truth.
