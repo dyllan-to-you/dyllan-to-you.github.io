@@ -1,1147 +1,698 @@
 ---
 import "../styles/guide.css";
 
-/* ═════════════════════════════════════════════════════════════
-   Rule-strict Sierpiński sun construction.
+/* ─────────────────────────────────────────────────────────────
+   Scratch — TocPage terminal-shape comparisons.
 
-   INVARIANT: every ring k+1 triangle's 2 base corners coincide
-   exactly with 2 apex positions of ring k. This rule holds for
-   every pair of adjacent rings, by construction — no exceptions.
+   Four CLI paradigms applied to the same TOC data:
 
-   DERIVATION: for N equilateral triangles pointing outward with
-   base on radius r, each base is a chord of length 2r·sin(π/N),
-   its midpoint is at radial distance r·cos(π/N) (sagitta), and
-   the triangle height is chord·√3/2 = r·√3·sin(π/N). The apex
-   sits at radius r·(cos(π/N) + √3·sin(π/N)) = r·F(N).
+     1. tree (anchor)        — hierarchy via connectors
+     2. ls -la               — tabular long-listing
+     3. git log --oneline    — flat chronological scroll
+     4. fzf                  — interactive picker
 
-   RECURRENCE: r^{base}_{k+1} = r^{apex}_k, α_{k+1} = α_k + π/N_k,
-   N_{k+1} = N_k / M where M ∈ {1, 2} is the span multiplier.
+   Same data, four different shapes. Active page:
+   "Writings" with three child writings.
+   ───────────────────────────────────────────────────────────── */
 
-   M=1 · N constant · each outer corner at a consecutive inner apex.
-   M=2 · N halves · each outer corner at every-other inner apex
-         (the skipped inner apex pokes into the outer body).
+type Kind = "cover" | "story" | "works" | "writings" | "writing" | "now" | "colophon" | "back";
 
-   Per-leaf gradient: every Sierpiński leaf across every ring is
-   colored by its own radial distance from origin — the burnt-to-
-   pale gradient blends smoothly across ring boundaries rather than
-   stepping at them.
-
-   Thin lines: no stroke expansion on fills; tiny stroke-width=0.08
-   of matching color just covers anti-aliasing hairlines.
-
-   All triangles are equilateral by construction — verified via
-   |apex − corner|² = 4r²sin²(π/N) = base².
-   ═════════════════════════════════════════════════════════════ */
-
-/* Tangent-chord growth factor. Base chord tangent to previous ring's
-   apex circle at its midpoint; equilateral triangle over that chord
-   lands its apex at R·(1 + √3·tan(π/N)). */
-function Gt(N: number): number {
-  return 1 + Math.sqrt(3) * Math.tan(Math.PI / N);
-}
-
-type Ring = {
-  N: number;                // total slot count (determines triangle size and angular step)
-  alpha: number;            // rotation offset (radians)
-  rBase: number;            // radius of base corners (tangent construction: corners at R/cos(π/N) > R)
-  rApex: number;            // radius of triangle apex
-  side: number;             // triangle side length
-  drawSlots?: number[];     // if set, only these j indices are rendered (sparse ring)
-  doubleOffset?: boolean;   // if true, render 2-3 sets at α / α+π/N / α+2π/N for K-style alternation
+type Entry = {
+  toc: string;
+  active?: boolean;
+  kind: Kind;
+  meta?: string;
+  children?: Entry[];
 };
 
-/* Tangent-chord construction. Base is a chord TANGENT to the previous
-   ring's apex circle at its midpoint — chord lies entirely at r ≥ R,
-   so ring-(k+1) body never intrudes on ring-k territory. Corners sit
-   on circle R/cos(π/N), slightly outside R. Rotation offset differs
-   from chord-on-R by exactly π/N_(k+1):
-     α_(k+1) = α_k + π/N_k − π/N_(k+1)
-   This makes chord midpoints coincide with ring-k apexes (tangent
-   touching) whenever N_(k+1) divides N_k. */
-function buildSunRingsTangent(r0: number, N1: number, M: 1 | 2, K: number, rMax: number): Ring[] {
-  const rings: Ring[] = [];
-  let N = N1;
-  let R = r0;            // tangent circle for this ring
-  let alpha = 0;
-  for (let k = 0; k < K; k++) {
-    const rCorner = R / Math.cos(Math.PI / N);
-    const rApex = R * Gt(N);
-    if (rApex > rMax) break;
-    const side = 2 * R * Math.tan(Math.PI / N);
-    rings.push({ N, alpha, rBase: rCorner, rApex, side });
-    const nextN = N / M;
-    if (!Number.isInteger(nextN) || nextN < 3) break;
-    R = rApex;
-    alpha = alpha + Math.PI / N - Math.PI / nextN;
-    N = nextN;
-  }
-  return rings;
-}
-
-/* Variant G: tangent-chord all the way through. 4 halving rings, then
-   M=1 half-density crown at N=16 — same crown shape as E but with
-   tangent chord. Zero body overlap anywhere, zero halving notches at
-   the crown, only a 2% corner offset at N=16 (imperceptible at 260px). */
-function buildVariantG(r0: number, rMax: number): Ring[] {
-  const rings = buildSunRingsTangent(r0, 128, 2, 4, rMax);
-  if (rings.length < 4) return rings;
-  const last = rings[rings.length - 1]; // N=16, tangent-chord
-  const crownN = last.N;
-  const R = last.rApex;                  // crown's tangent circle
-  const crownAlpha = last.alpha;         // M=1 tangent: no α shift
-  const crownCorner = R / Math.cos(Math.PI / crownN);
-  const crownApex = R * Gt(crownN);
-  if (crownApex > rMax) return rings;
-  rings.push({
-    N: crownN,
-    alpha: crownAlpha,
-    rBase: crownCorner,
-    rApex: crownApex,
-    side: 2 * R * Math.tan(Math.PI / crownN),
-    drawSlots: Array.from({ length: crownN / 2 }, (_, i) => i * 2),
-  });
-  return rings;
-}
-
-/* Variant K: every ring becomes sparse (drawSlots = even slot indices
-   of its N-grid) so set A draws 50% of the teeth and set B, shifted
-   by 2π/N_k (one full triangle angular width), lands cleanly in the
-   odd slots. Each ring's N triangles tile non-overlappingly across
-   the two sets; at any moment half the ring's triangles are bright
-   (one set) and half are dim, and which half cycles as the crossfade
-   runs. Per-ring delay (k·period/nRings) staggers the crossfade so
-   the alternation ripples outward through the layers. All ring types
-   — halving inner rings AND the M=1 crown — share the same
-   grammar. The crown's original drawSlots are preserved (it was
-   already sparse); inner rings get drawSlots = [0, 2, ..., N-2]. */
-function buildVariantK(r0: number, rMax: number): Ring[] {
-  const rings = buildVariantG(r0, rMax); // same geometry as G
-  return rings.map(r => {
-    if (r.drawSlots) {
-      // Already sparse (crown). Just enable doubleOffset.
-      return { ...r, doubleOffset: true };
-    }
-    // Fully-tiled inner ring. Convert to half-density (even slots of
-    // the N-grid). Set B's 2π/N shift will fill the complementary
-    // odd slots during the crossfade.
-    const evens = Array.from({ length: Math.floor(r.N / 2) }, (_, i) => i * 2);
-    return { ...r, drawSlots: evens, doubleOffset: true };
-  });
-}
-
-function triVerts(
-  ring: Ring, j: number
-): [[number, number], [number, number], [number, number]] {
-  const step = (2 * Math.PI) / ring.N;
-  const t1 = ring.alpha + j * step;
-  const t2 = ring.alpha + (j + 1) * step;
-  const ta = ring.alpha + (j + 0.5) * step;
-  return [
-    [ring.rBase * Math.cos(t1), ring.rBase * Math.sin(t1)],
-    [ring.rBase * Math.cos(t2), ring.rBase * Math.sin(t2)],
-    [ring.rApex * Math.cos(ta), ring.rApex * Math.sin(ta)],
-  ];
-}
-
-/* Sierpiński recursion. Each leaf reports its d-string, centroid
-   radial distance from origin, and centroid polar angle. */
-type Leaf = { d: string; r: number; angle: number };
-function sierpinskiLeaves(
-  A: [number, number], B: [number, number], C: [number, number], minSize: number
-): Leaf[] {
-  const out: Leaf[] = [];
-  const stack: [[number, number], [number, number], [number, number]][] = [[A, B, C]];
-  while (stack.length > 0) {
-    const [p, q, r] = stack.pop()!;
-    const dx = p[0] - q[0], dy = p[1] - q[1];
-    if (dx * dx + dy * dy <= minSize * minSize) {
-      const cx = (p[0] + q[0] + r[0]) / 3;
-      const cy = (p[1] + q[1] + r[1]) / 3;
-      out.push({
-        d:
-          `M${p[0].toFixed(2)} ${p[1].toFixed(2)}` +
-          `L${q[0].toFixed(2)} ${q[1].toFixed(2)}` +
-          `L${r[0].toFixed(2)} ${r[1].toFixed(2)}Z`,
-        r: Math.sqrt(cx * cx + cy * cy),
-        angle: Math.atan2(cy, cx),
-      });
-      continue;
-    }
-    const mPQ: [number, number] = [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
-    const mPR: [number, number] = [(p[0] + r[0]) / 2, (p[1] + r[1]) / 2];
-    const mQR: [number, number] = [(q[0] + r[0]) / 2, (q[1] + r[1]) / 2];
-    stack.push([p, mPQ, mPR]);
-    stack.push([mPQ, q, mQR]);
-    stack.push([mPR, mQR, r]);
-  }
-  return out;
-}
-
-const GRADIENT = ["#B7410E", "#CF6C1C", "#E0932C", "#D4AF37", "#F0D96D", "#F5E99F"];
-function gradientAt(t: number): string {
-  t = Math.max(0, Math.min(1, t));
-  const idx = t * (GRADIENT.length - 1);
-  const i = Math.min(Math.floor(idx), GRADIENT.length - 2);
-  const f = idx - i;
-  const hx = (s: string, n: number) => parseInt(s.slice(1 + n * 2, 3 + n * 2), 16);
-  const to2 = (x: number) => Math.round(x).toString(16).padStart(2, "0");
-  const r = hx(GRADIENT[i], 0) + f * (hx(GRADIENT[i + 1], 0) - hx(GRADIENT[i], 0));
-  const g = hx(GRADIENT[i], 1) + f * (hx(GRADIENT[i + 1], 1) - hx(GRADIENT[i], 1));
-  const b = hx(GRADIENT[i], 2) + f * (hx(GRADIENT[i + 1], 2) - hx(GRADIENT[i], 2));
-  return `#${to2(r)}${to2(g)}${to2(b)}`;
-}
-
-/* 2D per-ring bucketizer. Splits each ring's leaves into a
-   N_LOCAL_RADIAL × N_ANGULAR grid. Each returned bucket carries its
-   radial average (for global phase/color) and angular index (for
-   angular phase jitter). Per-ring output lets each ring render in its
-   own rotator <g>. */
-const N_LOCAL_RADIAL = 6;
-const N_ANGULAR = 4;
-
-type Bucket2D = {
-  d: string;
-  rAvg: number;        // mean global radial position of leaves in this bucket
-  angularIdx: number;  // 0..N_ANGULAR-1 (sector bucketing); 0 for per-triangle
-  angle?: number;      // continuous angle in [0, 2π), set by per-triangle bucketing only
-};
-
-function bucketizeRing2D(
-  ring: Ring,
-  minSize: number,
-  nRadial: number = N_LOCAL_RADIAL,
-  nAngular: number = N_ANGULAR,
-): Bucket2D[] {
-  const ringMin = ring.rBase * Math.cos(Math.PI / ring.N); // chord midpoint (minimum r in this ring)
-  const ringMax = ring.rApex;
-  const ringRange = Math.max(1e-6, ringMax - ringMin);
-  const key = (ri: number, ai: number) => ri * nAngular + ai;
-  const data: Record<number, { d: string; rSum: number; count: number; ai: number }> = {};
-  const slots = ring.drawSlots ?? Array.from({ length: ring.N }, (_, j) => j);
-  for (const j of slots) {
-    const [A, B, C] = triVerts(ring, j);
-    const leaves = sierpinskiLeaves(A, B, C, minSize);
-    for (const lf of leaves) {
-      const rLocal = (lf.r - ringMin) / ringRange;
-      const ri = Math.max(0, Math.min(nRadial - 1, Math.floor(rLocal * nRadial)));
-      const aT = (lf.angle + Math.PI) / (2 * Math.PI); // [0, 1)
-      const ai = Math.max(0, Math.min(nAngular - 1, Math.floor(aT * nAngular)));
-      const k = key(ri, ai);
-      if (!data[k]) data[k] = { d: "", rSum: 0, count: 0, ai };
-      data[k].d += lf.d;
-      data[k].rSum += lf.r;
-      data[k].count++;
-    }
-  }
-  return Object.values(data).map(v => ({
-    d: v.d,
-    rAvg: v.rSum / v.count,
-    angularIdx: v.ai,
-  }));
-}
-
-/* Per-triangle bucketizer for spiral variants. Each j-slot in each ring
-   becomes one Bucket2D with a continuous angle (the triangle's geometric
-   center), so the spiral wavefront is delineated by triangle boundaries
-   rather than by sector grid. The angle is in [0, 2π) — paired with
-   ANGULAR_SPAN equal to an integer multiple of cycle, the wrap from 2π
-   back to 0 is seamless because the phase difference is ≡ 0 (mod cycle). */
-function bucketizePerTriangle(ring: Ring, minSize: number): Bucket2D[] {
-  const out: Bucket2D[] = [];
-  const slots = ring.drawSlots ?? Array.from({ length: ring.N }, (_, k) => k);
-  const step = (2 * Math.PI) / ring.N;
-  for (const j of slots) {
-    const [A, B, C] = triVerts(ring, j);
-    const leaves = sierpinskiLeaves(A, B, C, minSize);
-    if (leaves.length === 0) continue;
-    let dAcc = "";
-    let rSum = 0;
-    for (const lf of leaves) {
-      dAcc += lf.d;
-      rSum += lf.r;
-    }
-    let centerAngle = ring.alpha + (j + 0.5) * step;
-    centerAngle = ((centerAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-    out.push({
-      d: dAcc,
-      rAvg: rSum / leaves.length,
-      angularIdx: 0,
-      angle: centerAngle,
-    });
-  }
-  return out;
-}
-
-type Variant = {
-  id: string;
-  title: string;
-  rMax: number;
-  build: (r0: number, rMax: number) => Ring[];
-  big?: boolean;
-  desc: string;
-  mixKL?: boolean;          // variant M — two sets with period/2 chase
-  mixKLAlt?: boolean;       // variant N — sequential A+C → B+D handoff
-  staticOff?: boolean;      // N-static — geometry-only, no animation
-  auroraMode?: boolean;     // N-aurora — persistent baseline, single outward wave
-  spokesMode?: boolean;     // N-spokes — N handoff + angular phase for rotating spokes
-  pulseMode?: boolean;      // N-pulse — heartbeat: sharp outward pulse with long rest
-  rippleMode?: boolean;     // N-ripple — concentric ring-by-ring ripple outward
-  overlapMode?: boolean;    // N-overlap — two waves with cycle/3 offset for continuous overlap
-  spiralMode?: boolean;     // N-spiral — sharp pulse + dominant angular phase, short rest, seamless one-rev spiral
-  spiralPairMode?: boolean; // N-spiral-pair — two spirals: A+C then B+D, sequential handoff
-  spiralBandsMode?: boolean;// N-spiral-bands — spiral-pair handoff with ring-parity alternation
-};
-
-const VARIANTS: Variant[] = [
-  { id: "M", title: "M · animated · K's sparse two-set teeth + L's wave, B offset by period/2",
-    rMax: 200, big: true, build: buildVariantK, mixKL: true,
-    desc: "K's geometry (each ring sparse with set A at even slots and set B at odd slots, non-overlapping interleave) + L's per-leaf radial wave applied separately to each set. Set A's wave runs with delay = rT · 0.9·period. Set B's wave runs with delay = rT · 0.9·period + 0.5·period — a half-cycle behind. Two continuous outward waves chase each other through the interleaved tooth pattern: even-slot teeth peak first at each radial position, odd-slot teeth peak a half-cycle later. The wave never stops (no quiet gap between cycles because A and B fill each other's troughs), and every tooth peaks twice per period — once when its set's wave passes through." },
-  { id: "N", title: "N · animated · sequential A+C → B+D handoff, ring-parity alternation",
-    rMax: 200, big: true, build: buildVariantK, mixKLAlt: true,
-    desc: "K's ring-level alternation expanded to 4 sets in a sequential rise-peak-fade-rest cycle. Set A at α, B at α + π/N_k, C at α + 2π/N_k, D at α + 3π/N_k. A+C tile at integer-step alignment (A even slots, C odd slots); B+D tile the same ring offset by half a triangle (B fills its even slot pairs, D the gaps) — together every angular position is covered. Every path uses one shared 10s keyframe (10% rise, 40% peak hold, 10% fade, 40% rest); per-path animation-delay = setOffset + rT · WAVE_SPAN. Set A+C and set B+D are offset by half the cycle, so as A+C's inner starts to fade, B+D's inner starts to rise — same per radial position. One set radiates outward, holds, then fades from the inside out; the other takes over fluidly during that fade. Ring parity flips which set fires first: even rings (0, 2) start with A+C, odd rings (1, 3) start with B+D. Adjacent rings always show opposite sets at any moment." },
-  { id: "N-static", title: "N-static · same geometry as N, all animations off",
-    rMax: 200, big: true, build: buildVariantK, mixKLAlt: true, staticOff: true,
-    desc: "Identical render path to variant N but every animation disabled. All four sets (A, B, C, D) sit at full opacity simultaneously — A+C tile the integer-step alignment, B+D tile the half-step-shifted alignment. Use this to study the geometric structure without temporal motion: pause and inspect the four-set double-coverage tiling that the rotating pulse cycles through." },
-  { id: "N-aurora", title: "N-aurora · persistent baseline sun with single outward wave",
-    rMax: 200, big: true, build: buildVariantK, auroraMode: true,
-    desc: "All four sets always visible at baseline opacity 0.3 — the sun is perpetually drawn, no paths ever fade to black. A single radial wave (rT · WAVE_SPAN delay, 8s cycle) boosts each path from 0.3 up to 1.0 and back as it sweeps outward. No set alternation, all sets share the same phase, so the full geometry is always present while one bright crest ripples outward through it. Cleanest 'rays radiating outwards' reading — the sun is always there, and you see the pulse flow out." },
-  { id: "N-spokes", title: "N-spokes · N's sequential handoff plus angular phase for rotating spokes",
-    rMax: 200, big: true, build: buildVariantK, spokesMode: true,
-    desc: "Variant N's sequential A+C → B+D handoff with the same rise-peak-fade-rest keyframe, but each path's delay now includes an angular term: delay = setOffset + rT · WAVE_SPAN + (angularIdx / N_ANGULAR) · ANGULAR_SPAN. With 6 angular sectors and ANGULAR_SPAN = 1.5s, the wave spirals outward rather than sweeping uniformly. Reads as sun rays rotating while also radiating — combines outward radiation with a slow angular sweep for a pinwheel feel." },
-  { id: "N-pulse", title: "N-pulse · heartbeat — sharp outward pulse with long rest",
-    rMax: 200, big: true, build: buildVariantK, pulseMode: true,
-    desc: "All four sets share a single phase (no set offset). Each path's keyframe is a brief bright pulse (0-5% rise, 5-20% fade, 20-100% rest): a thin wavefront races outward over WAVE_SPAN, then 80% of the cycle is quiet at baseline 0.05. Cycle = 8s, WAVE_SPAN = 3.2s. Dramatic single-wave radiation with a long dim pause between pulses — like a sun gently breathing, with each breath a sharp outward burst." },
-  { id: "N-ripple", title: "N-ripple · concentric ring-by-ring ripple outward",
-    rMax: 200, big: true, build: buildVariantK, rippleMode: true,
-    desc: "Each ring is treated as a single unit — all buckets in ring k share the same delay = k · RING_OFFSET. Ring 0 lights up as a whole, then ring 1, ring 2, ring 3 in sequence. No per-bucket radial variation within a ring; just discrete concentric pulses rippling outward. Baseline 0.25 keeps the structure visible between pulses. Reads as water-drop ripples expanding from the photo — each ring a discrete crest moving outward." },
-  { id: "N-overlap", title: "N-overlap · two waves overlapping — cycle/3 offset instead of cycle/2",
-    rMax: 200, big: true, build: buildVariantK, overlapMode: true,
-    desc: "Same geometry and handoff structure as N but with SET_OFFSET = cycle/3 instead of cycle/2. The second set starts rising while the first set is still at peak (not yet fading) — the two tilings overlap in brightness for a portion of each cycle. Multiple waves in flight simultaneously; no moment of dimness. Densest continuous-radiation feel — the sun never gets a chance to rest, always something lighting up somewhere." },
-  { id: "N-spiral", title: "N-spiral · seamless single spiral, per-triangle delineation",
-    rMax: 200, big: true, build: buildVariantK, spiralMode: true,
-    desc: "Sharp pulse keyframe (heartbeat) + dominant angular phase, with two critical fixes from earlier iteration: (1) per-triangle bucketing — each j-slot is one path with a continuous center angle, so the wavefront is delineated by triangle boundaries, not by an artificial sector grid; (2) ANGULAR_SPAN equal to cycle (6s = 1 revolution), so adjacent triangles at the angle 2π/0 wrap have phase difference ≡ 0 (mod cycle) — no seam on the left side. WAVE_SPAN = 1.5s. All four sets unison; delay = rT · 1.5 + (angle / 2π) · 6. Reads as a single seamless spiral arm continuously rotating outward." },
-  { id: "N-spiral-pair", title: "N-spiral-pair · two spirals: A+C then B+D handoff",
-    rMax: 200, big: true, build: buildVariantK, spiralPairMode: true,
-    desc: "Two N-spirals chasing each other. Set A+C runs the spiral with phase 0; set B+D runs the same spiral with phase = cycle/2 (3s offset). At every (radial, angular) position, A+C's path fades just as B+D's path rises. Adjacent triangles in the two tilings are offset by half a triangle width geometrically AND half a cycle temporally — the two spirals interlock. Per-triangle delineation, ANGULAR_SPAN = cycle = 6s for seamless wrap, WAVE_SPAN = 1.5s. Reads as two galactic arms spiraling outward in alternation." },
-  { id: "N-spiral-bands", title: "N-spiral-bands · spiral-pair handoff with ring-parity alternation",
-    rMax: 200, big: true, build: buildVariantK, spiralBandsMode: true,
-    desc: "Same as N-spiral-pair but with ring-parity flip on top: even rings (0, 2) fire A+C first then B+D; odd rings (1, 3) fire B+D first then A+C. So at any given moment, ring 0 is showing one spiral phase while ring 1 shows the opposite, ring 2 matches ring 0, ring 3 matches ring 1. Concentric bands of counter-phase spirals, each band radiating outward and rotating angularly. Per-triangle delineation, ANGULAR_SPAN = cycle = 6s seamless." },
+const entries: Entry[] = [
+  { toc: "Cover", kind: "cover" },
+  { toc: "Story", kind: "story" },
+  { toc: "Works", kind: "works" },
+  {
+    toc: "Writings",
+    kind: "writings",
+    active: true,
+    children: [
+      { toc: "We Fed Machines an Atlas…", kind: "writing", meta: "Apr 26" },
+      { toc: "Ur — Manifesto", kind: "writing", meta: "Apr 21" },
+      { toc: "Ur — Whitepaper", kind: "writing", meta: "Apr 18" },
+    ],
+  },
+  { toc: "Now", kind: "now", meta: "Apr 2026" },
+  { toc: "Colophon", kind: "colophon" },
+  { toc: "Back-Cover", kind: "back" },
 ];
 
-const MIN_SIZE = 1.0;
+/* Flat chronological projection for git log + history shapes. */
+const flat: { sha: string; date: string; subject: string; active?: boolean }[] = [
+  { sha: "a1b2c3d", date: "2026-04-26", subject: "We Fed Machines an Atlas…" },
+  { sha: "e4f5g6h", date: "2026-04-26", subject: "Writings · index", active: true },
+  { sha: "9c0d1e2", date: "2026-04-21", subject: "Ur — Manifesto" },
+  { sha: "7a8b9c0", date: "2026-04-18", subject: "Ur — Whitepaper" },
+  { sha: "5d6e7f8", date: "2026-04-15", subject: "Now · Apr 2026" },
+  { sha: "3a4b5c6", date: "2026-04-10", subject: "Works" },
+  { sha: "1f2a3b4", date: "2026-04-08", subject: "Story" },
+  { sha: "0d1e2f3", date: "2026-04-05", subject: "Colophon" },
+  { sha: "f9e8d7c", date: "2026-04-01", subject: "Cover" },
+];
+
+/* Tabular projection for ls -la shape. Perms invented as state-codes:
+     drwxr-xr-x → chapter dir
+     -rw-r--r-- → published writing
+     -rw-rw---- → draft (illustrative; nothing's drafty here) */
+const lsRows: { perms: string; size: string; date: string; name: string; isDir: boolean; active?: boolean; child?: boolean }[] = [
+  { perms: "drwxr-xr-x", size: "  4k", date: "Apr 24", name: "cover/", isDir: true },
+  { perms: "drwxr-xr-x", size: "  4k", date: "Apr 24", name: "story/", isDir: true },
+  { perms: "drwxr-xr-x", size: "  4k", date: "Apr 24", name: "works/", isDir: true },
+  { perms: "drwxr-xr-x", size: "  4k", date: "Apr 26", name: "writings/", isDir: true, active: true },
+  { perms: "-rw-r--r--", size: " 12k", date: "Apr 26", name: "atlas.md", isDir: false, child: true },
+  { perms: "-rw-r--r--", size: "  9k", date: "Apr 21", name: "ur-manifesto.md", isDir: false, child: true },
+  { perms: "-rw-r--r--", size: " 14k", date: "Apr 18", name: "ur-whitepaper.md", isDir: false, child: true },
+  { perms: "drwxr-xr-x", size: "  4k", date: "Apr 26", name: "now/", isDir: true },
+  { perms: "drwxr-xr-x", size: "  4k", date: "Apr 24", name: "colophon/", isDir: true },
+  { perms: "drwxr-xr-x", size: "  4k", date: "Apr 24", name: "back/", isDir: true },
+];
 ---
 
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Hatman sun · rule-strict Sierpiński</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Scratch · TocPage terminal-shape comparisons</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:wght@300;400;500&display=swap"
+    rel="stylesheet"
+  />
 </head>
 <body>
-  <h1>Hatman sun · rule-strict Sierpiński</h1>
-  <p class="sub">per-leaf gradient · thin lines · rule enforced: every ring's base corners align with the prior ring's apexes · F(N) = cos(π/N) + √3·sin(π/N)</p>
+  <header class="study-head">
+    <h1>TocPage · terminal-shape comparisons</h1>
+    <p class="sub">same data, four CLI paradigms. active page: <em>Writings</em> with three child writings.</p>
+  </header>
 
-  {VARIANTS.map((variant) => {
-    const rings = variant.build(70, variant.rMax);
-    const rFinal = rings.length > 0
-      ? Math.max(...rings.map(r => r.rApex))
-      : 70;
-    const WAVE_PERIOD = 5; // seconds; radial outward pulse duration
-    // Large variants use a 400-unit viewBox (±200); standard use 240 (±120 offset from photo center).
-    const vb = variant.big ? "-200 -200 400 400" : "-40 -40 240 240";
-    const tr = variant.big ? "translate(0 0)" : "translate(80 80)";
-    // Summarize ring structure for the status line. All mixKLAlt-family
-    // variants (N and its flavours) render 4 sets; M renders 2.
-    const is4Set = variant.mixKLAlt || variant.auroraMode || variant.spokesMode ||
-                   variant.pulseMode || variant.rippleMode || variant.overlapMode ||
-                   variant.spiralMode || variant.spiralPairMode || variant.spiralBandsMode;
-    const setCount = is4Set ? 4 : 2;
-    const ringSummary = rings
-      .map(r => {
-        if (r.doubleOffset) return r.drawSlots ? `${r.drawSlots.length}×${setCount}/${r.N}` : `${r.N}×${setCount}`;
-        if (r.drawSlots) return `${r.drawSlots.length}/${r.N}`;
-        return `${r.N}`;
-      })
-      .join(" → ");
-    return (
-      <section class={variant.big ? "hero hero-large" : "hero"}>
-        <h3>{variant.title}</h3>
-        <div class={variant.big ? "leather-slot hero-slot hero-slot-large" : "leather-slot hero-slot"}>
-          <div class="photo-wrap hero-wrap">
-            <div class="corona tight"></div>
-            <svg class={variant.big ? "overlay overlay-large" : "overlay"} viewBox={vb} aria-hidden="true">
-              <g transform={tr} shape-rendering="geometricPrecision">
-                {rings.map((ring, ringIdx) => {
-                  // All mixKLAlt-family variants share the same 4-set geometry
-                  // (A, B, C, D at α + k·π/N) but differ in:
-                  //   (1) delay function — what each path's animation-delay is
-                  //   (2) ring class — which CSS keyframe governs the animation
-                  //   (3) static override — whether animations run at all
-                  // The dispatch table below assigns these per variant flag.
-                  const isMixKLAltFamily = ring.doubleOffset && (
-                    variant.mixKLAlt || variant.auroraMode || variant.spokesMode ||
-                    variant.pulseMode || variant.rippleMode || variant.overlapMode ||
-                    variant.spiralMode || variant.spiralPairMode || variant.spiralBandsMode
+  <div class="study-grid">
+    {/* ───────── 1 · tree (anchor) ───────── */}
+    <article class="study">
+      <header class="study-card-head">
+        <h2><span class="num">1</span> tree <span class="badge">anchor</span></h2>
+        <p>hierarchy via vine connectors · grimoire glyphs · candle-flame cursor on the active leaf.</p>
+      </header>
+      <div class="page">
+        <div class="prompt-line">
+          <span class="prompt-glyph">❦</span><span class="path">/dyllan.to</span>
+          <span class="cmd"> ❯ tree</span>
+        </div>
+        <div class="tree">
+          <div class="tree-root">❧</div>
+          {entries.map((entry, i) => {
+            const last = i === entries.length - 1;
+            const hasNested = entry.active && entry.children && entry.children.length > 0;
+            const closesBranch = last && !hasNested;
+            return (
+              <>
+                <div class:list={["row", { active: entry.active }]}>
+                  <span class="branch">{closesBranch ? "╰─" : "├─"}</span>
+                  <span class:list={["leaf", { "leaf-active": entry.active }]}>{entry.toc}</span>
+                  {entry.active && <span class="cursor">✦</span>}
+                  {entry.meta && <span class="meta">{entry.meta}</span>}
+                </div>
+                {hasNested && entry.children!.map((child, ci) => {
+                  const lastChild = ci === entry.children!.length - 1;
+                  return (
+                    <div class="row child-row">
+                      <span class="branch child-branch">{last ? "   " : "╎  "}{lastChild ? "╰─" : "├─"}</span>
+                      <span class="leaf child-leaf">{child.toc}</span>
+                      {child.meta && <span class="meta">{child.meta}</span>}
+                    </div>
                   );
-                  if (isMixKLAltFamily) {
-                    const isEven = ringIdx % 2 === 0;
-                    const isSpiralFamily = variant.spiralMode || variant.spiralPairMode || variant.spiralBandsMode;
-                    // Spiral variants use per-triangle bucketing for clean delineation;
-                    // others use the 12 × 6 sector grid.
-                    const bucketsA = isSpiralFamily
-                      ? bucketizePerTriangle(ring, MIN_SIZE)
-                      : bucketizeRing2D(ring, MIN_SIZE, 12, 6);
-                    const ringB: Ring = { ...ring, alpha: ring.alpha + Math.PI / ring.N };
-                    const bucketsB = isSpiralFamily
-                      ? bucketizePerTriangle(ringB, MIN_SIZE)
-                      : bucketizeRing2D(ringB, MIN_SIZE, 12, 6);
-                    const ringC: Ring = { ...ring, alpha: ring.alpha + (2 * Math.PI) / ring.N };
-                    const bucketsC = isSpiralFamily
-                      ? bucketizePerTriangle(ringC, MIN_SIZE)
-                      : bucketizeRing2D(ringC, MIN_SIZE, 12, 6);
-                    const ringD: Ring = { ...ring, alpha: ring.alpha + (3 * Math.PI) / ring.N };
-                    const bucketsD = isSpiralFamily
-                      ? bucketizePerTriangle(ringD, MIN_SIZE)
-                      : bucketizeRing2D(ringD, MIN_SIZE, 12, 6);
-
-                    let ringClass: string;
-                    // delayFn now takes the bucket itself so spiral variants can read
-                    // bucket.angle (continuous) without falling back to angularIdx.
-                    let delayFn: (b: Bucket2D, setRole: "AC" | "BD") => number;
-
-                    if (variant.auroraMode) {
-                      ringClass = "aurora-ring";
-                      const WAVE_SPAN = 4;
-                      delayFn = (b) => {
-                        const rT = (b.rAvg - 70) / Math.max(1e-6, rFinal - 70);
-                        return rT * WAVE_SPAN;
-                      };
-                    } else if (variant.spokesMode) {
-                      ringClass = "spokes-ring";
-                      const SET_OFFSET = 5;
-                      const WAVE_SPAN = 3;
-                      const ANGULAR_SPAN = 1.5;
-                      delayFn = (b, setRole) => {
-                        const rT = (b.rAvg - 70) / Math.max(1e-6, rFinal - 70);
-                        const setOff = (setRole === "AC") === isEven ? 0 : SET_OFFSET;
-                        return setOff + rT * WAVE_SPAN + (b.angularIdx / 6) * ANGULAR_SPAN;
-                      };
-                    } else if (variant.pulseMode) {
-                      ringClass = "pulse-ring";
-                      const WAVE_SPAN = 3.2;
-                      delayFn = (b) => {
-                        const rT = (b.rAvg - 70) / Math.max(1e-6, rFinal - 70);
-                        return rT * WAVE_SPAN;
-                      };
-                    } else if (variant.rippleMode) {
-                      ringClass = "ripple-ring";
-                      const RING_OFFSET = 0.6;
-                      const perRingDelay = ringIdx * RING_OFFSET;
-                      delayFn = () => perRingDelay;
-                    } else if (variant.overlapMode) {
-                      ringClass = "overlap-ring";
-                      const SET_OFFSET = 3;
-                      const WAVE_SPAN = 2.25;
-                      delayFn = (b, setRole) => {
-                        const rT = (b.rAvg - 70) / Math.max(1e-6, rFinal - 70);
-                        const setOff = (setRole === "AC") === isEven ? 0 : SET_OFFSET;
-                        return setOff + rT * WAVE_SPAN;
-                      };
-                    } else if (variant.spiralMode) {
-                      // Single seamless spiral, all sets unison, per-triangle delineation.
-                      ringClass = "spiral-ring";
-                      const WAVE_SPAN = 1.5;
-                      const ANGULAR_SPAN = 6;  // = cycle (1 revolution, seamless wrap)
-                      delayFn = (b) => {
-                        const rT = (b.rAvg - 70) / Math.max(1e-6, rFinal - 70);
-                        const angle = b.angle ?? 0;
-                        return rT * WAVE_SPAN + (angle / (2 * Math.PI)) * ANGULAR_SPAN;
-                      };
-                    } else if (variant.spiralPairMode) {
-                      // Two spirals chasing each other: A+C at offset 0, B+D at cycle/2.
-                      ringClass = "spiral-pair-ring";
-                      const SET_OFFSET = 3;     // = cycle/2
-                      const WAVE_SPAN = 1.5;
-                      const ANGULAR_SPAN = 6;   // = cycle (seamless)
-                      delayFn = (b, setRole) => {
-                        const rT = (b.rAvg - 70) / Math.max(1e-6, rFinal - 70);
-                        const angle = b.angle ?? 0;
-                        const setOff = setRole === "AC" ? 0 : SET_OFFSET;
-                        return setOff + rT * WAVE_SPAN + (angle / (2 * Math.PI)) * ANGULAR_SPAN;
-                      };
-                    } else if (variant.spiralBandsMode) {
-                      // Spiral-pair handoff plus ring-parity flip on which set fires first.
-                      ringClass = "spiral-bands-ring";
-                      const SET_OFFSET = 3;
-                      const WAVE_SPAN = 1.5;
-                      const ANGULAR_SPAN = 6;
-                      delayFn = (b, setRole) => {
-                        const rT = (b.rAvg - 70) / Math.max(1e-6, rFinal - 70);
-                        const angle = b.angle ?? 0;
-                        const setOff = (setRole === "AC") === isEven ? 0 : SET_OFFSET;
-                        return setOff + rT * WAVE_SPAN + (angle / (2 * Math.PI)) * ANGULAR_SPAN;
-                      };
-                    } else {
-                      // Variant N (mixKLAlt) — sequential handoff with ring parity flip.
-                      ringClass = variant.staticOff ? "mix-n-ring static" : "mix-n-ring";
-                      const SET_OFFSET = 5;
-                      const WAVE_SPAN = 3;
-                      delayFn = (b, setRole) => {
-                        const rT = (b.rAvg - 70) / Math.max(1e-6, rFinal - 70);
-                        const setOff = (setRole === "AC") === isEven ? 0 : SET_OFFSET;
-                        return setOff + rT * WAVE_SPAN;
-                      };
-                    }
-
-                    const renderSet = (buckets: Bucket2D[], setRole: "AC" | "BD") =>
-                      buckets.map(b => {
-                        const rT = (b.rAvg - 70) / Math.max(1e-6, rFinal - 70);
-                        const color = gradientAt(rT);
-                        const delay = delayFn(b, setRole);
-                        return (
-                          <path d={b.d} fill={color} stroke={color}
-                                stroke-width="0.08" stroke-linejoin="miter"
-                                style={`animation-delay: ${delay.toFixed(3)}s`}/>
-                        );
-                      });
-                    return (
-                      <g class={ringClass}>
-                        <g class="mix-n-set-a">{renderSet(bucketsA, "AC")}</g>
-                        <g class="mix-n-set-b">{renderSet(bucketsB, "BD")}</g>
-                        <g class="mix-n-set-c">{renderSet(bucketsC, "AC")}</g>
-                        <g class="mix-n-set-d">{renderSet(bucketsD, "BD")}</g>
-                      </g>
-                    );
-                  }
-                  // Variant M (mixKL): K's two-set geometry (A at α, B at α + 2π/N_k
-                  // = full width → odd slots of A's grid; non-overlapping interleave)
-                  // + L's per-leaf wave per set, with B offset by period/2 so the two
-                  // outward waves chase each other through interleaved tooth slots.
-                  if (ring.doubleOffset && variant.mixKL) {
-                    const bucketsA = bucketizeRing2D(ring, MIN_SIZE, 16, 8);
-                    const ringB: Ring = { ...ring, alpha: ring.alpha + 2 * Math.PI / ring.N };
-                    const bucketsB = bucketizeRing2D(ringB, MIN_SIZE, 16, 8);
-                    const MIX_SPAN = WAVE_PERIOD * 0.9;
-                    const SET_B_OFFSET = WAVE_PERIOD * 0.5;
-                    return (
-                      <g class="mix-ring">
-                        {bucketsA.map(b => {
-                          const rT = (b.rAvg - 70) / Math.max(1e-6, rFinal - 70);
-                          const color = gradientAt(rT);
-                          const delay = rT * MIX_SPAN;
-                          return (
-                            <path d={b.d} fill={color} stroke={color}
-                                  stroke-width="0.08" stroke-linejoin="miter"
-                                  style={`animation-delay: ${delay.toFixed(3)}s`}/>
-                          );
-                        })}
-                        {bucketsB.map(b => {
-                          const rT = (b.rAvg - 70) / Math.max(1e-6, rFinal - 70);
-                          const color = gradientAt(rT);
-                          const delay = rT * MIX_SPAN + SET_B_OFFSET;
-                          return (
-                            <path d={b.d} fill={color} stroke={color}
-                                  stroke-width="0.08" stroke-linejoin="miter"
-                                  style={`animation-delay: ${delay.toFixed(3)}s`}/>
-                          );
-                        })}
-                      </g>
-                    );
-                  }
-                  // No other variants render rings; reaching here means the variant
-                  // config was malformed. Return null so React/Astro skips the slot.
-                  return null;
                 })}
-              </g>
-            </svg>
-            <img src="/hatman.jpg" alt="Hatman"/>
-          </div>
+              </>
+            );
+          })}
         </div>
-        <div class="hero-note">
-          {variant.desc} · <em>rings: {ringSummary}</em> · <em>r_final ≈ {rFinal.toFixed(1)}</em>
-        </div>
-      </section>
-    );
-  })}
-
-  {/* ═════════════════════════════════════════════════════════════
-       V · Interactive — same rule, live parameters
-       (large overlay; R_MAX is a slider so you can explore K ≥ 5)
-       ═════════════════════════════════════════════════════════════ */}
-  <section class="hero hero-large v5">
-    <h3>V · Interactive — rule enforced · per-leaf gradient</h3>
-    <div class="leather-slot hero-slot hero-slot-large">
-      <div class="photo-wrap hero-wrap">
-        <div class="corona tight"></div>
-        <svg id="v5-svg" class="overlay overlay-large" viewBox="-200 -200 400 400" aria-hidden="true">
-          <g id="v5-root" transform="translate(0 0)" shape-rendering="geometricPrecision"></g>
-        </svg>
-        <img src="/hatman.jpg" alt="Hatman"/>
+        <div class="scanlines"></div>
       </div>
-    </div>
-    <div class="sliders">
-      <label>
-        <span class="slabel">Innermost count N₁</span>
-        <select id="s-n1">
-          <option value="8">8</option>
-          <option value="12">12</option>
-          <option value="16">16</option>
-          <option value="24">24</option>
-          <option value="32">32</option>
-          <option value="48">48</option>
-          <option value="64">64</option>
-          <option value="96">96</option>
-          <option value="128" selected>128</option>
-          <option value="192">192</option>
-          <option value="256">256</option>
-        </select>
-      </label>
-      <label>
-        <span class="slabel">Span multiplier M</span>
-        <select id="s-m">
-          <option value="1">1 · constant N (corners at consecutive inner apexes)</option>
-          <option value="2" selected>2 · halving (corners at every-other inner apex)</option>
-        </select>
-      </label>
-      <label>
-        <span class="slabel">Rings requested K</span>
-        <input type="range" id="s-k" min="1" max="8" step="1" value="5"/>
-        <span class="svalue" id="v-k">5</span>
-      </label>
-      <label>
-        <span class="slabel">Max radius r_max</span>
-        <input type="range" id="s-rmax" min="100" max="200" step="5" value="200"/>
-        <span class="svalue" id="v-rmax">200</span>
-      </label>
-      <label>
-        <span class="slabel">Min pixel (recursion)</span>
-        <input type="range" id="s-min" min="0.5" max="3" step="0.25" value="1.0"/>
-        <span class="svalue" id="v-min">1.0</span>
-      </label>
-      <label>
-        <span class="slabel">Stroke width</span>
-        <input type="range" id="s-sw" min="0" max="0.5" step="0.02" value="0.08"/>
-        <span class="svalue" id="v-sw">0.08</span>
-      </label>
-    </div>
-    <div class="hero-note" id="v5-status">—</div>
-  </section>
+    </article>
 
-  <script is:inline>
-    (() => {
-      const GRADIENT = ["#B7410E", "#CF6C1C", "#E0932C", "#D4AF37", "#F0D96D", "#F5E99F"];
-      const R_PHOTO = 70;
-      const NUM_BUCKETS = 32;
+    {/* ───────── 2 · ls -la ───────── */}
+    <article class="study">
+      <header class="study-card-head">
+        <h2><span class="num">2</span> ls -la</h2>
+        <p>tabular long-listing · perms as state-code · size / date / name columns · grounded, utilitarian.</p>
+      </header>
+      <div class="page page-ls">
+        <div class="prompt-line">
+          <span class="prompt-glyph">❦</span><span class="path">/dyllan.to</span>
+          <span class="cmd"> ❯ ls -la</span>
+        </div>
+        <div class="ls-total">total {lsRows.length}</div>
+        <div class="ls-grid">
+          {lsRows.map((r) => (
+            <div class:list={["ls-row", { active: r.active, child: r.child }]}>
+              <span class="ls-perms">{r.perms}</span>
+              <span class="ls-size">{r.size}</span>
+              <span class="ls-date">{r.date}</span>
+              <span class:list={["ls-name", { dir: r.isDir, "name-active": r.active }]}>{r.name}</span>
+              {r.active && <span class="cursor cursor-inline">✦</span>}
+            </div>
+          ))}
+        </div>
+        <div class="scanlines"></div>
+      </div>
+    </article>
 
-      function F(N) {
-        return Math.cos(Math.PI / N) + Math.sqrt(3) * Math.sin(Math.PI / N);
-      }
+    {/* ───────── 3 · git log --oneline ───────── */}
+    <article class="study">
+      <header class="study-card-head">
+        <h2><span class="num">3</span> git log --oneline</h2>
+        <p>flat reverse-chron scroll · sha rune + subject · each chapter a commit to the canon.</p>
+      </header>
+      <div class="page page-log">
+        <div class="prompt-line">
+          <span class="prompt-glyph">❦</span><span class="path">/dyllan.to</span>
+          <span class="cmd"> ❯ git log --oneline</span>
+        </div>
+        <div class="log-grid">
+          {flat.map((c) => (
+            <div class:list={["log-row", { active: c.active }]}>
+              {c.active
+                ? <span class="log-head">HEAD →</span>
+                : <span class="log-head log-head-spacer">      </span>}
+              <span class="log-sha">{c.sha}</span>
+              <span class:list={["log-subject", { "log-subject-active": c.active }]}>{c.subject}</span>
+              {c.active && <span class="cursor cursor-inline">✦</span>}
+            </div>
+          ))}
+        </div>
+        <div class="scanlines"></div>
+      </div>
+    </article>
 
-      function buildSunRings(r0, N1, M, K, rMax) {
-        const rings = [];
-        let N = N1, rBase = r0, alpha = 0;
-        for (let k = 0; k < K; k++) {
-          const rApex = rBase * F(N);
-          if (rApex > rMax) break;
-          rings.push({ N, alpha, rBase, rApex });
-          alpha += Math.PI / N;
-          rBase = rApex;
-          const nextN = N / M;
-          if (!Number.isInteger(nextN) || nextN < 3) break;
-          N = nextN;
-        }
-        return rings;
-      }
-
-      function triVerts(ring, j) {
-        const step = (2 * Math.PI) / ring.N;
-        const t1 = ring.alpha + j * step;
-        const t2 = ring.alpha + (j + 1) * step;
-        const ta = ring.alpha + (j + 0.5) * step;
-        return [
-          [ring.rBase * Math.cos(t1), ring.rBase * Math.sin(t1)],
-          [ring.rBase * Math.cos(t2), ring.rBase * Math.sin(t2)],
-          [ring.rApex * Math.cos(ta), ring.rApex * Math.sin(ta)],
-        ];
-      }
-
-      function sierpinskiLeaves(A, B, C, minSize) {
-        const out = [];
-        const stack = [[A, B, C]];
-        while (stack.length) {
-          const [p, q, r] = stack.pop();
-          const dx = p[0] - q[0], dy = p[1] - q[1];
-          if (dx * dx + dy * dy <= minSize * minSize) {
-            const cx = (p[0] + q[0] + r[0]) / 3;
-            const cy = (p[1] + q[1] + r[1]) / 3;
-            out.push({
-              d: `M${p[0].toFixed(2)} ${p[1].toFixed(2)}L${q[0].toFixed(2)} ${q[1].toFixed(2)}L${r[0].toFixed(2)} ${r[1].toFixed(2)}Z`,
-              r: Math.sqrt(cx*cx + cy*cy),
-            });
-            continue;
-          }
-          const mPQ = [(p[0]+q[0])/2, (p[1]+q[1])/2];
-          const mPR = [(p[0]+r[0])/2, (p[1]+r[1])/2];
-          const mQR = [(q[0]+r[0])/2, (q[1]+r[1])/2];
-          stack.push([p, mPQ, mPR]);
-          stack.push([mPQ, q, mQR]);
-          stack.push([mPR, mQR, r]);
-        }
-        return out;
-      }
-
-      function gradientAt(t) {
-        t = Math.max(0, Math.min(1, t));
-        const idx = t * (GRADIENT.length - 1);
-        const i = Math.min(Math.floor(idx), GRADIENT.length - 2);
-        const f = idx - i;
-        const hx = (s, n) => parseInt(s.slice(1 + n * 2, 3 + n * 2), 16);
-        const to2 = (x) => Math.round(x).toString(16).padStart(2, "0");
-        const r = hx(GRADIENT[i], 0) + f * (hx(GRADIENT[i+1], 0) - hx(GRADIENT[i], 0));
-        const g = hx(GRADIENT[i], 1) + f * (hx(GRADIENT[i+1], 1) - hx(GRADIENT[i], 1));
-        const b = hx(GRADIENT[i], 2) + f * (hx(GRADIENT[i+1], 2) - hx(GRADIENT[i], 2));
-        return `#${to2(r)}${to2(g)}${to2(b)}`;
-      }
-
-      function render(rings, minSize, strokeWidth) {
-        if (rings.length === 0) return "";
-        const rFinal = rings[rings.length - 1].rApex;
-        const range = Math.max(1e-6, rFinal - R_PHOTO);
-        const ds = Array.from({length: NUM_BUCKETS}, () => "");
-        for (const ring of rings) {
-          for (let j = 0; j < ring.N; j++) {
-            const [A, B, C] = triVerts(ring, j);
-            const leaves = sierpinskiLeaves(A, B, C, minSize);
-            for (const lf of leaves) {
-              const t = (lf.r - R_PHOTO) / range;
-              const bi = Math.max(0, Math.min(NUM_BUCKETS - 1, Math.floor(t * NUM_BUCKETS)));
-              ds[bi] += lf.d;
-            }
-          }
-        }
-        const out = [];
-        for (let i = 0; i < NUM_BUCKETS; i++) {
-          if (!ds[i]) continue;
-          const color = gradientAt(i / (NUM_BUCKETS - 1));
-          out.push(`<path d="${ds[i]}" fill="${color}" stroke="${color}" stroke-width="${strokeWidth}" stroke-linejoin="miter" opacity="0.96"/>`);
-        }
-        return out.join("");
-      }
-
-      const root = document.getElementById('v5-root');
-      const status = document.getElementById('v5-status');
-      const read = () => ({
-        N1: parseInt(document.getElementById('s-n1').value, 10),
-        M:  parseInt(document.getElementById('s-m').value, 10),
-        K:  parseInt(document.getElementById('s-k').value, 10),
-        rMax: parseInt(document.getElementById('s-rmax').value, 10),
-        minSize: parseFloat(document.getElementById('s-min').value),
-        sw: parseFloat(document.getElementById('s-sw').value),
-      });
-      const update = () => {
-        const p = read();
-        document.getElementById('v-k').textContent = p.K;
-        document.getElementById('v-rmax').textContent = p.rMax;
-        document.getElementById('v-min').textContent = p.minSize.toFixed(2);
-        document.getElementById('v-sw').textContent = p.sw.toFixed(2);
-        const rings = buildSunRings(R_PHOTO, p.N1, p.M, p.K, p.rMax);
-        root.innerHTML = render(rings, p.minSize, p.sw);
-        const ringCounts = rings.map(r => r.N).join(" → ");
-        const rFinal = rings.length ? rings[rings.length-1].rApex.toFixed(1) : "—";
-        status.innerHTML = `rings built: <em>${rings.length}/${p.K}</em> · counts: <em>${ringCounts || "(none fit)"}</em> · r_final: <em>${rFinal}</em>`;
-      };
-      ['s-n1','s-m','s-k','s-rmax','s-min','s-sw'].forEach(id => {
-        document.getElementById(id).addEventListener('input', update);
-      });
-      update();
-    })();
-  </script>
-
-
-  <div class="notes-block">
-    <p><b>The rule is an invariant, not a wish.</b></p>
-    <p>Every ring's geometry — radii, triangle sizes, offsets — is <em>derived</em> from the single constraint that each next-ring base corner coincides with an apex of the previous ring. There are no free parameters beyond (r₀, N₁, M, K, r_max, minSize).</p>
-    <p><b>Per-leaf gradient:</b> every Sierpiński leaf is colored by its own radial distance from the center, then packed into 32 radial buckets so adjacent rings blend rather than step. Each bucket becomes one concatenated <code>&lt;path&gt;</code> — 32 paths total per variant regardless of leaf count.</p>
-    <p><b>Thin lines:</b> <code>stroke-width="0.08"</code> matching the fill color closes sub-pixel hairline cracks without painting over the intended Sierpiński negative space. The "lines" you see are the removed-middle triangles at each recursion level, not stroke.</p>
-    <p><b>Key formulas:</b><br/>
-    — side<sub>k</sub> = 2·r<sub>k</sub><sup>base</sup>·sin(π/N<sub>k</sub>)<br/>
-    — r<sub>k</sub><sup>apex</sup> = r<sub>k</sub><sup>base</sup> · (cos(π/N<sub>k</sub>) + √3·sin(π/N<sub>k</sub>)) = r · F(N)<br/>
-    — r<sub>k+1</sub><sup>base</sup> = r<sub>k</sub><sup>apex</sup> &nbsp;(next ring's base on previous apex circle)<br/>
-    — α<sub>k+1</sub> = α<sub>k</sub> + π/N<sub>k</sub> &nbsp;(half-step offset so corners land on apexes, not chord midpoints)<br/>
-    — N<sub>k+1</sub> = N<sub>k</sub> / M &nbsp;(M=1 or M=2)</p>
-    <p><b>Growth factors F(N):</b></p>
-    <p>F(8) = 1.587 · F(16) = 1.319 · F(24) = 1.212 · F(32) = 1.165 · F(48) = 1.108 · F(64) = 1.080 · F(96) = 1.053 · F(128) = 1.041 · F(256) = 1.020</p>
-    <p><b>Radial budget per variant (r₀ = 70):</b><br/>
-    — D (128→64→32→16, K=4): r_final ≈ 70·1.0422·1.0838·1.1650·1.3188 = <em>121.5</em> · fits within r_max = 132<br/>
-    — E (128→64→32→16, crown N=16 sparse 8/16): r_final ≈ 121.5·1.3188 = <em>160.3</em> · crown keeps ring-4 triangle size</p>
-    <p><b>Does chord-on-R construction always intrude on the prior layer?</b> Yes — at every transition, not just halving jumps. The chord between two points on a circle always dips inside the circle; the region above the chord but below the arc (the <em>sagitta sliver</em>) is simultaneously in ring-(k+1)'s body AND in ring-k territory.</p>
-    <p><b>Sagitta depth per transition</b> (how far ring-(k+1)'s chord dips below r_k<sup>apex</sup>): equals r_k<sup>apex</sup> · (1 − cos(π/N_(k+1))).<br/>
-    — any transition into N=128: <em>0.030%</em><br/>
-    — into N=64: <em>0.12%</em><br/>
-    — into N=32: <em>0.48%</em><br/>
-    — into N=16: <em>1.9%</em><br/>
-    — into N=8: <em>7.6%</em></p>
-    <p>At the M=2 halving <em>corner angles</em>, skipped ring-k apexes poke through by even more because they sit at arc midpoints (not chord midpoints). On the 16→8 jump, ~30% of each ring-k triangle body rises above the ring-(k+1) chord.</p>
-    <p><b>Fix: tangent chord (variant F, G).</b> Move ring-(k+1) corners outward so the chord is <em>tangent</em> to r_k<sup>apex</sup> at the midpoint.<br/>
-    — Corners on circle R/cos(π/N) · slight radial offset = R·(1/cos(π/N) − 1)<br/>
-    — Chord midpoint tangent to R (zero dip)<br/>
-    — Ring-(k+1) body entirely at r ≥ R · <em>provably no overlap with ring-k (which is entirely at r ≤ R)</em><br/>
-    — Growth factor G(N) = 1 + √3·tan(π/N); side length = 2R·tan(π/N)<br/>
-    — Rotation: α_(k+1) = α_k + π/N_k − π/N_(k+1)</p>
-    <p><b>Tangent-halving notches (variant F):</b> at each M=2 halving jump, adjacent ring-(k+1) chords meet at a shared corner directly above a skipped ring-k apex. That shared corner is at R/cos(2π/N_k) while the skipped apex sits at R — leaving a radial <em>notch</em> of size R·(1/cos(2π/N_k) − 1):<br/>
-    — 128→64: <em>0.12%</em> · invisible<br/>
-    — 64→32: <em>0.48%</em> · invisible<br/>
-    — 32→16: <em>1.9%</em> · barely visible<br/>
-    — 16→8: <em>8.3%</em> · obviously visible (the eight teeth look separated by visible gaps)</p>
-    <p><b>Best of both (variant G):</b> tangent chord throughout, halving inside (notches 0.12% / 0.48% / 1.9% — all invisible), then M=1 half-density crown at N=16 instead of halving to N=8. M=1 tangent has <em>zero</em> notches because every ring-k apex tangents a drawn-tooth chord midpoint. Only cost: 2% corner offset at the crown, imperceptible at this scale.</p>
-    <p><b>Option β — arc-base fangs</b> (not implemented yet): literally replace the chord with the arc of circle r_k<sup>apex</sup>. Zero overlap, zero notches, perfectly arc-tiled bases. Downside: the shape is a "fang" not a triangle, and Sierpiński subdivision on a fang produces a mix of sub-fangs (along the arc base) and regular triangles (toward the apex) — implementable but breaks the "everything is a standard Sierpiński triangle" invariant. Happy to build this if you want to see it.</p>
-    <p><b>Option δ — non-halving integer ratios</b>: M doesn't have to be 2. N=144 can go 144→72→24 (M=2, M=3) for dramatic coarsening. N=120 supports 120→60→20→10→5 for varied five-ring progressions. Tangent-chord math works for any integer M dividing N.</p>
-    <p><b>Animation grammar.</b> One keyframe, varying <code>animation-delay</code>. Four independent layers compose.</p>
-    <p><b>(1) 2D radial wave (all variants).</b> Every ring's leaves are 2D-bucketized into a local-radial × angular grid (6×4 per ring). Per bucket:<br/>
-    — <code>phase = r_global/r_final  +  0.10·(angularIdx/4)  +  0.08·hash(r, a)</code><br/>
-    — <code>animation-delay = −phase · 5s</code><br/>
-    Radial term dominates (the outward wave). Angular term adds a slight per-sector lag. Hash-noise breaks the ring into organic fingers. All paths run the same <code>@keyframes radiateOut</code>; the delays spread them in time.</p>
-    <p><b>(2) Alternating crown (variant H).</b> 16 teeth at N=16 full density, each tooth's opacity phase-flipped by j mod 2. Even peaks at phase 0, odd at phase π. Reads as the 8 bright teeth rotating π/8 each half-cycle.</p>
-    <p><b>(3) Per-ring differential rotation (variant I).</b> Each ring sits in a <code>&lt;g class="ring-rotator"&gt;</code> with an inline CSS custom property <code>--end-rot</code> set to 180°/N_k. The group oscillates between 0° and that value via CSS transform. N=128 swings 1.4°, N=16 swings 11.25°. The fractal shears as it breathes — inner rings barely move, outer rings sweep visibly. Combined with (1) the effect is organic, non-synchronized radiation.</p>
-    <p><b>(4) F↔G crossfade (variant J).</b> Both F's N=8 halving crown and G's N=16 sparse crown render over the shared inner structure; CSS counter-phase opacity animations (<code>.crossfade-f</code>, <code>.crossfade-g</code>) fade them in and out. Since G midpoints coincide with F midpoints at even ring-4 apexes, the crossfade reads as teeth morphing between wide-tall and narrow-short in place. Opacity-crossfade is the cheap proxy for true vertex interpolation — SVG <code>&lt;animate&gt;</code> can't interpolate paths with different leaf counts, and precomputed same-depth keyframes would be visually muddy.</p>
-    <p><b>(5) Per-ring sparse teeth + outward cascade (variant K).</b> Every ring is <em>sparse</em>: drawSlots = even slots of the ring's N-grid (so half the teeth are drawn, gaps at the odd slots). Each ring renders twice — set A at its own alpha, set B at alpha + 2π/N_k (one full triangle angular width, which is exactly the width of one gap). Set B's teeth land cleanly in set A's gaps; together they tile the full N positions without overlap. The sets sit as sibling <code>&lt;g class="set-a"&gt;</code> / <code>&lt;g class="set-b"&gt;</code> with counter-phase opacity animations on the parent <code>&lt;g&gt;</code> (SVG inherits opacity multiplicatively → descendant paths need no animation of their own). Keyframes <code>setPulseA</code> (1→0.05→1) and <code>setPulseB</code> (0.05→1→0.05) ensure A+B≈1.05 at every phase; total ring brightness stays roughly constant but <em>which half</em> of the teeth are bright cycles continuously.</p>
-    <p>Per-ring animation-delay is positive and monotone: <code>delay_k = k · period / nRings</code>, with <code>animation-fill-mode: backwards</code> holding outer rings at their first keyframe during their startup. This staggers the A↔B cycle across rings — inner rings' alternation leads, outer rings lag. A wave of "which teeth are bright" ripples outward through every layer. Same grammar at every ring level — inner halving rings AND the crown — because every ring is now sparse in the same way. Shift = triangle width = 2π/N_k; no transform, no geometry interpolation, all opacity.</p>
-    <p><b>(6) Granular per-leaf radial wave along the color gradient (variant L).</b> K's set A + set B merged into a single tiled surface — all rings full density, crown upgraded to 16 teeth. Bucketize each ring at <b>16 radial × 8 angular</b> (128 fine buckets/ring, ~640 total across the fractal) and give each bucket an <em>animation-delay proportional to its global radial position</em>: <code>delay_bucket = r_norm · 0.9 · period</code>. The axis of the delay is the axis of the color gradient — so the wave literally sweeps along the burnt-orange-to-pale-yellow spectrum, with inner (burnt) leaves peaking first and outer (pale) leaves peaking last.</p>
-    <p>Why positive delays with span 0.9·period (and not negative delays like D/E/F/G)? Negative delays with span ≥ period alias modulo the period — at phase_formula = 1 (outermost), <code>delay = -period</code> is identical to <code>delay = 0</code>, so inner and outer peak simultaneously. This is why D/E/F/G's radial wave never reads as a clean outward sweep; the peak travels middle → (inner AND outer) → middle non-monotonically. Positive delays with span &lt; period avoid aliasing: inner delay 0 → peaks at t = 0.5·period; outer delay 0.9·period → peaks at t = 1.4·period; next inner peak at 1.5·period. A continuous wave with only a 0.1·period gap between "outer peaks" and "next inner peaks" — reads as nearly-continuous outward flow. The cost: a startup lag equal to max delay (0.9·period ≈ 4.5s) during which outer buckets hold their first-keyframe opacity via <code>animation-fill-mode: backwards</code>.</p>
-    <p>Granularity: with 128 buckets per ring, each bucket contains a small handful of Sierpiński leaves at similar radial position. Adjacent leaves fade near-simultaneously; the wave appears smooth across thousands of individual sub-triangles. This is the "super granular at the sub-triangle level" interpretation — every tiny leaf participates in the continuous outward flow, phased by its position on the color gradient.</p>
+    {/* ───────── 4 · fzf picker ───────── */}
+    <article class="study">
+      <header class="study-card-head">
+        <h2><span class="num">4</span> fzf</h2>
+        <p>interactive picker · query at top · ranked list · selected row pointed at by <code>{`>`}</code> · count footer.</p>
+      </header>
+      <div class="page page-fzf">
+        <div class="prompt-line">
+          <span class="prompt-glyph">❦</span><span class="path">/dyllan.to</span>
+          <span class="cmd"> ❯ fzf</span>
+        </div>
+        <div class="fzf-results">
+          {entries.map((entry) => (
+            <>
+              <div class:list={["fzf-row", { active: entry.active }]}>
+                <span class="fzf-pointer">{entry.active ? ">" : " "}</span>
+                <span class:list={["leaf", { "leaf-active": entry.active }]}>{entry.toc}</span>
+                {entry.meta && <span class="meta">{entry.meta}</span>}
+              </div>
+              {entry.active && entry.children!.map((child) => (
+                <div class="fzf-row fzf-child">
+                  <span class="fzf-pointer"> </span>
+                  <span class="fzf-arrow">↳</span>
+                  <span class="leaf child-leaf">{child.toc}</span>
+                  {child.meta && <span class="meta">{child.meta}</span>}
+                </div>
+              ))}
+            </>
+          ))}
+        </div>
+        <div class="fzf-footer">
+          <span class="fzf-count">{entries.length + 3}/{entries.length + 3}</span>
+          <span class="fzf-rule">─────────────────</span>
+        </div>
+        <div class="fzf-query">
+          <span class="fzf-prompt">{`>`}</span>
+          <span class="fzf-input">writ</span>
+          <span class="cursor cursor-inline">✦</span>
+        </div>
+        <div class="scanlines"></div>
+      </div>
+    </article>
   </div>
 </body>
+</html>
 
 <style>
-  :global(html, body) {
+  body {
     margin: 0;
-    background: var(--tome-bg-void);
+    background: #1a1410;
     color: var(--tome-paper);
     font-family: var(--tome-font-body);
     min-height: 100vh;
+    padding: 32px 28px 48px;
+    box-sizing: border-box;
   }
-  body { padding: 3rem 2rem 6rem; }
-  h1 {
+
+  .study-head {
+    max-width: 1280px;
+    margin: 0 auto 28px;
+    color: var(--tome-paper);
+  }
+  .study-head h1 {
     font-family: var(--tome-font-display);
-    color: var(--tome-gold);
-    text-align: center;
-    font-size: 2rem;
-    margin: 0 0 0.25rem;
+    font-weight: 500;
+    font-size: 1.4rem;
+    margin: 0 0 4px;
     letter-spacing: 0.04em;
   }
-  .sub {
-    text-align: center;
-    color: var(--tome-term-dim, #8a8565);
+  .study-head .sub {
     font-family: var(--tome-font-mono);
-    font-size: 0.76rem;
-    margin: 0 0 3rem;
-    letter-spacing: 0.05em;
+    font-size: 0.8rem;
+    color: rgba(240, 228, 204, 0.6);
+    margin: 0;
+    letter-spacing: 0.02em;
   }
-
-  /* ─── Hero variant cards ─── */
-  .hero {
-    max-width: 560px;
-    margin: 0 auto 3rem;
-    padding: 1.5rem 1.5rem 1.25rem;
-    background: rgba(0, 0, 0, 0.35);
-    border: 1px solid rgba(201, 168, 76, 0.28);
-    border-radius: 8px;
-    box-shadow: 0 0 40px rgba(201, 168, 76, 0.08);
-  }
-  .hero-large {
-    max-width: 720px;
-  }
-  .hero h3 {
-    font-family: var(--tome-font-heading, var(--tome-font-display));
-    margin: 0 0 1rem;
-    color: var(--tome-gold);
-    font-size: 1.05rem;
-    text-align: center;
-    letter-spacing: 0.08em;
-  }
-
-  .leather-slot {
-    background: var(--tome-bg-leather);
-    border-radius: 4px;
-    aspect-ratio: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-  }
-  .hero-slot {
-    aspect-ratio: 1;
-    max-width: 420px;
-    margin: 0 auto;
-  }
-  .hero-slot-large {
-    max-width: 600px;
-  }
-
-  .photo-wrap {
-    position: relative;
-    width: 140px;
-    height: 140px;
-  }
-  .photo-wrap img {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: 45% 32%;
-    border-radius: 50%;
-    display: block;
-    box-shadow: 0 0 0 0.5px rgba(201, 168, 76, 0.35);
-    z-index: 3;
-  }
-  .overlay {
-    position: absolute;
-    inset: -50px;
-    width: calc(100% + 100px);
-    height: calc(100% + 100px);
-    pointer-events: none;
-    overflow: visible;
-    z-index: 2;
-  }
-  .overlay-large {
-    inset: -130px;
-    width: calc(100% + 260px);
-    height: calc(100% + 260px);
-  }
-
-  /* ─── Mix K + L (variant M) ───
-     Two outward waves (set A at α, set B at α + 2π/N_k) running at
-     positive delays with a period/2 offset between them. No quiet gap
-     between waves since they fill each other's troughs. */
-  .mix-ring path {
-    animation: radiateOut 5s linear infinite;
-    animation-fill-mode: backwards;
-  }
-  @keyframes radiateOut {
-    0%   { opacity: 0.45; }
-    50%  { opacity: 1.00; }
-    100% { opacity: 0.45; }
-  }
-
-  /* ─── Variant N: per-path rise-peak-fade-rest sequential cycle ───
-     Every path uses the same radiateOutWave keyframe; per-path
-     animation-delay = setOffset + rT · WAVE_SPAN. One set radiates
-     outward, holds at peak, then fades from the inside out; the other
-     set takes over offset by half a cycle. Ring parity alternates which
-     set fires first. */
-  .mix-n-ring path {
-    animation: radiateOutWave 10s linear infinite;
-    animation-fill-mode: backwards;
-  }
-  /* Rise (0-10%) → peak hold (10-40%, = WAVE_SPAN) → fade (40-50%) →
-     rest (50-100%). Peak hold equals WAVE_SPAN so the whole set hits peak
-     at one instant (when outer peaks); inner immediately starts fading.
-     Fade-end at 50% of cycle = SET_OFFSET, so the next set's inner rises
-     exactly when this set's inner finishes fading. */
-  @keyframes radiateOutWave {
-    0%   { opacity: 0.05; }
-    10%  { opacity: 1.00; }
-    30%  { opacity: 1.00; }
-    50%  { opacity: 0.05; }
-    100% { opacity: 0.05; }
-  }
-
-  /* ─── N-static override ───
-     Same DOM as variant N but every animation cancelled and every
-     path forced to full opacity. Use to inspect the four-set tiling
-     pattern without temporal motion. */
-  .mix-n-ring.static .mix-n-set-a,
-  .mix-n-ring.static .mix-n-set-b,
-  .mix-n-ring.static .mix-n-set-c,
-  .mix-n-ring.static .mix-n-set-d,
-  .mix-n-ring.static path {
-    animation: none !important;
-    opacity: 1 !important;
-  }
-
-  /* ─── N-aurora: persistent baseline + single outward wave ───
-     All paths sit at opacity 0.3 baseline; a single radial wave
-     boosts each path to 1.0 as it sweeps outward. No set alternation. */
-  .aurora-ring path {
-    animation: auroraWave 8s linear infinite;
-    animation-fill-mode: backwards;
-  }
-  @keyframes auroraWave {
-    0%, 100% { opacity: 0.3; }
-    25%      { opacity: 1.0; }
-    50%      { opacity: 0.3; }
-  }
-
-  /* ─── N-spokes: N's keyframe reused, angular phase added via delay ───
-     Reuses radiateOutWave from variant N. The visual difference comes
-     from the delay function (setOffset + rT·WAVE_SPAN + angular term). */
-  .spokes-ring path {
-    animation: radiateOutWave 10s linear infinite;
-    animation-fill-mode: backwards;
-  }
-
-  /* ─── N-pulse: heartbeat, sharp brief pulse with long rest ───
-     Pulse occupies 20% of cycle (rise 0-5%, fade 5-20%), rest 80%. */
-  .pulse-ring path {
-    animation: pulseWave 8s linear infinite;
-    animation-fill-mode: backwards;
-  }
-  @keyframes pulseWave {
-    0%       { opacity: 0.05; }
-    5%       { opacity: 1.00; }
-    20%      { opacity: 0.05; }
-    100%     { opacity: 0.05; }
-  }
-
-  /* ─── N-ripple: concentric ring pulse ───
-     Each ring shares one delay; whole ring lights up as a unit.
-     Baseline 0.25 keeps structure visible between ripples. */
-  .ripple-ring path {
-    animation: rippleWave 8s linear infinite;
-    animation-fill-mode: backwards;
-  }
-  @keyframes rippleWave {
-    0%, 100% { opacity: 0.25; }
-    15%      { opacity: 1.00; }
-    30%      { opacity: 0.25; }
-  }
-
-  /* ─── N-overlap: two waves overlapping via cycle/3 offset ───
-     Same profile shape as N but shorter cycle (9s) and tighter set
-     handoff, so one set is still at peak when the other starts rising. */
-  .overlap-ring path {
-    animation: overlapWave 9s linear infinite;
-    animation-fill-mode: backwards;
-  }
-  @keyframes overlapWave {
-    0%       { opacity: 0.05; }
-    10%      { opacity: 1.00; }
-    30%      { opacity: 1.00; }
-    50%      { opacity: 0.05; }
-    100%     { opacity: 0.05; }
-  }
-
-  /* ─── Spiral family (N-spiral, N-spiral-pair, N-spiral-bands) ───
-     Cycle is 6s and ANGULAR_SPAN matches it (one full revolution per
-     cycle), so the wrap from angle 2π back to 0 lands on the same
-     phase mod cycle — no seam at the angle boundary. Per-triangle
-     bucketing means each j-slot has its own discrete angle, so the
-     spiral wavefront is delineated by triangle, not by sector grid.
-     Sharp 0.5s rise + 4s slow fade + 1.5s rest (≈ 25% rest). */
-  .spiral-ring path,
-  .spiral-pair-ring path,
-  .spiral-bands-ring path {
-    animation: spiralWave 6s linear infinite;
-    animation-fill-mode: backwards;
-  }
-  @keyframes spiralWave {
-    0%       { opacity: 0.05; }
-    8%       { opacity: 1.00; }
-    75%      { opacity: 0.05; }
-    100%     { opacity: 0.05; }
-  }
-
-  .corona {
-    position: absolute;
-    inset: -40px;
-    border-radius: 50%;
-    z-index: 1;
-    animation: coronaBreathe 6s ease-in-out infinite;
-  }
-  .corona.tight {
-    inset: -12px;
-    background: radial-gradient(
-      circle at 50% 50%,
-      rgba(232, 214, 140, 0.48) 0%,
-      rgba(232, 214, 140, 0.40) 18%,
-      rgba(232, 214, 140, 0.30) 32%,
-      rgba(201, 168, 76, 0.22) 45%,
-      rgba(201, 168, 76, 0.14) 58%,
-      rgba(201, 168, 76, 0.07) 72%,
-      rgba(201, 168, 76, 0.02) 85%,
-      transparent 96%
-    );
-  }
-  @keyframes coronaBreathe {
-    0%, 100% { opacity: 0.88; transform: scale(1); }
-    50%      { opacity: 1;    transform: scale(1.04); }
-  }
-
-  .hero-note {
-    text-align: center;
-    font-size: 0.72rem;
-    color: var(--tome-term-dim, #8a8565);
-    margin-top: 1rem;
-    line-height: 1.6;
-    font-family: var(--tome-font-mono);
-  }
-  .hero-note em {
-    color: var(--tome-gold);
+  .study-head em {
+    color: var(--tome-term-green);
     font-style: normal;
   }
 
-  /* ─── V5 sliders ─── */
-  .sliders {
+  .study-grid {
+    max-width: 1280px;
+    margin: 0 auto;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.6rem 1rem;
-    margin: 1.25rem auto 0;
-    max-width: 600px;
-    font-family: var(--tome-font-mono);
-    font-size: 0.75rem;
-    color: var(--tome-paper);
+    grid-template-columns: repeat(2, 1fr);
+    gap: 28px;
   }
-  @media (max-width: 520px) { .sliders { grid-template-columns: 1fr; } }
-  .sliders label {
+
+  .study {
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
+    gap: 12px;
   }
-  .slabel {
-    color: var(--tome-gold);
-    opacity: 0.8;
-    font-size: 0.68rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+
+  .study-card-head h2 {
+    font-family: var(--tome-font-heading);
+    font-weight: 500;
+    font-size: 1rem;
+    margin: 0 0 4px;
+    color: var(--tome-paper);
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
   }
-  .svalue {
+  .study-card-head .num {
+    font-family: var(--tome-font-mono);
+    color: var(--tome-copper);
+    font-size: 0.75rem;
+    opacity: 0.7;
+  }
+  .badge {
     display: inline-block;
-    margin-left: 0.5rem;
-    color: var(--tome-gold-bright);
+    padding: 1px 6px;
+    font-family: var(--tome-font-mono);
+    font-size: 0.6rem;
+    background: var(--tome-term-green);
+    color: var(--tome-paper);
+    border-radius: 2px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    vertical-align: middle;
+  }
+  .study-card-head p {
+    font-family: var(--tome-font-mono);
+    font-size: 0.7rem;
+    color: rgba(240, 228, 204, 0.55);
+    margin: 0;
+    line-height: 1.5;
+    letter-spacing: 0.01em;
+  }
+  .study-card-head code {
+    font-family: var(--tome-font-mono);
+    font-size: 0.65rem;
+    color: var(--tome-term-green);
+    padding: 0 3px;
+    background: rgba(45, 107, 63, 0.12);
+    border-radius: 2px;
+  }
+
+  /* ─── Faux page ─────────────────────────────────────────── */
+  .page {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    box-sizing: border-box;
+    padding: 36px 22px 18px;
+    position: relative;
+    overflow: hidden;
+    background: var(--tome-bg-paper);
+    border-radius: 2px;
+    box-shadow:
+      0 1px 0 rgba(0, 0, 0, 0.4),
+      0 12px 28px rgba(0, 0, 0, 0.45);
+    font-family: var(--tome-font-mono);
+  }
+
+  .scanlines {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.015) 2px,
+      rgba(0, 0, 0, 0.015) 4px
+    );
+    pointer-events: none;
+  }
+
+  /* ─── Shared prompt line ─────────────────────────────────── */
+  .prompt-line {
+    margin-bottom: 14px;
+    line-height: 1.4;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+  }
+  .prompt-glyph {
+    color: var(--tome-copper);
+    margin-right: 2px;
+    font-size: 0.95rem;
+    vertical-align: -1px;
+  }
+  .path {
+    color: var(--tome-term-green);
+    opacity: 0.95;
+  }
+  .cmd {
+    color: var(--tome-ink);
+    opacity: 0.7;
+  }
+
+  /* ─── Shared row tokens ──────────────────────────────────── */
+  .leaf {
+    color: var(--tome-ink);
+    font-size: 0.9rem;
+    letter-spacing: 0.02em;
+    transition: color 0.2s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .leaf-active {
+    color: var(--tome-term-green);
+    text-shadow: 0 0 8px rgba(45, 107, 63, 0.3);
+  }
+  .child-leaf {
+    color: var(--tome-ink-light);
+    font-size: 0.82rem;
+  }
+  .meta {
+    margin-left: auto;
+    padding-left: 10px;
+    font-family: var(--tome-font-mono);
+    font-size: 0.65rem;
+    color: var(--tome-term-dim);
+    letter-spacing: 0.04em;
+    opacity: 0.75;
+    flex-shrink: 0;
+  }
+  .cursor {
+    color: var(--tome-term-green);
+    font-size: 0.95rem;
+    margin-left: 6px;
+    flex-shrink: 0;
+    animation: flicker 1.6s ease-in-out infinite;
+    text-shadow: 0 0 6px rgba(45, 107, 63, 0.5);
+  }
+  .cursor-inline {
+    margin-left: 6px;
+  }
+  @keyframes flicker {
+    0%, 100% { opacity: 0.95; transform: translateY(0); }
+    35% { opacity: 0.6; transform: translateY(-0.5px); }
+    65% { opacity: 1; transform: translateY(0.3px); }
+  }
+
+  /* ─── 1 · tree ───────────────────────────────────────────── */
+  .tree {
+    display: flex;
+    flex-direction: column;
+    color: var(--tome-ink);
+  }
+  .tree-root {
+    color: var(--tome-copper);
+    opacity: 0.6;
+    font-size: 1rem;
+    padding: 0 0 2px 2px;
+    line-height: 1.5;
+  }
+  .row {
+    display: flex;
+    align-items: center;
+    padding: 2px 8px;
+    margin: 0 -8px;
+    line-height: 1.5;
+    border-radius: 2px;
+    position: relative;
+    transition: background 0.18s;
+  }
+  .row:hover {
+    background: rgba(45, 107, 63, 0.06);
+  }
+  .row:hover .leaf {
+    color: var(--tome-term-green);
+  }
+  .row.active {
+    background: rgba(45, 107, 63, 0.1);
+    box-shadow: inset 2px 0 0 var(--tome-term-green);
+  }
+  .branch {
+    color: var(--tome-copper);
+    opacity: 0.6;
+    font-size: 0.85rem;
+    white-space: pre;
+    flex-shrink: 0;
+    margin-right: 8px;
+    user-select: none;
+  }
+  .child-branch {
+    opacity: 0.5;
+  }
+
+  /* ─── 2 · ls -la ─────────────────────────────────────────── */
+  .ls-total {
+    color: var(--tome-term-dim);
+    font-size: 0.72rem;
+    opacity: 0.65;
+    margin-bottom: 4px;
+    letter-spacing: 0.02em;
+  }
+  .ls-grid {
+    display: flex;
+    flex-direction: column;
+  }
+  .ls-row {
+    display: grid;
+    grid-template-columns: auto auto auto 1fr auto;
+    gap: 10px;
+    align-items: baseline;
+    padding: 1px 8px;
+    margin: 0 -8px;
+    line-height: 1.45;
+    border-radius: 2px;
+    position: relative;
+    transition: background 0.18s;
+  }
+  .ls-row:hover {
+    background: rgba(45, 107, 63, 0.06);
+  }
+  .ls-row.active {
+    background: rgba(45, 107, 63, 0.1);
+    box-shadow: inset 2px 0 0 var(--tome-term-green);
+  }
+  .ls-row.child {
+    padding-left: 16px;
+  }
+  .ls-perms {
+    font-size: 0.72rem;
+    color: var(--tome-copper);
+    opacity: 0.7;
+    letter-spacing: 0.04em;
+  }
+  .ls-size {
+    font-size: 0.7rem;
+    color: var(--tome-term-dim);
+    opacity: 0.7;
+    text-align: right;
+  }
+  .ls-date {
+    font-size: 0.7rem;
+    color: var(--tome-term-dim);
+    opacity: 0.75;
+    letter-spacing: 0.03em;
+  }
+  .ls-name {
+    font-size: 0.85rem;
+    color: var(--tome-ink);
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ls-name.dir {
+    color: var(--tome-term-green);
+    opacity: 0.85;
+  }
+  .ls-row:hover .ls-name {
+    color: var(--tome-term-green);
+  }
+  .ls-name.name-active {
+    color: var(--tome-term-green);
+    text-shadow: 0 0 8px rgba(45, 107, 63, 0.3);
+    opacity: 1;
+  }
+
+  /* ─── 3 · git log ────────────────────────────────────────── */
+  .log-grid {
+    display: flex;
+    flex-direction: column;
+  }
+  .log-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 1px 8px;
+    margin: 0 -8px;
+    line-height: 1.5;
+    border-radius: 2px;
+    position: relative;
+    transition: background 0.18s;
+  }
+  .log-row:hover {
+    background: rgba(45, 107, 63, 0.06);
+  }
+  .log-row:hover .log-subject {
+    color: var(--tome-term-green);
+  }
+  .log-row.active {
+    background: rgba(45, 107, 63, 0.1);
+    box-shadow: inset 2px 0 0 var(--tome-term-green);
+  }
+  .log-head {
+    font-size: 0.65rem;
+    color: var(--tome-term-green);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    width: 4.2em;
+  }
+  .log-head-spacer {
+    visibility: hidden;
+  }
+  .log-sha {
+    font-size: 0.78rem;
+    color: var(--tome-copper);
+    opacity: 0.85;
+    letter-spacing: 0.03em;
+    flex-shrink: 0;
+  }
+  .log-subject {
+    font-size: 0.85rem;
+    color: var(--tome-ink);
+    letter-spacing: 0.01em;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .log-subject-active {
+    color: var(--tome-term-green);
+    text-shadow: 0 0 8px rgba(45, 107, 63, 0.3);
+  }
+
+  /* ─── 4 · fzf ───────────────────────────────────────────── */
+  .page-fzf {
+    display: flex;
+    flex-direction: column;
+  }
+  .fzf-results {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .fzf-row {
+    display: flex;
+    align-items: center;
+    padding: 1px 8px;
+    margin: 0 -8px;
+    line-height: 1.5;
+    border-radius: 2px;
+    transition: background 0.18s;
+  }
+  .fzf-row:hover {
+    background: rgba(45, 107, 63, 0.06);
+  }
+  .fzf-row:hover .leaf {
+    color: var(--tome-term-green);
+  }
+  .fzf-row.active {
+    background: rgba(45, 107, 63, 0.1);
+    box-shadow: inset 2px 0 0 var(--tome-term-green);
+  }
+  .fzf-pointer {
+    color: var(--tome-term-green);
+    font-size: 0.85rem;
+    width: 1.1em;
+    flex-shrink: 0;
     font-weight: 600;
   }
-  .sliders select, .sliders input[type="range"] {
-    background: rgba(0,0,0,0.3);
-    color: var(--tome-paper);
-    border: 1px solid rgba(201, 168, 76, 0.25);
-    border-radius: 3px;
-    padding: 0.25rem 0.35rem;
-    font-family: inherit;
+  .fzf-arrow {
+    color: var(--tome-term-dim);
     font-size: 0.78rem;
+    margin-right: 4px;
   }
-  .sliders input[type="range"] { padding: 0; }
+  .fzf-child {
+    padding-left: 16px;
+  }
+  .fzf-footer {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-top: 8px;
+    padding-top: 4px;
+  }
+  .fzf-count {
+    font-size: 0.7rem;
+    color: var(--tome-term-green);
+    opacity: 0.85;
+    letter-spacing: 0.04em;
+  }
+  .fzf-rule {
+    color: var(--tome-copper);
+    opacity: 0.4;
+    font-size: 0.7rem;
+    flex: 1;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .fzf-query {
+    display: flex;
+    align-items: center;
+    margin-top: 2px;
+    font-size: 0.85rem;
+  }
+  .fzf-prompt {
+    color: var(--tome-term-green);
+    margin-right: 6px;
+    font-weight: 600;
+  }
+  .fzf-input {
+    color: var(--tome-ink);
+    letter-spacing: 0.04em;
+  }
 
-  /* ─── Notes ─── */
-  .notes-block {
-    max-width: 820px;
-    margin: 3rem auto 0;
-    color: var(--tome-term-dim, #8a8565);
-    font-family: var(--tome-font-mono);
-    font-size: 0.74rem;
-    line-height: 1.8;
-  }
-  .notes-block p { margin: 0.8rem 0; }
-  .notes-block b { color: var(--tome-gold); }
-  .notes-block code {
-    font-family: var(--tome-font-mono);
-    color: var(--tome-gold-bright);
-    background: rgba(0, 0, 0, 0.3);
-    padding: 0.1rem 0.3rem;
-    border-radius: 2px;
-    font-size: 0.85em;
+  /* ─── Stack on narrow ────────────────────────────────────── */
+  @media (max-width: 980px) {
+    .study-grid {
+      grid-template-columns: 1fr;
+      max-width: 480px;
+    }
   }
 </style>
 </html>
