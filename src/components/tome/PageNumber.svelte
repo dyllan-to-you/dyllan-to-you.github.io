@@ -14,7 +14,7 @@ let { number } = $props();
     transform: translateX(-50%);
     font-family: var(--tome-font-heading);
     color: var(--tome-copper);
-    font-size: 0.6rem;
+    font-size: var(--tome-text-caption);
     opacity: 0.4;
   }
 </style>

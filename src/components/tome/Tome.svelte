@@ -46,6 +46,7 @@ interface PageData {
   cardsSource?: "writings";
   header?: string;
   closing?: string;
+  meta?: string;
 }
 
 let { pages }: { pages: PageData[] } = $props();
@@ -64,11 +65,11 @@ let tocEntries = $derived.by(() => {
   const withIndex = pages.map((p, i) => ({ ...p, index: i }));
   const writingChildren = withIndex
     .filter((p) => p.toc && p.slug?.startsWith("writings/"))
-    .map((p) => ({ index: p.index, toc: p.toc as string, slug: p.slug }));
+    .map((p) => ({ index: p.index, toc: p.toc as string, slug: p.slug, meta: p.meta }));
   return withIndex
     .filter((p) => p.toc && !p.slug?.startsWith("writings/"))
     .map((p) => {
-      const base = { index: p.index, toc: p.toc as string, slug: p.slug };
+      const base = { index: p.index, toc: p.toc as string, slug: p.slug, meta: p.meta };
       if (p.slug === "writings" && writingChildren.length > 0) {
         return { ...base, children: writingChildren };
       }
@@ -725,7 +726,7 @@ onDestroy(() => clearTimeout(timer));
     cursor: pointer;
     font-family: var(--tome-font-mono);
     color: var(--tome-term-green);
-    font-size: 0.7rem;
+    font-size: var(--tome-text-caption);
     letter-spacing: 0.08em;
     opacity: 0.92;
     transition: opacity 0.2s;
@@ -738,7 +739,7 @@ onDestroy(() => clearTimeout(timer));
   .toc-handle-icon {
     display: inline-block;
     transition: transform 0.25s;
-    font-size: 0.7rem;
+    font-size: var(--tome-text-caption);
     line-height: 1;
   }
 
@@ -768,7 +769,7 @@ onDestroy(() => clearTimeout(timer));
     margin-top: 8px;
     font-family: var(--tome-font-mono);
     color: var(--tome-gold);
-    font-size: 0.6rem;
+    font-size: var(--tome-text-caption);
     opacity: 0.3;
     letter-spacing: 0.15em;
   }
@@ -777,7 +778,7 @@ onDestroy(() => clearTimeout(timer));
     text-align: center; margin-top: 8px;
     font-family: var(--tome-font-body);
     color: var(--tome-gold);
-    font-size: 0.7rem; opacity: 0.3;
+    font-size: var(--tome-text-caption); opacity: 0.3;
     letter-spacing: 0.1em;
   }
 

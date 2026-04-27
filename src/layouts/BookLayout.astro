@@ -26,6 +26,11 @@ function fmtDate(d: Date): string {
   return d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 }
 
+/** Compact date for the TOC meta column — "Apr 26". */
+function shortDate(d: Date): string {
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
 function escapeHtml(s: string): string {
   return s
     .replace(/&/g, "&amp;")
@@ -71,6 +76,7 @@ type TomePage = {
   backFace?: "cover";
   body?: string;
   sections?: { id: string; text: string }[];
+  meta?: string;
   prompt?: string;
   quote?: string;
   attribution?: string;
@@ -115,6 +121,7 @@ for (const entry of sortedPages) {
         pageLayout: "content",
         header: `> writings / ${w.id}`,
         body: renderWritingAsBookPage(w.data),
+        meta: shortDate(w.data.date),
       });
     }
   }
@@ -152,7 +159,7 @@ for (const entry of sortedPages) {
   .writing-title {
     font-family: var(--tome-font-display);
     color: var(--tome-ink);
-    font-size: 1.25rem;
+    font-size: var(--tome-text-title);
     font-weight: 500;
     line-height: 1.2;
     margin: 0 0 6px;
@@ -162,14 +169,14 @@ for (const entry of sortedPages) {
     font-family: var(--tome-font-body);
     font-style: italic;
     color: var(--tome-ink-light);
-    font-size: 0.85rem;
+    font-size: var(--tome-text-chrome);
     line-height: 1.4;
     margin: 0 0 10px;
   }
   .writing-meta {
     font-family: var(--tome-font-mono);
     color: var(--tome-term-dim);
-    font-size: 0.55rem;
+    font-size: var(--tome-text-caption);
     letter-spacing: 0.06em;
     display: flex;
     gap: 10px;
@@ -181,7 +188,7 @@ for (const entry of sortedPages) {
   .writing-body {
     font-family: var(--tome-font-body);
     color: var(--tome-ink);
-    font-size: 0.92rem;
+    font-size: var(--tome-text-body);
     line-height: 1.7;
   }
   .writing-body p { margin: 0 0 14px; }
@@ -200,7 +207,7 @@ for (const entry of sortedPages) {
 
   .voice-legend {
     font-family: var(--tome-font-mono);
-    font-size: 0.7rem;
+    font-size: var(--tome-text-caption);
     line-height: 1.5;
     color: var(--tome-term-dim);
     padding: 10px 12px;

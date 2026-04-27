@@ -17,21 +17,21 @@ let { number, title, subtitle } = $props();
   .chapter-label {
     font-family: var(--tome-font-mono);
     color: var(--tome-term-green);
-    font-size: 0.6rem;
+    font-size: var(--tome-text-caption);
     letter-spacing: 0.15em;
     margin-bottom: 4px;
   }
   .chapter-title {
     font-family: var(--tome-font-display);
     color: var(--tome-ink);
-    font-size: 1.35rem;
+    font-size: var(--tome-text-display);
     margin: 0 0 4px;
     letter-spacing: 0.08em;
   }
   .chapter-subtitle {
     font-family: var(--tome-font-body);
     color: var(--tome-ink-light);
-    font-size: 0.8rem;
+    font-size: var(--tome-text-chrome);
     font-style: italic;
     margin: 0 0 20px;
   }

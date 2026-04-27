@@ -58,6 +58,25 @@
   --tome-font-mono: "IBM Plex Mono", "Courier New", monospace;
   --tome-font-fallback: "Cormorant Garamond", Georgia, serif;
 
+  /* ── Type scale ──
+   * Six rungs, anchored at body (0.9rem), floored at caption (0.7rem).
+   * Ratios: ~1.11–1.17× between adjacent rungs; display gets an
+   * authority bump for chapter / writing titles.
+   *
+   *   display  1.35rem  21.6px  chapter / writing titles
+   *   title    1.15rem  18.4px  large lead text
+   *   lead     1.0rem   16px    decorative glyphs, prompts
+   *   body     0.9rem   14.4px  body prose, nav leaf  ← anchor
+   *   chrome   0.8rem   12.8px  branches, secondary text, subtitles
+   *   caption  0.7rem   11.2px  meta, page #, dates  ← floor
+   */
+  --tome-text-display: 1.35rem;
+  --tome-text-title: 1.15rem;
+  --tome-text-lead: 1rem;
+  --tome-text-body: 0.9rem;
+  --tome-text-chrome: 0.8rem;
+  --tome-text-caption: 0.7rem;
+
   /* ── Backgrounds (CSS-generated textures) ── */
   --tome-bg-leather:
     repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(0, 0, 0, 0.02) 3px, rgba(0, 0, 0, 0.02) 6px),
@@ -116,7 +135,7 @@
 /* Voice legend — small meta-note shown at the top of attributed pieces */
 .voice-legend {
   font-family: var(--tome-font-mono);
-  font-size: 0.7rem;
+  font-size: var(--tome-text-caption);
   color: var(--tome-term-dim);
   line-height: 1.6;
   border-top: 1px solid rgba(184, 115, 51, 0.25);

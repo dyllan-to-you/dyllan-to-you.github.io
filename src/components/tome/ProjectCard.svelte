@@ -63,7 +63,7 @@ function handleClick(e: MouseEvent) {
   .name {
     font-family: var(--tome-font-mono);
     color: var(--tome-term-green);
-    font-size: 0.75rem;
+    font-size: var(--tome-text-caption);
     letter-spacing: 0.05em;
     margin-bottom: 3px;
   }
@@ -71,7 +71,7 @@ function handleClick(e: MouseEvent) {
   .desc {
     font-family: var(--tome-font-body);
     color: var(--tome-ink-light);
-    font-size: 0.82rem;
+    font-size: var(--tome-text-chrome);
     padding-left: 14px;
   }
 </style>

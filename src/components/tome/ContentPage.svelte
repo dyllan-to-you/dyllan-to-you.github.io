@@ -155,13 +155,13 @@ $effect(() => {
   .prompt {
     font-family: var(--tome-font-mono);
     color: var(--tome-term-dim);
-    font-size: 0.6rem; letter-spacing: 0.05em;
+    font-size: var(--tome-text-caption); letter-spacing: 0.05em;
     margin-bottom: 16px;
   }
   blockquote {
     font-family: var(--tome-font-body);
     color: var(--tome-ink);
-    font-size: 1.1rem; font-style: italic;
+    font-size: var(--tome-text-title); font-style: italic;
     text-align: center; line-height: 1.8;
     max-width: 80%; margin: 0 auto;
   }
@@ -172,14 +172,14 @@ $effect(() => {
   .attribution {
     font-family: var(--tome-font-mono);
     color: var(--tome-term-dim);
-    font-size: 0.6rem; letter-spacing: 0.1em; opacity: 0.6;
+    font-size: var(--tome-text-caption); letter-spacing: 0.1em; opacity: 0.6;
   }
 
   /* ─── Body (pre-rendered HTML from YAML) ─── */
   .body {
     font-family: var(--tome-font-body);
     color: var(--tome-ink);
-    font-size: 0.9rem; line-height: 1.7;
+    font-size: var(--tome-text-body); line-height: 1.7;
   }
   .body :global(p) { margin: 0 0 14px; }
   .body :global(p:last-child) { margin: 0; }
@@ -188,7 +188,7 @@ $effect(() => {
   .body :global(h2) {
     font-family: var(--tome-font-mono);
     color: var(--tome-term-green);
-    font-size: 0.6rem; letter-spacing: 0.1em; margin: 0 0 4px;
+    font-size: var(--tome-text-caption); letter-spacing: 0.1em; margin: 0 0 4px;
     font-weight: normal;
   }
   .body :global(h2::before) { content: "> "; }
@@ -199,23 +199,11 @@ $effect(() => {
     background: linear-gradient(90deg, rgba(45, 107, 63, 0.27), transparent);
   }
 
-  /* Drop cap — first letter of first paragraph in chapter pages */
-  .page:has(.body :global(h2)) .body :global(p) {
-    /* Reset for non-chapter pages with headings (philosophy) */
-  }
-
-  /* Chapter drop cap: first paragraph's first letter */
-  :global(.chapter-drop) .body :global(p:first-child::first-letter) {
-    font-family: var(--tome-font-display);
-    color: var(--tome-term-green);
-    font-size: 2rem; float: left; line-height: 1; margin-right: 6px;
-  }
-
   /* ─── Header ─── */
   .header {
     font-family: var(--tome-font-mono);
     color: var(--tome-term-dim);
-    font-size: 0.6rem; letter-spacing: 0.05em;
+    font-size: var(--tome-text-caption); letter-spacing: 0.05em;
     margin-bottom: 12px; opacity: 0.5;
   }
 
@@ -226,7 +214,7 @@ $effect(() => {
   .empty-state {
     font-family: var(--tome-font-mono);
     color: var(--tome-term-dim);
-    font-size: 0.75rem; letter-spacing: 0.05em;
+    font-size: var(--tome-text-chrome); letter-spacing: 0.05em;
     padding: 24px 0; opacity: 0.7;
   }
   .empty-state .prompt { opacity: 0.5; }
@@ -235,14 +223,14 @@ $effect(() => {
   .closing {
     font-family: var(--tome-font-mono);
     color: var(--tome-term-dim);
-    font-size: 0.7rem; line-height: 1.9; letter-spacing: 0.02em;
+    font-size: var(--tome-text-caption); line-height: 1.9; letter-spacing: 0.02em;
   }
 
   /* ─── Colophon ─── */
   .colophon-label {
     font-family: var(--tome-font-mono);
     color: var(--tome-term-green);
-    font-size: 0.6rem; letter-spacing: 0.1em; margin-bottom: 16px; text-align: center;
+    font-size: var(--tome-text-caption); letter-spacing: 0.1em; margin-bottom: 16px; text-align: center;
   }
   .colophon-rule {
     width: 40px; height: 1px; margin: 0 auto 20px;
@@ -251,7 +239,7 @@ $effect(() => {
   .colophon-body {
     font-family: var(--tome-font-body);
     color: var(--tome-ink-light);
-    font-size: 0.85rem; text-align: center; line-height: 1.8;
+    font-size: var(--tome-text-chrome); text-align: center; line-height: 1.8;
   }
   .colophon-body p { margin: 0 0 12px; }
   .italic { font-style: italic; }
@@ -262,6 +250,6 @@ $effect(() => {
   .imprint {
     font-family: var(--tome-font-mono);
     color: var(--tome-term-dim);
-    font-size: 0.65rem; margin: 0;
+    font-size: var(--tome-text-caption); margin: 0;
   }
 </style>

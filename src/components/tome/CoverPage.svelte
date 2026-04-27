@@ -53,7 +53,7 @@ let { variant = "front" } = $props();
     font-family: var(--tome-font-display);
     color: var(--tome-gold);
     text-shadow: 0 0 20px rgba(201, 168, 76, 0.27), 0 2px 4px rgba(0,0,0,.5);
-    font-size: clamp(0.95rem, 3.5vmin, 1.5rem);
+    font-size: clamp(var(--tome-text-lead), 3.5vmin, var(--tome-text-display));
     letter-spacing: 0.18em;
     margin: 0 0 clamp(4px, 1vmin, 8px);
     text-transform: uppercase;
@@ -68,7 +68,7 @@ let { variant = "front" } = $props();
   .subtitle {
     font-family: var(--tome-font-body);
     color: var(--tome-gold-bright);
-    font-size: clamp(0.7rem, 2vmin, 0.85rem);
+    font-size: clamp(var(--tome-text-caption), 2vmin, var(--tome-text-chrome));
     letter-spacing: 0.2em;
     opacity: 0.7; margin: 0; text-transform: uppercase;
     text-align: center;

@@ -200,7 +200,7 @@ onMount(() => {
     background: var(--tome-bg-paper);
     color: var(--tome-ink);
     font-family: var(--tome-font-body);
-    font-size: 0.82rem;
+    font-size: var(--tome-text-chrome);
     line-height: 1.55;
     padding: 10px 14px;
     margin-bottom: 0;   /* flush against the text below — crease, not gap */
@@ -280,7 +280,7 @@ onMount(() => {
   }
   .preview-caption {
     font-family: var(--tome-font-mono);
-    font-size: 0.68rem;
+    font-size: var(--tome-text-caption);
     line-height: 1.4;
     color: #3d2e14;
     letter-spacing: 0.02em;
