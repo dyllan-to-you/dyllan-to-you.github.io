@@ -29,12 +29,12 @@
       <feGaussianBlur stdDeviation="6"/>
     </filter>
 
-    <path id="leafShape" d="M 200, 440 
-             C 160, 350 120, 260 110, 155 
-             C 110, 135 140, 125 160, 145 
-             C 175, 160 190, 165 200, 165 
-             C 210, 165 225, 160 240, 145 
-             C 260, 125 290, 135 290, 155 
+    <path id="leafShape" d="M 200, 440
+             C 160, 350 120, 260 110, 155
+             C 110, 135 140, 125 160, 145
+             C 175, 160 190, 165 200, 165
+             C 210, 165 225, 160 240, 145
+             C 260, 125 290, 135 290, 155
              C 280, 260 240, 350 200, 440 Z" />
 
     <clipPath id="leafClip">
@@ -42,20 +42,20 @@
     </clipPath>
 
     <path id="veinSkeleton" d="
-      M 200, 165 L 200, 420 
-      M 200, 185 Q 165, 160 140, 150 
-      M 200, 215 Q 160, 205 125, 190 
-      M 200, 250 Q 165, 250 130, 235 
-      M 200, 285 Q 170, 285 135, 275 
-      M 200, 320 Q 175, 320 145, 310 
-      M 200, 355 Q 180, 355 160, 345 
-      M 200, 390 Q 190, 390 175, 380 
-      M 200, 185 Q 235, 160 260, 150 
-      M 200, 215 Q 240, 205 275, 190 
-      M 200, 250 Q 235, 250 270, 235 
-      M 200, 285 Q 230, 285 265, 275 
-      M 200, 320 Q 225, 320 255, 310 
-      M 200, 355 Q 220, 355 240, 345 
+      M 200, 165 L 200, 420
+      M 200, 185 Q 165, 160 140, 150
+      M 200, 215 Q 160, 205 125, 190
+      M 200, 250 Q 165, 250 130, 235
+      M 200, 285 Q 170, 285 135, 275
+      M 200, 320 Q 175, 320 145, 310
+      M 200, 355 Q 180, 355 160, 345
+      M 200, 390 Q 190, 390 175, 380
+      M 200, 185 Q 235, 160 260, 150
+      M 200, 215 Q 240, 205 275, 190
+      M 200, 250 Q 235, 250 270, 235
+      M 200, 285 Q 230, 285 265, 275
+      M 200, 320 Q 225, 320 255, 310
+      M 200, 355 Q 220, 355 240, 345
       M 200, 390 Q 210, 390 225, 380
       M 165, 205 Q 155, 225 140, 235
       M 235, 250 Q 245, 270 260, 280
@@ -74,34 +74,34 @@
     <use href="#leafShape" fill="url(#leafGrad)" />
 
     <g clip-path="url(#leafClip)">
-      
-      <path d="M 200, 400 
-               C 170, 320 140, 240 135, 175 
-               C 135, 165 150, 155 165, 170 
-               C 175, 180 185, 185 200, 185 
-               C 215, 185 225, 180 235, 170 
-               C 250, 155 265, 165 265, 175 
-               C 260, 240 230, 320 200, 400 Z" 
+
+      <path d="M 200, 400
+               C 170, 320 140, 240 135, 175
+               C 135, 165 150, 155 165, 170
+               C 175, 180 185, 185 200, 185
+               C 215, 185 225, 180 235, 170
+               C 250, 155 265, 165 265, 175
+               C 260, 240 230, 320 200, 400 Z"
             fill="#80967A" filter="url(#heavyBlur)" opacity="0.9"/>
 
       <use href="#veinSkeleton" fill="none" stroke="#9AB392" stroke-width="14" stroke-linecap="round" filter="url(#heavyBlur)"/>
-      
+
       <use href="#veinSkeleton" fill="none" stroke="#B8CDB1" stroke-width="7" stroke-linecap="round" filter="url(#edgeBlur)"/>
-      
+
       <use href="#veinSkeleton" fill="none" stroke="#D6E8CF" stroke-width="2.5" stroke-linecap="round" filter="url(#lightBlur)"/>
 
       <path d="M 200, 165 L 320, 165 L 320, 450 L 200, 450 Z" fill="#000000" opacity="0.2" filter="url(#heavyBlur)"/>
       <path d="M 200, 165 L 80, 165 L 80, 450 L 200, 450 Z" fill="#ffffff" opacity="0.08" filter="url(#heavyBlur)"/>
-      
+
       <use href="#veinSkeleton" fill="none" stroke="#142110" stroke-width="1.5" stroke-dasharray="10, 6, 3, 5" opacity="0.5"/>
 
       <path d="M 200, 440 L 90, 440 L 90, 120 L 200, 120 Z" fill="url(#glareGrad)"/>
-      
+
       <path d="M 125, 175 Q 140, 160 160, 175 Q 135, 190 125, 175 Z" fill="#ffffff" opacity="0.35" filter="url(#lightBlur)" transform="rotate(-15 140 170)"/>
     </g>
 
     <use href="#leafShape" fill="none" stroke="#4A2E35" stroke-width="3" opacity="0.8"/>
-    
+
     <ellipse cx="200" cy="165" rx="3.5" ry="2" fill="#0A0F08"/>
     <path d="M 200,165 Q 195, 150 197, 135" stroke="#E6C8D1" stroke-width="1.5" fill="none" opacity="0.5" filter="url(#lightBlur)"/>
   </g>
