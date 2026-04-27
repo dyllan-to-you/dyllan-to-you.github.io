@@ -3,7 +3,7 @@ import { getCollection } from "astro:content";
 import Tome from "../components/tome/Tome.svelte";
 import StickyNote from "../components/post/StickyNote.svelte";
 import { extractSections } from "../lib/page";
-import { renderBody as renderWritingBody, type Writing } from "../lib/writing";
+import { renderBody as renderWritingBody, getReadingTime, type Writing } from "../lib/writing";
 import "../styles/guide.css";
 
 interface Props {
@@ -41,12 +41,14 @@ function renderWritingAsBookPage(w: Writing): string {
   const tags = w.tags.map((t) => `<span class="tag">#${escapeHtml(t)}</span>`).join(" ");
   const subtitle = w.description ? `<p class="writing-subtitle">${escapeHtml(w.description)}</p>` : "";
   const tagsMarkup = tags ? `<span class="tags">${tags}</span>` : "";
+  const readingMinutes = getReadingTime(w);
   return `
 <header class="writing-header">
   <h1 class="writing-title">${escapeHtml(w.title)}</h1>
   ${subtitle}
   <div class="writing-meta">
     <time datetime="${w.date.toISOString()}">${fmtDate(w.date)}</time>
+    <span class="reading-time">${readingMinutes} min read</span>
     ${tagsMarkup}
   </div>
 </header>

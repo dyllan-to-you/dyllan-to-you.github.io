@@ -89,6 +89,15 @@ export function renderBody(writing: Writing): string {
   return writing.body.map((block) => renderBlock(block, writing)).join("\n");
 }
 
+/** Estimate reading time in minutes. 234 wpm sits just below Brysbaert (2019)'s
+ *  meta-analytic average of 238 wpm for English silent reading, biased slightly
+ *  toward the conservative side for thoughtful prose. */
+export function getReadingTime(writing: Writing, wordsPerMinute = 234): number {
+  const text = renderBody(writing).replace(/<[^>]+>/g, " ");
+  const words = text.split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.ceil(words / wordsPerMinute));
+}
+
 function renderBlock(block: Block, writing: Writing): string {
   switch (block.kind) {
     case "legend":
