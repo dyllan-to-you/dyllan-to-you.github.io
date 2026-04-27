@@ -1,0 +1,472 @@
+id: writing:ur-whitepaper
+title: "Ur and the Urdex"
+description: "Technical whitepaper for the Ur framework. Specifies the substrate (Urdex), the engine (Faewyld + symbolic layer), the projection apparatus, the lineage, and the open questions. Drafted from ur/spec/alt-spec.md with Why-Now, Lineage, and sharpening passes."
+date: 2026-04-27
+draft: true
+tags: [ur, whitepaper, urdex, faewyld, substrate, technical]
+
+voices:
+  justice-inline:
+    class: voice-justice-inline
+    kind: author
+    label: Justice (near-verbatim)
+  agent-inline:
+    class: voice-agent-inline
+    kind: agent
+    label: Claude
+  collab:
+    class: voice-collab
+    kind: braid
+    label: Braided
+
+body:
+  - kind: legend
+    content: >-
+      <strong>A note on voices.</strong> {s:ls1} is Justice — his thesis, his alt-spec content, the framings he authored. {s:ls2} is the agent he writes with (Claude). Unmarked text is collaborative. Dotted-underlined passages unfold a paper strip above the text on hover, with the prompt thread that shaped them.
+
+  - { kind: paragraph, id: p00, content: "<em>A substrate where code, data, prose, schema, statecharts, and the conversations that produced them all live as Holographs.</em>" }
+  - { kind: separator }
+
+  # ── §1 Thesis ──────────────────────────────────────────────────
+  - { kind: paragraph, id: p01, content: "<strong>1. Thesis</strong>" }
+  - { kind: paragraph, id: p02, content: "<strong>{s:s001}</strong>" }
+  - { kind: paragraph, id: p03, content: "{s:s002}" }
+  - { kind: paragraph, id: p04, content: "{s:s003}" }
+  - { kind: paragraph, id: p05, content: "1. <strong>Map</strong> the concept territory." }
+  - { kind: paragraph, id: p06, content: "2. <strong>Project</strong> appropriate to the moment." }
+  - { kind: paragraph, id: p07, content: "3. <strong>Manifest</strong> artifacts." }
+  - { kind: paragraph, id: p08, content: "4. <strong>Witness</strong> the manifestation back." }
+  - { kind: paragraph, id: p09, content: "{s:s004}" }
+  - { kind: paragraph, id: p10, content: "{s:s005}" }
+  - { kind: separator }
+
+  # ── §2 Why now ─────────────────────────────────────────────────
+  - { kind: paragraph, id: p11, content: "<strong>2. Why now</strong>" }
+  - { kind: paragraph, id: p12, content: "{s:s006}" }
+  - { kind: paragraph, id: p13, content: "{s:s007}" }
+  - { kind: paragraph, id: p14, content: "{s:s008}" }
+  - { kind: paragraph, id: p15, content: "{s:s009}" }
+  - { kind: paragraph, id: p16, content: "{s:s010}" }
+  - { kind: separator }
+
+  # ── §3 The loop ────────────────────────────────────────────────
+  - { kind: paragraph, id: p17, content: "<strong>3. The loop</strong>" }
+  - { kind: paragraph, id: p18, content: "{s:s011}" }
+  - { kind: paragraph, id: p19, content: "<strong>3.1 Map.</strong> {s:s012}" }
+  - { kind: paragraph, id: p20, content: "<strong>3.2 Project.</strong> {s:s013}" }
+  - { kind: paragraph, id: p21, content: "<strong>3.3 Manifest.</strong> {s:s014}" }
+  - { kind: paragraph, id: p22, content: "<strong>3.4 Witness.</strong> {s:s015}" }
+  - { kind: paragraph, id: p23, content: "{s:s016}" }
+  - { kind: separator }
+
+  # ── §4 Vocabulary ──────────────────────────────────────────────
+  - { kind: paragraph, id: p24, content: "<strong>4. Vocabulary</strong>" }
+  - { kind: paragraph, id: p25, content: "{s:s017}" }
+  - { kind: paragraph, id: p26, content: "{s:s018}" }
+  - { kind: separator }
+
+  # ── §5 The substrate (Urdex) ───────────────────────────────────
+  - { kind: paragraph, id: p27, content: "<strong>5. The substrate (Urdex)</strong>" }
+  - { kind: paragraph, id: p28, content: "<strong>5.1 Storage.</strong> {s:s019}" }
+  - { kind: paragraph, id: p29, content: "<strong>5.2 Identity & addressing.</strong> {s:s020}" }
+  - { kind: paragraph, id: p30, content: "<strong>5.3 Sovereignty.</strong> {s:s021}" }
+  - { kind: paragraph, id: p31, content: "<strong>5.4 Out of scope (v0).</strong> {s:s022}" }
+  - { kind: separator }
+
+  # ── §6 The engine ──────────────────────────────────────────────
+  - { kind: paragraph, id: p32, content: "<strong>6. The engine</strong>" }
+  - { kind: paragraph, id: p33, content: "<strong>6.1 Neural layer (Faewyld).</strong> {s:s023}" }
+  - { kind: paragraph, id: p34, content: "<strong>6.2 Symbolic layer.</strong> {s:s024}" }
+  - { kind: paragraph, id: p35, content: "<strong>6.3 Graded validation — the handshake.</strong> {s:s025}" }
+  - { kind: paragraph, id: p36, content: "{s:s026}" }
+  - { kind: paragraph, id: p37, content: "<strong>6.4 Paradox handling.</strong> {s:s027}" }
+  - { kind: separator }
+
+  # ── §7 Ontology ────────────────────────────────────────────────
+  - { kind: paragraph, id: p38, content: "<strong>7. Ontology — provisional, empirical, crystallizing</strong>" }
+  - { kind: paragraph, id: p39, content: "{s:s028}" }
+  - { kind: paragraph, id: p40, content: "{s:s029}" }
+  - { kind: paragraph, id: p41, content: "{s:s030}" }
+  - { kind: separator }
+
+  # ── §8 Projections ─────────────────────────────────────────────
+  - { kind: paragraph, id: p42, content: "<strong>8. Projections</strong>" }
+  - { kind: paragraph, id: p43, content: "{s:s031}" }
+  - { kind: paragraph, id: p44, content: "{s:s032}" }
+  - { kind: paragraph, id: p45, content: "{s:s033}" }
+  - { kind: separator }
+
+  # ── §9 Lineage ─────────────────────────────────────────────────
+  - { kind: paragraph, id: p46, content: "<strong>9. Lineage</strong>" }
+  - { kind: paragraph, id: p47, content: "{s:s034}" }
+  - { kind: paragraph, id: p48, content: "{s:s035}" }
+  - { kind: paragraph, id: p49, content: "{s:s036}" }
+  - { kind: paragraph, id: p50, content: "<strong>{s:s037}</strong>" }
+  - { kind: separator }
+
+  # ── §10 Open questions ─────────────────────────────────────────
+  - { kind: paragraph, id: p51, content: "<strong>10. Open questions</strong>" }
+  - { kind: paragraph, id: p52, content: "{s:s038}" }
+  - { kind: paragraph, id: p53, content: "{s:s039}" }
+  - { kind: paragraph, id: p54, content: "{s:s040}" }
+  - { kind: separator }
+
+  # ── §11 Status & engagement ────────────────────────────────────
+  - { kind: paragraph, id: p55, content: "<strong>11. Status & engagement</strong>" }
+  - { kind: paragraph, id: p56, content: "{s:s041}" }
+  - { kind: paragraph, id: p57, content: "{s:s042}" }
+  - { kind: paragraph, id: p58, content: "{s:s043}" }
+  - { kind: paragraph, id: p59, content: "{s:s044}" }
+  - { kind: paragraph, id: p60, content: "{s:s045}" }
+
+spans:
+  ls1: { voice: [justice-inline], text: "Burnt orange" }
+  ls2: { voice: [agent-inline], text: "Slate" }
+
+  # ── §1 Thesis ──────────────────────────────────────────────────
+  s001:
+    voice: [justice-inline]
+    prompt: pr001
+    text: "Code is data is Holograph."
+
+  s002:
+    voice: [collab]
+    prompt: pr001
+    text: >-
+      Echoing Lisp's <em>code is data</em>, but extended in two dimensions: code, prose, schema, ritual, song, runtime state, statecharts, and the conversations that drafted any of them are all Holographs — descriptions in a single substrate. The distinction between artifact and meta-artifact collapses. A function, the spec that demanded it, the test that exercises it, the conversation that proposed it, and the deployment that runs it are the same kind of thing — queryable, composable, addressable, executable.
+
+  s003:
+    voice: [collab]
+    prompt: pr001
+    text: "The work has three moves and a closing fourth:"
+
+  s004:
+    voice: [justice-inline, collab]
+    prompt: pr001
+    text: >-
+      Artifacts are the point. Concept-mapping that never manifests is hoarding. Artifacts produced without concept-mapping are technical debt with extra steps. Artifacts that don't witness back are leaks. The loop is the discipline; both halves matter; neither suffices alone.
+
+  s005:
+    voice: [collab]
+    prompt: pr001
+    text: >-
+      What follows specifies the substrate (the Urdex), the engine (Faewyld plus the symbolic layer), and the projection apparatus that produces artifacts. Most parts are recombinations of mature ideas, cited where they came from. Where the framework commits to specifics it commits explicitly; where it remains open, §10 lists what's open and what would resolve it.
+
+  # ── §2 Why now ─────────────────────────────────────────────────
+  s006:
+    voice: [agent-inline, collab]
+    prompt: pr002
+    text: "Three things changed in the last decade. None of them alone is sufficient. Together they make Ur possible."
+
+  s007:
+    voice: [collab]
+    prompt: pr002
+    text: >-
+      <strong>LLMs collapsed the authoring gap that killed the Semantic Web.</strong> Berners-Lee was right about the primitives — triples, URIs, machine-readable structure — and adoption stalled because nobody hand-writes RDF at scale. LLMs read prose, code, conversations, and emit structured triples cheaply. Authoring is no longer the rate-limiter. The Semantic Web vision becomes viable at <em>personal</em> scale for the first time.
+
+  s008:
+    voice: [collab]
+    prompt: pr002
+    text: >-
+      <strong>Modern declarative substrates proved the architecture.</strong> Kubernetes graduated from infrastructure novelty to planetary-scale precedent for spec/status reconciliation, level-triggered controllers, eventual consistency, owner-references, finalizers, server-side apply. Datomic and XTDB demonstrated bitemporal event-reified time at production scale. RDF 1.2 finally shipped quoted triples (RDF*) in 2025. SQLite at maturity handles concurrent triple-store workloads without exotic infrastructure.
+
+  s009:
+    voice: [collab]
+    prompt: pr002
+    text: >-
+      <strong>Symbolic AI returned, augmented.</strong> Datalog won the substrate war — Scallop (PLDI 2023, with provenance semirings), Soufflé (Meta), Polonius (rustc), Glean (Google). Statecharts returned via XState v5; SCXML is a W3C Recommendation; UML 2.5 is ISO/IEC 19505. Neuro-symbolic systems (AlphaProof, AlphaGeometry 2) demonstrated that LLMs propose and symbolic engines verify, with the result recording cleanly. Property graphs got an ISO standard (GQL, ISO/IEC 39075:2024). Code Property Graphs (Yamaguchi et al 2014; Joern, Semgrep, CodeQL) made code-as-graph operational.
+
+  s010:
+    voice: [agent-inline, collab]
+    prompt: pr002
+    text: >-
+      The substrate components have all crystallized independently. None of them is novel; none of them needed to be. What's new is the recombination — putting them in one substrate where they share storage, share identity discipline, and share a projection apparatus, so that the artifact-and-its-rationale-and-its-spec-and-its-runtime co-exist as Holographs without forced separation. The window for that recombination is now.
+
+  # ── §3 The loop ────────────────────────────────────────────────
+  s011:
+    voice: [collab]
+    prompt: pr003
+    text: "Work in the substrate has four moves. They form a cycle; the cycle is the discipline."
+
+  s012:
+    voice: [collab]
+    prompt: pr003
+    text: >-
+      Build Holographs in the substrate via direct authoring (write triples through a domain-projection vocabulary that compiles to triples; the Stage-1 surface uses YAML-LD with ergonomic predicates), extraction (an LLM reads existing artifacts and proposes Holographs entering as <code>latent</code>, aging into <code>proposed</code> and <code>manifest</code> as validation accumulates), or witnessing (existing systems already running — K8s controllers, IDE buffer state, CI status — projected continuously into Holographs).
+
+  s013:
+    voice: [collab]
+    prompt: pr003
+    text: >-
+      A projection is a recipe — a parameterized walk plus a target template — that produces a view from the substrate. Recipes are themselves Hols; queryable, composable, versionable. Targets are pluggable: an IDE view, a documentation site, an architecture diagram, a SPARQL CONSTRUCT result, a SHACL shape, a Pydantic class, a prose section, a deployment manifest. Recipe composition uses the standard combinator basis (S, K, I, B, C, W, Y) over walks. Most projections compose deterministically; LLM-mediated projection is the escape hatch for under-specified targets where the recipe can't fully specify the mapping.
+
+  s014:
+    voice: [collab]
+    prompt: pr003
+    text: >-
+      Render the projection into the world. Compile the code, publish the doc, serve the API, perform the statechart, deploy the manifest. Manifestation produces an embodied artifact in some substrate outside the Urdex. The forward direction is named <em>manifestation</em> (source → embodied artifact). The backward direction is named <em>distillation</em> (artifact → source update). The substrate accommodates both directions of the glamour operation.
+
+  s015:
+    voice: [collab]
+    prompt: pr003
+    text: >-
+      The fact that the manifestation occurred is itself a Hol. Compilation happened — the version and the artifact's hash are recorded. The doc shipped — the URL and the publication time are recorded. The deployment took — the cluster and the controller's view of it are recorded. Witnessing closes the loop; the substrate accumulates not just descriptions but <em>the fact of artifacts having existed</em>.
+
+  s016:
+    voice: [collab]
+    prompt: pr003
+    text: >-
+      The discipline matters because the alternatives are well-known failure modes: <em>hoarding</em> (concept-mapping that never manifests; looks productive, produces nothing), <em>leaking</em> (artifacts that don't witness back; the substrate's view drifts from the world), <em>drifting</em> (artifacts produced without concept-mapping; technical debt accumulates). The loop closes both directions and witnesses both ends.
+
+  # ── §4 Vocabulary ──────────────────────────────────────────────
+  s017:
+    voice: [collab]
+    prompt: pr004
+    text: >-
+      <strong>Hol</strong> — the atomic unit of description; an entity with identity. <strong>Holon</strong> — a Hol with structured composition; a slot-bearing Hol. <strong>Holograph</strong> — the whole graph or any subgraph that stands as a description in its own right; unrooted graph-view. <strong>Holarchy</strong> — a Holograph with a designated root; a scope-bound rooted hierarchy. <strong>Ur</strong> — the framework: vocabulary, operators, kinds, substrates, patterns, axioms. <strong>Urdex</strong> — the canonical instance of a triple-store-plus-projections, configured to honor Ur's commitments. <strong>Faewyld</strong> — the agent orchestration layer. <strong>Manifestation</strong> — the forward outcome (source → embodied artifact). <strong>Distillation</strong> — the backward outcome (artifact → source update). <strong>Glamour</strong> — a named bidirectional operation; the Hol packaging a manifestation/distillation pair.
+
+  s018:
+    voice: [agent-inline, collab]
+    prompt: pr004
+    text: >-
+      The full glossary lives at <code>ur/glossary.md</code>. Pre-2026-04-24 prose uses retired terms (template, ghost-manifestation, ghost-impression, manifestation-as-umbrella, Ludex-as-active); the glossary's migration table translates them.
+
+  # ── §5 The substrate ───────────────────────────────────────────
+  s019:
+    voice: [collab]
+    prompt: pr005
+    text: >-
+      The Stage-1 kernel uses a single SQLite file as the operational store of triples, trees, commits, and refs — battle-tested, zero-dependency, file-as-database aligned with sovereign and local-first commitments, concurrent access via WAL. The framework's RDF-compatibility commitment is honored at the structural layer (Ur's triples are subject-predicate-object tuples, structurally identical to RDF) and at the interop layer (export to Turtle / JSON-LD / N-Triples). Native RDF triple-store engines (Apache Jena, Oxigraph, RDFox, GraphDB) work as substitute storage backends; the framework commits to the storage <em>model</em>, not the storage <em>engine</em>. DuckDB and DuckPGQ are deferred to Stage 2+.
+
+  s020:
+    voice: [collab]
+    prompt: pr005
+    text: >-
+      Hols carry one of two identity flavors. <em>Content-addressable</em> identity is computed from the Hol's structural content via hash — how Git identifies commits, IPFS identifies files. Functions, schemas, projection recipes, walks all use it. <em>Nominal</em> identity is assigned: a name, a UUID, an external reference — used for atomic Hols whose structural content the framework can't compute over (real-world persons, external documents). The two coexist without ceremony. Consequences of content-addressing: renames don't break references; mutation is creation (editing a Hol produces a new hash, the prior version persists); version control is intrinsic; deduplication is automatic; cross-Urdex reference works without sync.
+
+  s021:
+    voice: [collab]
+    prompt: pr005
+    text: >-
+      An Urdex is sovereign. The entity that owns it controls what enters, what persists, what leaves, what remains private. Federation between Urdexes is opt-in — no Urdex can be force-merged with another, no Urdex accepts triples without authorization. Cross-Urdex references work via stable identifiers; A can cite B without forcing sync. This is an architectural property of the triple-multiset-with-provenance structure, not a policy overlay. Alignment between sovereign Urdexes is a mutual protocol — walks over shared Holographs, divergence detection via comparison, optional convergence via explicit import — not a one-directional imposition. The same property extends across scales.
+
+  s022:
+    voice: [agent-inline, collab]
+    prompt: pr005
+    text: >-
+      Listed for explicit deferral, not denial: multi-Urdex replication, CRDT-based merge semantics, distributed consensus, cross-Urdex network protocols, native RDF storage backend (alternative to SQLite), heterogeneous-substrate dex variants. Each has architectural intent (§10); none blocks v0.
+
+  # ── §6 The engine ──────────────────────────────────────────────
+  s023:
+    voice: [collab]
+    prompt: pr006
+    text: >-
+      Agents that read, traverse, propose, and crystallize over an Urdex. Provisional coordination primitives: <em>spawn</em> (instantiate an agent in a context), <em>fork</em> (branch state to explore alternatives), <em>delegate</em> (hand a sub-task under constrained scope). Capabilities: information extraction (parse prose/code/transcripts into proposed Hols and edges; LLM structured output as default, with OpenIE/SRL/AMR/CCG parsers as higher-resolution validators), Pattern Crystallization (observe recurring subgraphs and promote to first-class patterns), mutation proposals (write code, draft tests, update prose; mutations land as <code>proposed</code>), traversal & retrieval (RAG over the Urdex). Coordination influences: sociocratic consent, Cord-style channels (June Kim, <em>cord-human</em>, 2025), Gastown — the specific recipe is current research and out of scope for this whitepaper.
+
+  s024:
+    voice: [collab]
+    prompt: pr006
+    text: >-
+      Deterministic checks and execution over the Urdex. Validation: referential integrity (no dangling edges), type and logic checking over the CPG subset (AST + control-flow + data-flow), pattern conformance (the pattern is a Hol; the conformance check is a walk; the match is a triple), paradox handling (locate contradictions; check whether an explicit paradox operator licenses them). Execution: statecharts as executable Holographs (Harel-style state machines — hierarchy, region orthogonality, event-triggered transitions, guards, actions, history — interpreted directly over graph topology), test runs (test execution as a walk plus a verdict; failures address into the structure where the assertion lived).
+
+  s025:
+    voice: [justice-inline, collab]
+    prompt: pr007
+    text: >-
+      A patch from the neural layer doesn't arrive as truth; it arrives as a proposal. The handshake: agent proposes a subgraph patch → symbolic layer validates against patterns, types, and constraints → on success, the patch lands at one of three grades; on failure, structured error trace returned and the agent iterates.
+
+  s026:
+    voice: [justice-inline, collab]
+    prompt: pr007
+    text: >-
+      The three grades: <code>latent</code> — recorded but not authoritative; for proposals not yet exercised, extracted material whose source-of-truth check is pending, hypotheses agents are exploring. <code>proposed</code> — validated against active patterns and constraints; accepted as a working draft. <code>manifest</code> — the artifact has been produced, witnessed back, ground-truth recorded; the strongest grade. Most knowledge ages into manifest rather than being born there. The substrate's accommodation of <code>latent</code> and <code>proposed</code> is what makes it usable for noisy real-world authoring.
+
+  s027:
+    voice: [collab]
+    prompt: pr007
+    text: >-
+      The symbolic layer does not reject paradoxes outright. It locates them and asks whether they are licensed. A paradox-Hol annotates a contradiction with a status: <code>admit</code> (handle paraconsistently — the rest of the substrate continues to function) or <code>quarantine</code> (isolate the contradicting region). This is unfashionable but load-bearing. Real corpora — legal, scientific, conversational — contain genuine contradictions. A substrate that requires consistent input to function isn't a substrate for real corpora.
+
+  # ── §7 Ontology ────────────────────────────────────────────────
+  s028:
+    voice: [collab]
+    prompt: pr008
+    text: >-
+      The upper ontology is <strong>aspirational and empirical</strong>. The wager is that a useful upper ontology can be derived from observed patterns in language, code, ritual, and social structure — not legislated top-down. Two stances Ur explicitly rejects: <em>CYC's stance</em> ("encode everything correctly upfront" — forty years demonstrated this is harder than it looks); <em>the "no ontology, just embeddings" stance</em> ("let the LLM handle it" — embeddings are useful but don't admit cross-substrate reasoning, don't preserve provenance, don't compose).
+
+  s029:
+    voice: [collab]
+    prompt: pr008
+    text: >-
+      Ur's third way is <strong>Pattern Crystallization</strong> (§6.1): agents observe recurring subgraphs and promote them into first-class patterns when they earn it. The framework ships with a small kernel (composition, reference, pattern, paradox) and lets domain ontologies accrete from practice. The concrete v0 conventions: a small set of canonical kinds (Order, Metric, Topological, Feature, Modal, Measure, Algebraic), a registry of canonical substrates, an initial pattern library, relational primitives drawn from Pāṇinian <em>kāraka</em> theory.
+
+  s030:
+    voice: [agent-inline, collab]
+    prompt: pr008
+    text: >-
+      The kernel is small because every commitment at the foundation is honored by every implementation. The convention library is rich because cartographical tradition matters. The domain layer is unbounded because that's where modelers live. Operating principle: <strong>do not let ontology debates block artifact production</strong>. Ship with provisional ontology; revise as patterns crystallize. The framework is descriptive at the kernel layer, not prescriptive.
+
+  # ── §8 Projections ─────────────────────────────────────────────
+  s031:
+    voice: [collab]
+    prompt: pr009
+    text: >-
+      A projection is a query result cast into a human-usable surface. Projections are not the truth — the Urdex is the truth. Projections are where humans live and where agents render artifacts.
+
+  s032:
+    voice: [collab]
+    prompt: pr009
+    text: >-
+      Projection targets include: IDE (code Holographs → text editor with edits mutating Holons underneath), Doc (prose Holographs + reference edges → live cross-refs), Architecture (component Holons + dependency edges → diagram; structural edits propagate), Task (operational Holons + assignment edges → kanban; transitions invoke Faewyld agents), Schema (type Holons + constraint patterns → LinkML / Pydantic / JSON Schema), Query (walk recipe over substrate composition → SPARQL CONSTRUCT or SELECT), Shape (axiom-walk over kind → SHACL NodeShape), Verbalization (fact-type walk + verbalization template → ORM-style natural-language reading), Ritual / Performance (event Holons + temporal edges → calendar/score; performances witness back). Projections are pluggable; the substrate does not privilege code over prose over ritual.
+
+  s033:
+    voice: [collab]
+    prompt: pr009
+    text: >-
+      The recipe space generalizes. Projection recipes are themselves Hols, queryable and composable. Most recipes are deterministic — the mapping from walk to artifact is fully specifiable as a parameterized walk plus a target template. Halpin's ORM verbalization discipline (Halpin & Morgan 2010, <em>Verbalizing Business Rules</em>) provides prior art for fact-type → natural-language projection; SHACL provides shape projection; LinkML provides schema projection. Where the mapping requires inference the recipe can't capture — stylistic prose with register control, complex logic synthesis, design rationale derivation — LLM-mediated projection is the escape hatch. The two compose: a deterministic recipe produces the structural skeleton; the LLM fills the under-specified surface.
+
+  # ── §9 Lineage ─────────────────────────────────────────────────
+  s034:
+    voice: [collab]
+    prompt: pr010
+    text: >-
+      Almost nothing in Ur's foundations is original. The framework is a recombination of mature ideas, organized around the cartographical metaphor. Honest accounting:
+
+  s035:
+    voice: [collab]
+    prompt: pr010
+    text: >-
+      <strong>Lisp</strong> (McCarthy 1960) — code-is-data, the metacircular evaluator, macros, the REPL; Ur extends homoiconicity from trees to graphs and from code to all artifact types. <strong>RDF</strong> (W3C, 1999/2014; Hartig 2017 for RDF*) — triples-as-atoms, URI-based identifiers, the @context mechanism, SPARQL semantics, Turtle / JSON-LD / YAML-LD / N-Triples interchange. <strong>Datalog</strong> (Maier & Ullman, early 1980s; Scallop, Soufflé, Polonius, Glean for modern) — recursive rule closure under fixpoints, declarative graph queries, provenance semirings for fault-aware reasoning. <strong>Kubernetes</strong> (Burns, Beda, Hightower 2016; CNCF) — spec/status separation, level-triggered reconciliation, eventual consistency, owner-references, finalizers, server-side-apply; Ur's manifestation/distillation cycle inherits the K8s pattern at the semantic-artifact layer. <strong>Datomic / XTDB</strong> — bitemporal event-reified time; assertion log as canonical, "current" view as derived. <strong>Harel statecharts</strong> (Harel 1987; SCXML, UML 2.5, XState v5) — hierarchical/orthogonal statecharts as substrate-native form for behavior.
+
+  s036:
+    voice: [collab]
+    prompt: pr010
+    text: >-
+      <strong>Object-Role Modeling</strong> (Halpin & Morgan 2010; Nijssen NIAM tradition) — fact-type-as-atomic, verbalization-as-deterministic. <strong>Combinatory logic</strong> (Schönfinkel 1924; Curry 1930) — the S-K-I-B-C-W-Y basis. <strong>Aczel's anti-foundation axiom</strong> (Aczel 1988) — non-well-founded sets, self-membership as fixpoint property; tier-3 self-description closes via Y over an AFA-shaped fixpoint. <strong>Pāṇinian <em>kāraka</em> theory</strong> (4th–6th century BCE; Cardona 1965, 1969; Kiparsky 1991) — six relational primitives (agent, patient, instrument, recipient, source, locus). <strong>Knowledge-engineering tradition</strong> (CYC, SUMO, BFO, UFO, DOLCE, Wikidata) — provides entity-vocabulary Ur deliberately doesn't. <strong>Religious-transmission disciplines</strong> (Islamic <em>isnād</em>, Hindu <em>parampara</em>, Jewish <em>shemu'ah</em>) — mature provenance-tracking practices the PROVENANCE substrate inherits from. <strong>Projection-from-source pattern</strong> (Swagger/OpenAPI, LinkML, Protocol Buffers) — the same pattern Ur generalizes, established at smaller scope for single artifact types.
+
+  s037:
+    voice: [agent-inline, collab]
+    prompt: pr010
+    text: >-
+      What's specifically new isn't any one of these. The cartographical framing applied across all of it; the graded-validation handshake (<code>latent</code> / <code>proposed</code> / <code>manifest</code>) as a first-class kernel concept; the manifestation/distillation glamour pair as a bidirectional projection primitive; the commitment that the framework's own conventions can be re-derived from its own machinery; the deterministic-plus-stochastic projection trajectory. None of the parts is original. The recombination is.
+
+  # ── §10 Open questions ─────────────────────────────────────────
+  s038:
+    voice: [agent-inline, collab]
+    prompt: pr011
+    text: "Honest accounting of what's not yet earned:"
+
+  s039:
+    voice: [collab]
+    prompt: pr011
+    text: >-
+      <strong>Hol structure.</strong> The current six-slot Ur-Holon schema (Identity, Composition, Relations, Provenance, Purpose, Constraints) is under reconsideration as of 2026-04-25; a candidate alternative uses dynamic schemas aggregated across instances. <strong>Pattern Crystallization v0.</strong> Recurring-subgraph detection at scale is non-trivial ML — hand-curated patterns, heuristic detection, or embedding-similarity? Each has trade-offs; none is yet the chosen path. <strong>Cross-Urdex references.</strong> How does Hol A in Urdex X cite Hol B in Urdex Y without forcing sync? Content-addressing solves part of this; the rest is import-boundary discipline plus dangling-reference handling. <strong>Upper-ontology bootstrap.</strong> What corpus seeds the first empirical pass? Current candidate is the Ur project itself (Ur using Ur). <strong>Statechart formalism.</strong> Harel statecharts, SCXML, or something Ur-native that composes more cleanly with Holons? Ratification pending.
+
+  s040:
+    voice: [collab]
+    prompt: pr011
+    text: >-
+      <strong>Substrate-typed terms.</strong> Lifting RDF's IRI/literal distinction into the kernel; URN scheme transition. <strong>Multi-axis walks.</strong> Walks navigate multiple axes — edge, identity, schema, time, reification, provenance, owner, meaning — not just edges. <strong>Embeddings as substrate axis.</strong> Vector embeddings on Hols as optional substrate axis, sidecar table, kernel-aware. Deferred. <strong>Faewyld v0 governance.</strong> Sociocratic consent is aspirational; what's the bootstrap? <strong>DuckPGQ.</strong> Minimum viable graph-query layer if it does not pan out? <strong>Worked workflows.</strong> Ship the spec corpus with concrete examples or keep it formal? None of these blocks v0; each is a candidate for empirical resolution as practice surfaces evidence.
+
+  # ── §11 Status & engagement ────────────────────────────────────
+  s041:
+    voice: [collab]
+    prompt: pr012
+    text: >-
+      Ur is at v0.10. The Constitution and Laws are ratified. The Stage-1 kernel is running on SQLite. The first runnable Urdex is in dogfood — operational orchestration for the Ur project itself. The agent-guide round-trip (manifestation/distillation on a non-trivial artifact) lands in the next two weeks.
+
+  s042:
+    voice: [agent-inline, collab]
+    prompt: pr012
+    text: >-
+      Authoritative location for the spec corpus is the Sumome vault at <code>ur/</code>, projecting outward to a public surface (TBD) when stable.
+
+  s043:
+    voice: [collab]
+    prompt: pr012
+    text: >-
+      Feedback and adversarial questions are welcome. Lineage corrections especially welcome — if you see a tradition Ur draws from that isn't adequately cited, surface it. Domain projection work is welcome from practitioners in any domain. Implementation work is welcome; the functional spec doesn't mandate an implementation approach.
+
+  s044:
+    voice: [collab]
+    prompt: pr012
+    text: >-
+      Funding the work matters. Playfaire PBC is a public-benefit corporation. Patronage (Ko-Fi, Substack), grants (NLNet, NGI, Constellation), and enterprise pilots are all in scope.
+
+  s045:
+    voice: [justice-inline]
+    prompt: pr012
+    text: "Write your own urdex. Tell us what broke."
+
+prompts:
+  pr001:
+    justice: >-
+      Code is data is Holograph (verbatim, from alt-spec §1 Thesis). The work has three moves: Map, Project, Manifest. Plus the closing fourth: Witness. Artifacts are the point. Concept-mapping that never manifests is hoarding.
+    claude: >-
+      kept Justice's verbatim thesis statement and the four-move loop verbs. Drafted the Lisp-extension framing ("two dimensions: graphs not trees, all artifacts not just code"). Closed §1 with the navigational guide to what follows.
+
+  pr002:
+    justice: >-
+      (Justice approved Why-Now framing during whitepaper /plot — three components have crystallized, recombination is what's new)
+    claude: >-
+      drafted §2 Why Now as a new section addressing "what changed in the last decade." Three themes: LLM authoring gap closure, modern declarative substrates (K8s/Datomic/RDF1.2/SQLite), symbolic AI return (Datalog/statecharts/neuro-symbolic). Closing summary frames "recombination, not invention" — the substrate components crystallized independently.
+
+  pr003:
+    justice: >-
+      Map, Project, Manifest, Witness (loop verbs from alt-spec §7). Hoarding / leaking / drifting as failure modes.
+    claude: >-
+      drafted §3 expanding the four-move loop with concrete operational detail per Justice's verbs. Each move gets its subsection: Map (three modes), Project (recipes as Hols), Manifest (render outward), Witness (fact-of-existence). Closing failure-mode taxonomy compressed from three patterns.
+
+  pr004:
+    justice: >-
+      Vocabulary list per ur/glossary.md canonical entries (Hol/Holon/Holograph/Holarchy/Ur/Urdex/Faewyld/Manifestation/Distillation/Glamour)
+    claude: >-
+      compressed the vocabulary from the canonical glossary into a single-paragraph reference. Each term gets a one-line definition. Pointer to full glossary preserved.
+
+  pr005:
+    justice: >-
+      Substrate spec — SQLite, content-addressed identity, sovereignty, out of scope (from alt-spec §3 The Substrate)
+    claude: >-
+      drafted §5 with subsections compressed from alt-spec §3. SQLite as Stage-1 kernel; two-flavor identity (content-addressable + nominal); sovereignty as architectural property; explicit out-of-scope list for v0.
+
+  pr006:
+    justice: >-
+      Engine spec — neural layer (Faewyld) + symbolic layer (from alt-spec §5)
+    claude: >-
+      drafted §6.1 (neural layer) and §6.2 (symbolic layer) with their primitives and capabilities. Faewyld's coordination primitives (spawn/fork/delegate) and capabilities (extraction, Pattern Crystallization, mutation proposals, traversal); symbolic layer's validation and execution surfaces.
+
+  pr007:
+    justice: >-
+      Graded validation — three grades: latent / proposed / manifest. Most knowledge ages into manifest rather than being born there. Real corpora contain contradictions. (from alt-spec §5.3)
+    claude: >-
+      kept Justice's three-grade vocabulary and the "ages into manifest" claim verbatim. Expanded the handshake mechanics. Paradox handling section preserves Justice's "real corpora contain contradictions" framing.
+
+  pr008:
+    justice: >-
+      Ontology is aspirational and empirical. Pattern Crystallization is the engine of empirical ontology growth. Do not let ontology debates block artifact production. (from alt-spec §4)
+    claude: >-
+      added the third-way framing (CYC vs. embeddings-only vs. Pattern Crystallization) per our discussion. Kept Justice's "aspirational and empirical" stance and the "do not block artifact production" operating principle verbatim.
+
+  pr009:
+    justice: >-
+      Projections are not the truth. The Urdex is the truth. Projections are where humans live. (from alt-spec §6)
+    claude: >-
+      kept Justice's framing verbatim. Compressed the alt-spec table of projection targets into prose form (since the writings schema doesn't support tables natively). Added the deterministic-plus-LLM hybrid framing per our Stage 2.5 / Stage 3 trajectory discussion.
+
+  pr010:
+    justice: >-
+      (Justice approved adding §Lineage during whitepaper /plot — recombination not invention; named lineages from RDF/Lisp/Datalog/K8s/Harel; Swagger as adjacency)
+    claude: >-
+      drafted §9 Lineage as a new section. Twelve lineages compressed into prose, each with one-line contribution. Added Swagger/OpenAPI / LinkML / Protocol Buffers as the projection-pattern adjacency per Justice's confirmation. Closing "recombination, not invention" lands the humility-as-credibility move.
+
+  pr011:
+    justice: >-
+      Open questions list per spec corpus (Hol structure, Pattern Crystallization, cross-Urdex refs, ontology bootstrap, statechart formalism, substrate-typed terms, multi-axis walks, embeddings, governance, DuckPGQ, worked workflows)
+    claude: >-
+      consolidated open questions into two paragraphs (eleven items) compressed from various explorations and proposals. Each item gets one-line scope plus current uncertainty.
+
+  pr012:
+    justice: >-
+      Status — v0.10, Constitution + Laws ratified, kernel running. Engagement — adversarial questions, contributions, funding (Playfaire PBC). Closing line: "Write your own urdex. Tell us what broke."
+    claude: >-
+      kept Justice's status claims verbatim. Drafted engagement-and-closing per the call section. Closing line preserved exactly.
