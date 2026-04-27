@@ -9,6 +9,8 @@
     "preview": "astro preview",
     "astro": "astro",
     "sync": "astro sync",
+    "check": "astro check",
+    "check:ci": "astro check --minimumSeverity error",
     "test": "npx playwright test",
     "test:vision": "npx playwright test --grep @vision",
     "lint": "biome check src/",
@@ -24,12 +26,17 @@
     "svelte": "^5.28.2"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.8",
     "@axe-core/playwright": "^4.11.2",
     "@biomejs/biome": "^2.4.7",
     "@playwright/test": "^1.58.2",
-    "playwright": "^1.58.2"
+    "playwright": "^1.58.2",
+    "typescript": "^6.0.3"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild", "sharp"]
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "sharp"
+    ]
   }
 }
