@@ -140,6 +140,13 @@ function renderSpan(id: string, span: Span, writing: Writing, seen: Set<string>)
     attrs.push(`data-prompt="${escapeAttr(formatPrompt(prompt))}"`);
   }
 
+  // Voice-collab spans carry the hover-revealed prompt strip; make them
+  // keyboard-reachable so the affordance isn't mouse-only. StickyNote attaches
+  // focusin/focusout listeners alongside its mouseover/mouseout handlers.
+  if (classes.some((c) => c === "voice-collab")) {
+    attrs.push(`tabindex="0"`);
+  }
+
   const inner = resolveSpans(span.text, writing, seen);
   return `<span ${attrs.join(" ")}>${inner}</span>`;
 }

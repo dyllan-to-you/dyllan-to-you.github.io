@@ -21,7 +21,7 @@ test.describe("Book navigation", () => {
   test("starts on front cover in landscape", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.waitForTimeout(500);
-    const label = await page.locator("[aria-live='polite']").textContent();
+    const label = await page.locator('[data-tome-live-page]').textContent();
     expect(label).toContain("Front Cover");
   });
 
@@ -31,7 +31,7 @@ test.describe("Book navigation", () => {
     // Open the book from front cover
     await page.keyboard.press("ArrowRight");
     await page.waitForTimeout(FLIP_SETTLE_MS);
-    const label = await page.locator("[aria-live='polite']").textContent();
+    const label = await page.locator('[data-tome-live-page]').textContent();
     expect(label).toContain("Epigraph");
   });
 
@@ -43,7 +43,7 @@ test.describe("Book navigation", () => {
     await page.waitForTimeout(FLIP_SETTLE_MS);
     await page.keyboard.press("ArrowLeft");
     await page.waitForTimeout(FLIP_SETTLE_MS);
-    const label = await page.locator("[aria-live='polite']").textContent();
+    const label = await page.locator('[data-tome-live-page]').textContent();
     expect(label).toContain("Front Cover");
   });
 
@@ -52,7 +52,7 @@ test.describe("Book navigation", () => {
     await page.waitForTimeout(500);
     await page.keyboard.press("ArrowLeft");
     await page.waitForTimeout(FLIP_SETTLE_MS);
-    const label = await page.locator("[aria-live='polite']").textContent();
+    const label = await page.locator('[data-tome-live-page]').textContent();
     expect(label).toContain("Front Cover");
   });
 
@@ -67,14 +67,14 @@ test.describe("Book navigation", () => {
     }
 
     // Verify we're at colophon
-    let label = await page.locator("[aria-live='polite']").textContent();
+    let label = await page.locator('[data-tome-live-page]').textContent();
     expect(label).toContain("Colophon");
 
     // One more flip should close the book — skip the back cover leaf spread
     await page.keyboard.press("ArrowRight");
     await page.waitForTimeout(FLIP_SETTLE_MS);
 
-    label = await page.locator("[aria-live='polite']").textContent();
+    label = await page.locator('[data-tome-live-page]').textContent();
     expect(label).toContain("Book closed (back)");
   });
 
@@ -91,14 +91,14 @@ test.describe("Book navigation", () => {
     await page.waitForTimeout(FLIP_SETTLE_MS);
 
     // Verify closed
-    let label = await page.locator("[aria-live='polite']").textContent();
+    let label = await page.locator('[data-tome-live-page]').textContent();
     expect(label).toContain("Book closed (back)");
 
     // Go back — should land on colophon, not an intermediate state
     await page.keyboard.press("ArrowLeft");
     await page.waitForTimeout(FLIP_SETTLE_MS);
 
-    label = await page.locator("[aria-live='polite']").textContent();
+    label = await page.locator('[data-tome-live-page]').textContent();
     expect(label).toContain("Colophon");
   });
 
@@ -115,7 +115,7 @@ test.describe("Book navigation", () => {
     if (await tocEntry.count() > 0) {
       await tocEntry.first().click();
       await page.waitForTimeout(FLIP_SETTLE_MS);
-      const label = await page.locator("[aria-live='polite']").textContent();
+      const label = await page.locator('[data-tome-live-page]').textContent();
       expect(label).toContain("Architect");
     }
   });

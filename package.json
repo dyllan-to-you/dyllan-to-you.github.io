@@ -12,6 +12,7 @@
     "check": "astro check",
     "check:ci": "astro check --minimumSeverity error",
     "test": "npx playwright test",
+    "test:a11y": "npx playwright test --workers=2 accessibility.spec.ts contrast.spec.ts",
     "test:vision": "npx playwright test --grep @vision",
     "lint": "biome check src/",
     "lint:fix": "biome check --fix src/",

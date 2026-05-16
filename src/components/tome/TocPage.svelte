@@ -47,7 +47,11 @@ function handleNav(e: MouseEvent, idx: number) {
 </script>
 
 <div class="page" onclick={(e) => { if (e.target.closest('button')) return; onFlipBack?.(); }} role="presentation">
-  <nav class="toc" aria-label="Table of contents">
+  <!-- Wrapper is <div> rather than <nav> because every leaf renders its own
+       TOC verso; multiple nav landmarks with the same accessible name fail
+       axe's landmark-unique rule. The TOC entries are still semantic
+       navigation (links with aria-current). -->
+  <div class="toc" aria-label="Table of contents">
     <div class="terminal-chrome">
       <a
         class="path"
@@ -75,7 +79,6 @@ function handleNav(e: MouseEvent, idx: number) {
           href={hrefFor(entry.slug)}
           onclick={(e) => handleNav(e, entry.index)}
           aria-current={active ? 'page' : undefined}
-          aria-expanded={hasNested ? true : undefined}
         >
           <span class="branch">{last && !hasNested ? '╰─' : '├─'}</span>
           <span class="leaf" class:leaf-active={active}>{entry.toc}</span>
@@ -107,6 +110,7 @@ function handleNav(e: MouseEvent, idx: number) {
             {@const lastSection = si === sections.length - 1}
             <button
               class="tree-entry section-entry"
+              type="button"
               onclick={() => onScrollToSection?.(entry.index, section.id)}
             >
               <span class="branch">{last ? '   ' : '╎  '}{lastSection ? '╰─' : '├─'}</span>
@@ -116,7 +120,7 @@ function handleNav(e: MouseEvent, idx: number) {
         {/if}
       {/each}
     </div>
-  </nav>
+  </div>
 
   <div class="scanlines"></div>
 </div>
@@ -177,8 +181,8 @@ function handleNav(e: MouseEvent, idx: number) {
   }
 
   .path:focus-visible {
-    outline: 1px solid rgba(45, 107, 63, 0.4);
-    outline-offset: 1px;
+    outline: 2px solid rgba(45, 107, 63, 0.7);
+    outline-offset: 2px;
   }
 
   .path-active {
@@ -232,8 +236,8 @@ function handleNav(e: MouseEvent, idx: number) {
   }
 
   .tree-entry:focus-visible {
-    outline: 1px solid rgba(45, 107, 63, 0.4);
-    outline-offset: 1px;
+    outline: 2px solid rgba(45, 107, 63, 0.7);
+    outline-offset: 2px;
   }
 
   .tree-entry.active {
@@ -279,7 +283,7 @@ function handleNav(e: MouseEvent, idx: number) {
   }
 
   .section-leaf {
-    color: var(--tome-term-dim);
+    color: var(--tome-ink-light);
     font-size: var(--tome-text-caption);
     letter-spacing: 0.03em;
   }
@@ -296,9 +300,8 @@ function handleNav(e: MouseEvent, idx: number) {
     margin-left: auto;
     padding-left: 10px;
     font-size: var(--tome-text-caption);
-    color: var(--tome-term-dim);
+    color: var(--tome-ink-light);
     letter-spacing: 0.04em;
-    opacity: 0.7;
     flex-shrink: 0;
   }
 

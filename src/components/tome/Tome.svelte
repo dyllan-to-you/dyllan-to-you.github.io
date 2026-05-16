@@ -128,6 +128,7 @@ let timer: ReturnType<typeof setTimeout> | undefined;
 let tocOpen = $state(false);
 let suppressPush = false;
 let wrapperEl = $state(null);
+let prefersReducedMotion = $state(false);
 
 /* ─── Derived ─── */
 
@@ -161,6 +162,27 @@ $effect(() => {
   window.addEventListener("resize", check);
   return () => window.removeEventListener("resize", check);
 });
+
+/* ─── Reduced motion ─── */
+
+$effect(() => {
+  const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const sync = () => { prefersReducedMotion = mql.matches; };
+  sync();
+  mql.addEventListener("change", sync);
+  return () => mql.removeEventListener("change", sync);
+});
+
+/* ─── Active leaf detection ─── */
+/* A leaf contributes visible content when its front (recto) or back (verso)
+   face is facing the user. Everything else lives in DOM only as 3D-rotated
+   geometry; mark inert so SR doesn't linearize the entire vault. */
+function isActiveLeaf(i: number): boolean {
+  if (flipped >= total) return i === total - 1; // back cover (verso of last leaf)
+  if (i === flipped) return true; // current recto
+  if (!isPortrait && i === flipped - 1) return true; // companion verso (TOC)
+  return false;
+}
 
 /* Track orientation flips to reset state. previousPortrait stays non-reactive
    (we only want to snapshot the last value the effect saw). */
@@ -253,7 +275,29 @@ function goTo(target) {
         history.pushState(null, "", newPath);
       }
     }
+    // Keep document.title in sync with the visible page so the browser tab,
+    // share titles, and SR page-changed announcements reflect the current leaf.
+    if (target === 0) {
+      document.title = "Justice — Builder · Musician · Architect";
+    } else if (target >= total) {
+      document.title = "Back Cover — Justice";
+    } else {
+      const label = pages[target]?.label ?? "Page";
+      document.title = `${label} — Justice`;
+    }
   }
+
+  // Move focus into the new page's scroll-area so keyboard users land in the
+  // content rather than orphaned on the dogear they just activated.
+  // setTimeout(0) lets Svelte's inert-attribute reactivity settle first;
+  // focus() on a still-inert subtree silently no-ops.
+  setTimeout(() => {
+    const scrollArea = contentRefs.get(target);
+    if (scrollArea) {
+      if (!scrollArea.hasAttribute("tabindex")) scrollArea.setAttribute("tabindex", "-1");
+      scrollArea.focus({ preventScroll: true });
+    }
+  }, 0);
 
   clearTimeout(timer);
   timer = setTimeout(
@@ -291,9 +335,17 @@ function handleCardNavigate(href: string) {
 function scrollToSection(pageIndex: number, sectionId: string) {
   const scrollArea = contentRefs.get(pageIndex);
   if (!scrollArea) return;
-  const heading = scrollArea.querySelector(`#${CSS.escape(sectionId)}`);
+  const heading = scrollArea.querySelector(`#${CSS.escape(sectionId)}`) as HTMLElement | null;
   if (heading) {
-    heading.scrollIntoView({ behavior: "smooth", block: "start" });
+    // Make the heading programmatically focusable so focus follows the scroll;
+    // keyboard / SR users land on the section rather than being orphaned in
+    // the TOC after their selection scrolls the page.
+    if (!heading.hasAttribute("tabindex")) heading.setAttribute("tabindex", "-1");
+    heading.scrollIntoView({
+      behavior: prefersReducedMotion ? "auto" : "smooth",
+      block: "start",
+    });
+    heading.focus({ preventScroll: true });
   }
 }
 
@@ -331,6 +383,7 @@ function transformFor(i) {
 
 function transitionFor(i) {
   if (!isAnimating(i)) return "none";
+  if (prefersReducedMotion) return "none"; // snap, don't flip
   const { from, to, forward, staggerMs } = animation;
   const steps = to - from;
   const pos = forward ? i - from : to - i;
@@ -370,6 +423,22 @@ function handleTouchEnd(event) {
 }
 
 function handleKeydown(event) {
+  // Escape closes the portrait TOC drawer (mouse equivalent: click-outside).
+  if (event.key === "Escape") {
+    if (isPortrait && tocOpen) {
+      tocOpen = false;
+      event.preventDefault();
+      return;
+    }
+  }
+  // Avoid hijacking arrow keys when focus is on a focusable inline element
+  // (e.g., a voice-collab span or in-text link) — let those receive their
+  // native handling. Tome navigation arrows only fire when focus is on the
+  // tome shell, body, or a tome-owned button.
+  const activeEl = document.activeElement as HTMLElement | null;
+  const tag = activeEl?.tagName;
+  if (tag === "A" || tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+
   if (["ArrowRight", " ", "ArrowDown"].includes(event.key)) {
     event.preventDefault();
     goForward();
@@ -422,14 +491,13 @@ onDestroy(() => clearTimeout(timer));
 
 <svelte:window onkeydown={handleKeydown}/>
 
-<div
+<main
   class="tome-root"
   class:portrait={isPortrait}
-  role="region"
-  aria-label="Interactive book"
+  aria-label="Interactive book — Dyllan Justice Tô-Yu"
   aria-roledescription="book"
 >
-  <div class="sr-only" aria-live="polite" aria-atomic="true">
+  <div class="sr-only" aria-live="polite" aria-atomic="true" data-tome-live-page>
     {currentPageLabel}
   </div>
 
@@ -471,6 +539,7 @@ onDestroy(() => clearTimeout(timer));
       <!-- ─── LEAVES ─── -->
       {#each pages as page, i (i)}
         {@const leafFlipped = isFlippedFor(i)}
+        {@const leafActive = isActiveLeaf(i)}
         <div
           class="leaf"
           class:portrait-leaf={isPortrait}
@@ -479,6 +548,7 @@ onDestroy(() => clearTimeout(timer));
           style:transition={transitionFor(i)}
           role="group"
           aria-label={page.label}
+          inert={!leafActive}
         >
           <!-- Front face -->
           <div
@@ -519,16 +589,15 @@ onDestroy(() => clearTimeout(timer));
 
       <!-- Open/close affordance -->
       {#if flipped === 0 || flipped >= total}
-        <!-- Closed (front cover or back cover): click anywhere to (re-)open -->
-        <div
+        <!-- Closed (front cover or back cover): click/Enter/Space to (re-)open.
+             Native <button> handles Enter and Space; no manual key handler needed. -->
+        <button
           class="click-zone"
+          type="button"
           style:transform="translateZ({DEPTH_UI}px)"
           onclick={handleClick}
-          onkeydown={(e) => { if (e.key === 'Enter') handleClick(); }}
-          role="button"
-          tabindex="0"
-          aria-label={flipped === 0 ? 'Click to open the book' : 'Click to re-open the book'}
-        ></div>
+          aria-label={flipped === 0 ? 'Open the book' : 'Re-open the book'}
+        ></button>
       {/if}
     </div>
 
@@ -572,7 +641,7 @@ onDestroy(() => clearTimeout(timer));
   </div>
 
   <div class="ambient-glow" aria-hidden="true"></div>
-</div>
+</main>
 
 
 <style>
@@ -589,6 +658,9 @@ onDestroy(() => clearTimeout(timer));
     user-select: none;
     background: var(--tome-bg-void);
     font-family: var(--tome-font-fallback);
+    /* Clip our own 3D rotation overflow so leaves can't bleed past the void;
+       body itself can scroll (browser zoom / reflow). */
+    overflow: hidden;
   }
 
   .tome-root.portrait {
@@ -683,10 +755,16 @@ onDestroy(() => clearTimeout(timer));
   .click-zone {
     position: absolute; inset: 0;
     cursor: pointer;
+    /* Neutralize <button> defaults so the zone is a transparent activator */
+    background: transparent;
+    border: none;
+    padding: 0; margin: 0;
+    color: inherit;
+    font: inherit;
   }
 
   .click-zone:focus-visible {
-    outline: 2px solid rgba(201, 168, 76, 0.6);
+    outline: 2px solid rgba(201, 168, 76, 0.7);
     outline-offset: 4px;
     border-radius: 3px;
   }
@@ -770,7 +848,7 @@ onDestroy(() => clearTimeout(timer));
     font-family: var(--tome-font-mono);
     color: var(--tome-gold);
     font-size: var(--tome-text-caption);
-    opacity: 0.3;
+    opacity: 0.75;
     letter-spacing: 0.15em;
   }
 
@@ -778,7 +856,7 @@ onDestroy(() => clearTimeout(timer));
     text-align: center; margin-top: 8px;
     font-family: var(--tome-font-body);
     color: var(--tome-gold);
-    font-size: var(--tome-text-caption); opacity: 0.3;
+    font-size: var(--tome-text-caption); opacity: 0.7;
     letter-spacing: 0.1em;
   }
 

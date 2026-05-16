@@ -27,6 +27,10 @@ let mode = $state<Mode>("strip");
 let visible = $state(false);
 let hideTimer: ReturnType<typeof setTimeout> | null = null;
 
+// SR live-region announcement — broadcasts strip text / preview caption so
+// keyboard + screen-reader users discover the hover affordance.
+let liveAnnouncement = $state("");
+
 // Strip state
 let stripText = $state("");
 let stripTop = $state(0);
@@ -58,6 +62,7 @@ function showStrip(span: HTMLElement) {
   stripWidth = Math.max(rect.width, 220);
   mode = "strip";
   visible = true;
+  liveAnnouncement = stripText ? `Prompt thread: ${stripText}` : "";
 }
 
 function showPreview(link: HTMLAnchorElement) {
@@ -100,6 +105,7 @@ function showPreview(link: HTMLAnchorElement) {
 
   mode = "preview";
   visible = true;
+  liveAnnouncement = previewCaption ? `Link preview: ${previewCaption}` : "";
 }
 
 onMount(() => {
@@ -126,6 +132,35 @@ onMount(() => {
     }
   };
 
+  // Keyboard mirror: focusin/focusout reveal the same overlays so
+  // Tab-navigating users get the prompt strip + preview thumbnail
+  // that hover-only users were already getting.
+  const handleFocusIn = (e: FocusEvent) => {
+    const target = e.target as HTMLElement | null;
+    if (!target?.closest) return;
+    const link = target.closest?.("a[data-preview]") as HTMLAnchorElement | null;
+    if (link) { showPreview(link); return; }
+    const span = target.closest?.(".voice-collab") as HTMLElement | null;
+    if (span) { showStrip(span); return; }
+  };
+
+  const handleFocusOut = (e: FocusEvent) => {
+    const target = e.target as HTMLElement | null;
+    if (!target?.closest) return;
+    if (target.closest(".voice-collab") ||
+        target.closest("a[data-preview]")) {
+      scheduleHide();
+    }
+  };
+
+  const handleKeydown = (e: KeyboardEvent) => {
+    if (e.key === "Escape" && visible) {
+      visible = false;
+      cancelHide();
+      liveAnnouncement = "";
+    }
+  };
+
   const handleScroll = () => {
     visible = false;
     cancelHide();
@@ -133,15 +168,27 @@ onMount(() => {
 
   document.addEventListener("mouseover", handleOver);
   document.addEventListener("mouseout", handleOut);
+  document.addEventListener("focusin", handleFocusIn);
+  document.addEventListener("focusout", handleFocusOut);
+  document.addEventListener("keydown", handleKeydown);
   document.addEventListener("scroll", handleScroll, { capture: true });
 
   return () => {
     document.removeEventListener("mouseover", handleOver);
     document.removeEventListener("mouseout", handleOut);
+    document.removeEventListener("focusin", handleFocusIn);
+    document.removeEventListener("focusout", handleFocusOut);
+    document.removeEventListener("keydown", handleKeydown);
     document.removeEventListener("scroll", handleScroll, { capture: true });
   };
 });
 </script>
+
+<!-- SR live region: announces overlay content to screen readers when the
+     strip or preview becomes visible (mirror of the visible UI). -->
+<div class="sr-only" aria-live="polite" aria-atomic="true">
+  {visible ? liveAnnouncement : ""}
+</div>
 
 <!-- Strip tooltip: unfolds down from above the hovered voice-collab span -->
 {#if mode === "strip"}

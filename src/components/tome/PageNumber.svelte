@@ -13,8 +13,8 @@ let { number } = $props();
     left: 50%;
     transform: translateX(-50%);
     font-family: var(--tome-font-heading);
-    color: var(--tome-copper);
+    color: var(--tome-ink-light);
     font-size: var(--tome-text-caption);
-    opacity: 0.4;
+    opacity: 0.75;
   }
 </style>

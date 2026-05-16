@@ -63,19 +63,22 @@
    * Ratios: ~1.11–1.17× between adjacent rungs; display gets an
    * authority bump for chapter / writing titles.
    *
-   *   display  1.35rem  21.6px  chapter / writing titles
-   *   title    1.15rem  18.4px  large lead text
-   *   lead     1.0rem   16px    decorative glyphs, prompts
-   *   body     0.9rem   14.4px  body prose, nav leaf  ← anchor
-   *   chrome   0.8rem   12.8px  branches, secondary text, subtitles
-   *   caption  0.7rem   11.2px  meta, page #, dates  ← floor
+   *   display  1.4rem   22.4px  chapter / writing titles
+   *   title    1.2rem   19.2px  large lead text
+   *   lead     1.05rem  16.8px  decorative glyphs, prompts
+   *   body     0.95rem  15.2px  body prose, nav leaf  ← anchor
+   *   chrome   0.85rem  13.6px  branches, secondary text, subtitles
+   *   caption  0.78rem  12.5px  meta, page #, dates  ← floor
+   *
+   * Floor raised from 0.7rem → 0.78rem (2026-05-16) for low-vision legibility;
+   * other rungs followed proportionally to preserve the ~1.11–1.17× ratios.
    */
-  --tome-text-display: 1.35rem;
-  --tome-text-title: 1.15rem;
-  --tome-text-lead: 1rem;
-  --tome-text-body: 0.9rem;
-  --tome-text-chrome: 0.8rem;
-  --tome-text-caption: 0.7rem;
+  --tome-text-display: 1.4rem;
+  --tome-text-title: 1.2rem;
+  --tome-text-lead: 1.05rem;
+  --tome-text-body: 0.95rem;
+  --tome-text-chrome: 0.85rem;
+  --tome-text-caption: 0.78rem;
 
   /* ── Backgrounds (CSS-generated textures) ── */
   --tome-bg-leather:
@@ -102,6 +105,20 @@
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* ── Reduced motion ──
+ * Honor the OS-level vestibular accommodation. Page flips, sigil pulses,
+ * cursor flickers, and sticky-note unfolds all collapse to ~instant transitions.
+ * The interactivity stays; the animation goes.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* ── Voice attribution ──

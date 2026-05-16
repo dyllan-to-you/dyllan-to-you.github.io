@@ -53,7 +53,7 @@ function renderWritingAsBookPage(w: Writing): string {
   ${subtitle}
   <div class="writing-meta">
     <time datetime="${w.date.toISOString()}">${fmtDate(w.date)}</time>
-    <span class="reading-time">${readingMinutes} min read</span>
+    <span class="reading-time" aria-label="${readingMinutes} minute read">${readingMinutes} min read</span>
     ${tagsMarkup}
   </div>
 </header>
@@ -147,7 +147,9 @@ for (const entry of sortedPages) {
 <style is:global>
   body {
     margin: 0;
-    overflow: hidden;
+    /* Body itself scrolls so browser zoom + reflow (WCAG 1.4.10) is not
+       trapped by a viewport-locked book. The tome root clips its own 3D
+       overflow so leaves can't escape laterally during page flips. */
   }
 
   /* ─── In-book writing styling ─────────────────────────────────────── */

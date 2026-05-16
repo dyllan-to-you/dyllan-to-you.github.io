@@ -31,7 +31,10 @@ $effect(() => {
     <CircuitVine page={vine}/>
   {/if}
 
-  <div class="scroll-area" bind:this={scrollAreaEl}>
+  <!-- tabindex=0 so keyboard users can scroll the prose via PageDown/PageUp/
+       arrows when the area has no focusable content inside. Inert leaves
+       still have their scroll-areas excluded from Tab order. -->
+  <div class="scroll-area" bind:this={scrollAreaEl} tabindex="0">
     <!-- Chapter header (if present) -->
     {#if page.chapter}
       <ChapterHeader number={page.chapter.number} title={page.chapter.title} subtitle={page.chapter.subtitle}/>
@@ -133,6 +136,14 @@ $effect(() => {
        flips, but the prose itself should be selectable. */
     user-select: text;
     -webkit-user-select: text;
+    /* Scroll-area is keyboard-focusable for PageDown/arrow scrolling on
+       prose pages with no inner focusable content. The focus-visible
+       outline lives just inside so it doesn't fight the page-edge frame. */
+    outline: none;
+  }
+  .scroll-area:focus-visible {
+    box-shadow: inset 0 0 0 2px rgba(45, 107, 63, 0.4);
+    border-radius: 2px;
   }
 
   /* Subtle scrollbar that matches the parchment aesthetic */
@@ -154,7 +165,7 @@ $effect(() => {
   }
   .prompt {
     font-family: var(--tome-font-mono);
-    color: var(--tome-term-dim);
+    color: var(--tome-ink-light);
     font-size: var(--tome-text-caption); letter-spacing: 0.05em;
     margin-bottom: 16px;
   }
@@ -171,8 +182,8 @@ $effect(() => {
   }
   .attribution {
     font-family: var(--tome-font-mono);
-    color: var(--tome-term-dim);
-    font-size: var(--tome-text-caption); letter-spacing: 0.1em; opacity: 0.6;
+    color: var(--tome-ink-light);
+    font-size: var(--tome-text-caption); letter-spacing: 0.1em;
   }
 
   /* ─── Body (pre-rendered HTML from YAML) ─── */
@@ -202,9 +213,9 @@ $effect(() => {
   /* ─── Header ─── */
   .header {
     font-family: var(--tome-font-mono);
-    color: var(--tome-term-dim);
+    color: var(--tome-ink-light);
     font-size: var(--tome-text-caption); letter-spacing: 0.05em;
-    margin-bottom: 12px; opacity: 0.5;
+    margin-bottom: 12px;
   }
 
   /* ─── Cards ─── */
@@ -213,16 +224,16 @@ $effect(() => {
   /* ─── Empty state (no published writings) ─── */
   .empty-state {
     font-family: var(--tome-font-mono);
-    color: var(--tome-term-dim);
+    color: var(--tome-ink-light);
     font-size: var(--tome-text-chrome); letter-spacing: 0.05em;
-    padding: 24px 0; opacity: 0.7;
+    padding: 24px 0;
   }
-  .empty-state .prompt { opacity: 0.5; }
+  .empty-state .prompt { opacity: 0.6; }
 
   /* ─── Closing ─── */
   .closing {
     font-family: var(--tome-font-mono);
-    color: var(--tome-term-dim);
+    color: var(--tome-ink-light);
     font-size: var(--tome-text-caption); line-height: 1.9; letter-spacing: 0.02em;
   }
 
@@ -238,7 +249,7 @@ $effect(() => {
   }
   .colophon-body {
     font-family: var(--tome-font-body);
-    color: var(--tome-ink-light);
+    color: var(--tome-ink);
     font-size: var(--tome-text-chrome); text-align: center; line-height: 1.8;
   }
   .colophon-body p { margin: 0 0 12px; }
@@ -249,7 +260,7 @@ $effect(() => {
   }
   .imprint {
     font-family: var(--tome-font-mono);
-    color: var(--tome-term-dim);
+    color: var(--tome-ink-light);
     font-size: var(--tome-text-caption); margin: 0;
   }
 </style>

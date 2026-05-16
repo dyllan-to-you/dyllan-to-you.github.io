@@ -31,6 +31,11 @@ for (const { path, name } of ROUTES) {
       .disableRules([
         // The Tome's offscreen leaves are intentionally hidden from AT
         "aria-hidden-focus",
+        // Best-practice rule: the book's h1 is on the cover leaf, which is
+        // inert on non-cover routes. The book metaphor (single document,
+        // multiple "pages" in DOM) defeats this heuristic — every route
+        // shares the same document with the cover providing the canonical h1.
+        "page-has-heading-one",
       ])
       .analyze();
 
