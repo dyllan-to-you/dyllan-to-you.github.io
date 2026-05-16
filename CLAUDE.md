@@ -45,6 +45,30 @@ Svelte (or React) components that listen to document-level events and render ove
 
 **How to apply:** If a component listens on `window`/`document` and the hover targets can appear on more than one route, mount once in the outermost layout that covers all those routes.
 
+### T5 — Don't stack opacity on already-dim contrast tokens
+
+When `--tome-term-dim` (or any token whose direct contrast against the parchment is already borderline) is rendered with `opacity: 0.4–0.7` at the usage site, the effective ratio drops below WCAG AA without any sign of failure at the token layer. The contrast-token test passes; the rendered chrome silently fails.
+
+**Why:** Discovered during the 2026-05-16 a11y pass — `.attribution { opacity: 0.6 }`, `.page-number { opacity: 0.4 }`, `.toc .meta { opacity: 0.7 }`, and several siblings were all undercutting their declared ratios. The token comments in `guide.css` explicitly call out 5.60/7.46/7.08 contrast values; the opacity-stacking at the call sites silently negated that work.
+
+**How to apply:** If a chrome element needs to feel "less prominent visually," reduce font-weight, increase letter-spacing, or move to a token whose direct-paint ratio is higher (`--tome-ink-light` instead of `--tome-term-dim`). Don't multiply opacity onto a token that's already at the borderline. The `contrast.spec.ts` suite tests token pairs at full opacity; usage-level opacity is invisible to it.
+
+### T6 — `inert` is not a complete axe escape hatch for multi-DOM-page metaphors
+
+The tome renders every leaf in DOM at once and uses `inert` on non-active leaves to hide them from AT. axe-core respects `inert` for ARIA-hidden / focus rules — but **still flags `landmark-is-unique` across inert subtrees**. A `<nav>` landmark on every leaf with the same `aria-label` will fail axe even when 6 of 7 are inert.
+
+**Why:** Discovered when adding `inert` exposed both the cover h1 (page-has-heading-one) and per-leaf nav landmarks (landmark-is-unique) as axe violations that hadn't fired before — because before, axe also wasn't crediting the offscreen leaves as accessible. `inert` correctly hid them; axe correctly demanded uniqueness anyway.
+
+**How to apply:** When the architecture parks N copies of a structural element in DOM (per-leaf TOC, per-page sidebar, etc.), don't lean on `inert` alone to solve uniqueness. Either downgrade the landmark wrapper (`<nav>` → `<div>`; keep semantic interior via links + `aria-current`), or disable the specific axe best-practice rule with reasoning preserved in-file. Both choices are valid; the wrong choice is assuming `inert` already handled it.
+
+### T7 — Hard-coded loop counts in tests rot against additively-evolving structures
+
+`tests/navigation.spec.ts` walks the book via `for (let i = 0; i < 5; i++) page.keyboard.press("ArrowRight")` and asserts arrival at Colophon. That arithmetic was correct when the book had 6 pages. The book is now 7 pages and the test silently lands on "Now" — failing on the assertion text, not the walk count, so the failure mode looks like a regression rather than test rot.
+
+**Why:** Caught during the 2026-05-16 a11y pass when running the full suite. The test predates the addition of the writings index page. The book is additively-evolving (Tenet from parent `CLAUDE.md`: "Additive evolution") — its size will grow again.
+
+**How to apply:** When walking a sequence whose length is data-driven (pages array, writings collection, etc.), derive the target index from the data, not from a hardcoded literal. For book tests: `for (let i = 0; i < pages.length - 1; i++)` or query the live region label after each press and break on match. Same shape generalizes to any "click N times to reach X" test against any append-only structure.
+
 ## Conventions
 
 - **File naming**: `<slug>.yaml` for both pages and writings. Pages have numeric prefix for sort (`00-cover-front.yaml` … `06-colophon.yaml`). Writings use kebab-case slug.

@@ -60,6 +60,26 @@ Dependency graph: `tokens.js <- decorations <- atoms <- pages <- Tome.svelte`
 
 **Svelte 5 idioms.** Direct component rendering (`<Page />`), `$derived.by()` for complex derivations, `$props()` throughout. No `svelte:component`.
 
+## Accessibility
+
+Run the accessibility suite on its own:
+
+```bash
+pnpm test:a11y
+```
+
+Two checks fire:
+
+- **`tests/accessibility.spec.ts`** — runs `@axe-core/playwright` against every published route. Covers ARIA, landmarks, alt text, heading order, focus management, and color contrast on real rendered DOM. Two rules are explicitly disabled and the reasoning is in-file: `aria-hidden-focus` (the tome's offscreen leaves are intentionally hidden) and `page-has-heading-one` (the book's canonical h1 lives on the cover leaf, which is inert on non-cover routes; the book metaphor defeats this best-practice heuristic).
+- **`tests/contrast.spec.ts`** — pure-data check that every `--tome-*` foreground/background pair we actually render meets its declared WCAG ratio (4.5:1 body, 3:1 large). Runs offline; sub-second.
+
+Architectural notes:
+
+- Non-active leaves carry `inert` so screen readers don't linearize the entire vault as one document.
+- `prefers-reduced-motion` is honored both via global CSS overrides and JS short-circuits in `Tome.svelte` (`transitionFor()` returns `"none"`, `scrollIntoView` switches to `"auto"`).
+- The hover-revealed prompt strip and link preview in `StickyNote.svelte` mirror their `mouseover/mouseout` listeners with `focusin/focusout` so keyboard users get the same affordance, with an `aria-live` region announcing the prompt text.
+- The scroll-area on each content page is `tabindex="0"` (keyboard-scrollable for prose pages with no inner focusable content); inert leaves still exclude their scroll-area from Tab order.
+
 ## Deploy
 
 ```bash
