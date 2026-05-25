@@ -229,7 +229,7 @@ spans:
     voice: [agent-inline, collab]
     prompt: pr004
     text: >-
-      The full glossary lives at <code>ur/glossary.md</code>. Pre-2026-04-24 prose uses retired terms (template, ghost-manifestation, ghost-impression, manifestation-as-umbrella, Ludex-as-active); the glossary's migration table translates them.
+      The full glossary lives at <code>ur/docs/glossary.md</code>. Pre-2026-04-24 prose uses retired terms (template, ghost-manifestation, ghost-impression, manifestation-as-umbrella, Ludex-as-active); the glossary's migration table translates them.
 
   # ── §5 The substrate ───────────────────────────────────────────
   s019:
@@ -419,7 +419,7 @@ prompts:
 
   pr004:
     justice: >-
-      Vocabulary list per ur/glossary.md canonical entries (Hol/Holon/Holograph/Holarchy/Ur/Urdex/Faewyld/Manifestation/Distillation/Glamour)
+      Vocabulary list per ur/docs/glossary.md canonical entries (Hol/Holon/Holograph/Holarchy/Ur/Urdex/Faewyld/Manifestation/Distillation/Glamour)
     claude: >-
       compressed the vocabulary from the canonical glossary into a single-paragraph reference. Each term gets a one-line definition. Pointer to full glossary preserved.
 
