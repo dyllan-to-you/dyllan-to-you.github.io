@@ -1,0 +1,32 @@
+#!/bin/sh
+# After committing in this submodule, auto-create a matching bump
+# commit in the parent (sumome) so the two histories advance in lockstep.
+# No-op when run outside a submodule (e.g. a standalone clone).
+
+set -e
+
+PARENT_DIR=$(git rev-parse --show-superproject-working-tree 2>/dev/null || true)
+[ -z "$PARENT_DIR" ] && exit 0
+
+# Skip during rebase, cherry-pick, or amend in flight — those are not
+# the natural commit moment, and auto-bumping mid-operation creates noise.
+GITDIR=$(git rev-parse --git-dir)
+for sentinel in rebase-merge rebase-apply CHERRY_PICK_HEAD MERGE_HEAD; do
+  if [ -e "$GITDIR/$sentinel" ]; then exit 0; fi
+done
+
+SUB_SUBJECT=$(git log -1 --pretty=%s)
+SUB_SHA=$(git rev-parse --short HEAD)
+SUB_NAME=$(basename "$(git rev-parse --show-toplevel)")
+
+cd "$PARENT_DIR"
+
+# If the submodule pointer is not actually dirty in the parent, skip.
+# (Can happen if the parent already bumped via some other path.)
+if git diff --quiet --cached "$SUB_NAME" && git diff --quiet "$SUB_NAME"; then
+  exit 0
+fi
+
+git add "$SUB_NAME"
+git commit --no-verify -m "Bump $SUB_NAME: $SUB_SUBJECT" -m "Submodule $SUB_NAME advanced to $SUB_SHA." >/dev/null
+echo "→ parent ($SUB_NAME) bumped to $SUB_SHA"
