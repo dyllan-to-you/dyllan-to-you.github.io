@@ -1,0 +1,94 @@
+slug: resume
+order: 2
+label: The Résumé
+toc: the-resume
+chapter:
+  number: "I"
+  title: The Résumé
+  subtitle: Platforms, real-time control systems, and the work in motion
+closing: |-
+  location: Oakland, California
+  contact: howdy@dyllan.to
+  github: github.com/dyllan-to-you
+body: |-
+  <p>Systems thinker and software engineer. About seven years building platform architecture, real-time control systems, and developer infrastructure for clean energy. Now: independent — building sovereign systems and transparent tools, grammar over prescription. See <a href="/now">now</a> for what I'm working on this week.</p>
+
+  <hr />
+
+  <h2 id="experience">experience</h2>
+
+  <p><strong>Founding Engineer / Technical Lead</strong> <em>(Software Architect)</em> · Acelerex · Remote / Boston, MA · Nov 2018 — Dec 2025</p>
+
+  <h3>Platform &amp; distributed systems</h3>
+  <ul>
+    <li>Established a standardized application and data platform across all products, enabling rapid feature delivery while preserving long-term maintainability under severe resource constraints. Stack: Vue.js, Node.js, TimescaleDB, DuckDB.</li>
+    <li>Designed a job-queue and worker execution system for bursty, low-duty-cycle workloads — running C++, Python, and ML training/inference jobs cost-efficiently without over-provisioning infrastructure.</li>
+  </ul>
+
+  <h3>Real-time data &amp; control</h3>
+  <ul>
+    <li>Led a ground-up rewrite of a legacy C++ SCADA system into a local-first TypeScript architecture, maintaining reliable real-time control of <strong>30+ MW of deployed solar and storage assets</strong> while significantly improving development velocity. Integrated MATLAB/Simulink control models and TimescaleDB-backed dashboards.</li>
+    <li>Architected real-time data pipelines ingesting <strong>70,000+ metrics at sub-second resolution</strong> from Modbus, DNP3, and OPC UA sources — the backbone for monitoring, control, analytics, and ML-driven forecasting.</li>
+  </ul>
+
+  <h3>Product delivery &amp; user experience</h3>
+  <ul>
+    <li>Delivered a grid-simulation system on the unified platform, replacing a legacy tool and enabling faster analysis, visualization, and reporting for clients including the <strong>World Bank</strong> and international energy agencies.</li>
+    <li>Served as de facto product and UX design lead across internal tools, operational dashboards, and customer-facing applications — translating complex problem domains into usable, trusted workflows.</li>
+  </ul>
+
+  <h3>Infrastructure, security, &amp; leadership</h3>
+  <ul>
+    <li>Grew and mentored a <strong>5-person globally distributed engineering team</strong>, serving as primary technical decision-maker. Established standards for architecture, code review, shared ownership, and iterative delivery aligned with business goals.</li>
+    <li>Standardized cloud infrastructure and operations on Azure, selecting tooling and automation to minimize operational overhead while preserving observability, security, and reproducibility across environments.</li>
+    <li>Designed and operated systems aligned with NIST guidance for critical infrastructure — MFA, least-privilege access, network segmentation, CI security scanning, and secure remote connectivity via Tailscale.</li>
+  </ul>
+
+  <hr />
+
+  <h2 id="skills">skills</h2>
+
+  <p><strong>Languages</strong> — TypeScript, Python, C++, Rust, Java. Working: Clojure/ClojureScript. Reading: Lean4.</p>
+
+  <p><strong>Technologies</strong> — Vue.js, React, Node.js, WebSocket, PostgreSQL, TimescaleDB, Emscripten, Docker, Terraform, GitLab CI/CD, Cloudflare, Tailscale, Azure, Google Cloud. Secure system design: MFA, secrets management, zero-trust networking.</p>
+
+  <p><strong>Systems</strong> — Distributed control, real-time data pipelines, time-series databases, message queues, content-addressed storage, formal verification, graph databases (Datalog/Datascript), local-first architecture.</p>
+
+  <p><strong>Approach</strong> — Derive, don't assert. Map dynamics before designing. Progressive enhancement. Fail visibly. Short feedback loops. Systems over goals.</p>
+
+  <hr />
+
+  <h2 id="projects">projects</h2>
+
+  <p><strong>Hydra</strong> · <a href="https://github.com/dyllan-to-you/hydra">github.com/dyllan-to-you/hydra</a></p>
+  <p>Python-based quantitative trading system focused on rapid research iteration and large-scale backtesting. Stack: Jupyter, pandas, numba, vectorbt, dask.</p>
+
+  <p><strong>Ur · Verve</strong> · current — see <a href="/now">now</a>.</p>
+
+  <hr />
+
+  <h2 id="education">education</h2>
+
+  <p><strong>Florida Atlantic University</strong> — B.S. Computer Science · Aug 2018</p>
+
+  <hr />
+
+  <h2 id="elsewhere">elsewhere</h2>
+
+  <ul>
+    <li><strong>Hour Kava</strong> — Co-founded a Burning Man camp; led logistics and infrastructure for 10 first-time participants. 2022 — 2023.</li>
+    <li><strong>Toastmasters</strong> — Competent Communicator &amp; Competent Leader; VP of Public Relations. 2016 — 2018.</li>
+    <li><strong>Zendo Project</strong> — Sitting and Integration Training. 2024.</li>
+    <li><strong>Cybersecurity Competitions</strong> — Capture-the-flag (CTF) challenges through high school and college; early foundations in defensive and adversarial thinking.</li>
+    <li><strong>CPR Certification</strong> — 2025.</li>
+  </ul>
+
+  <p>Music is the other architecture: classical piano as foundation, looping-based live performance as exploration. DJ persona <em>Hatman</em>. Art installations at Burning Man.</p>
+
+  <hr />
+
+  <h2 id="contact">contact</h2>
+
+  <p>Open to: collaboration on sovereign systems, local-first architecture, formal-but-practical knowledge graphs. Selectively open to: contract work that funds the mission. Not open to: VC-shaped opportunities.</p>
+
+  <p>Reach me at <a href="mailto:howdy@dyllan.to">howdy@dyllan.to</a>.</p>
