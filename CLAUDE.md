@@ -69,6 +69,20 @@ The tome renders every leaf in DOM at once and uses `inert` on non-active leaves
 
 **How to apply:** When walking a sequence whose length is data-driven (pages array, writings collection, etc.), derive the target index from the data, not from a hardcoded literal. For book tests: `for (let i = 0; i < pages.length - 1; i++)` or query the live region label after each press and break on match. Same shape generalizes to any "click N times to reach X" test against any append-only structure.
 
+### T8 — Bust `.astro/` after content-schema changes
+
+Astro 6 caches parsed content-collection data in `.astro/data-store.json`, keyed on `content-config-digest`. When you add a field to a collection schema — especially with `.default()` — the digest doesn't always change in a way that triggers re-validation. `getCollection()` returns entries that look correct in the cache file but never expose the new field to consumers. Dev-server restart alone is not enough; the on-disk cache survives.
+
+**Why:** Discovered 2026-05-25 wiring a `draft` flag into `PageSchema`. The cache file showed `"draft": true` for the three drafted entries, but the SSR'd Svelte island's `props=` attribute had zero `"draft"` occurrences for ANY of 11 page entries. Multiple restarts of `pnpm dev` did not fix it. `rm -rf .astro node_modules/.vite` + rebuild did. Sibling memory: `feedback_astro_content_cache_invalidation.md`.
+
+**How to apply:** When a schema field "should" be visible to components but isn't — conditional rendering branches silently not firing, props missing the field in SSR'd island output, defaults appearing where explicit values were set — bust the cache before debugging code:
+
+```
+rm -rf .astro node_modules/.vite
+```
+
+Then restart dev. If the field appears, the bug was cache invalidation; if it still doesn't, then look at the code. Doing this first saves 10–30 min of wrong-direction debugging.
+
 ## Conventions
 
 - **File naming**: `<slug>.yaml` for both pages and writings. Pages have numeric prefix for sort (`00-cover-front.yaml` … `06-colophon.yaml`). Writings use kebab-case slug.
