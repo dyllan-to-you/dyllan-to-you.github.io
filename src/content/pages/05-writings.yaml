@@ -1,7 +1,8 @@
 slug: writings
-order: 4
+order: 5
 label: The Writings
 toc: the-writings
+draft: true
 chapter:
   number: "III"
   title: The Writings

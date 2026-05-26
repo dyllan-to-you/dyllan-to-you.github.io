@@ -12,8 +12,10 @@ interface Props {
 
 const { title = "Justice — Builder · Musician · Architect" } = Astro.props;
 
-// Book pages — sorted by declared order.
-const rawPages = await getCollection("pages");
+// Book pages — sorted by declared order. Drafts visible in dev only.
+const rawPages = await getCollection("pages", ({ data }) =>
+  import.meta.env.PROD ? !data.draft : true,
+);
 const sortedPages = rawPages.sort((a, b) => a.data.order - b.data.order);
 
 // Writings — newest first for card listing; same order for in-book pages.
@@ -70,6 +72,7 @@ type TomePage = {
   order: number;
   label: string;
   toc?: string;
+  draft?: boolean;
   pageLayout: "cover" | "content";
   variant?: "front" | "back";
   chapter?: { number: string; title: string; subtitle?: string };
@@ -218,4 +221,5 @@ for (const entry of sortedPages) {
     border-radius: 2px;
     background: rgba(224, 208, 176, 0.25);
   }
+
 </style>

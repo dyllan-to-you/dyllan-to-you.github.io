@@ -9,6 +9,7 @@ interface TocChild {
   toc: string;
   slug?: string;
   meta?: string;
+  draft?: boolean;
 }
 
 interface TocEntry extends TocChild {
@@ -76,11 +77,13 @@ function handleNav(e: MouseEvent, idx: number) {
         <a
           class="tree-entry"
           class:active
+          class:draft={entry.draft}
           href={hrefFor(entry.slug)}
           onclick={(e) => handleNav(e, entry.index)}
           aria-current={active ? 'page' : undefined}
         >
           <span class="branch">{last && !hasNested ? '╰─' : '├─'}</span>
+          {#if entry.draft}<span class="draft-tag" aria-label="draft">DRAFT</span>{/if}
           <span class="leaf" class:leaf-active={active}>{entry.toc}</span>
           {#if active && !hasNested}<span class="cursor">✦</span>{/if}
           {#if entry.meta}<span class="meta">{entry.meta}</span>{/if}
@@ -93,11 +96,13 @@ function handleNav(e: MouseEvent, idx: number) {
             <a
               class="tree-entry child-entry"
               class:active={childActive}
+              class:draft={child.draft}
               href={hrefFor(child.slug)}
               onclick={(e) => handleNav(e, child.index)}
               aria-current={childActive ? 'page' : undefined}
             >
               <span class="branch">{last ? '   ' : '╎  '}{lastChild ? '╰─' : '├─'}</span>
+              {#if child.draft}<span class="draft-tag" aria-label="draft">DRAFT</span>{/if}
               <span class="leaf" class:leaf-active={childActive}>{child.toc}</span>
               {#if childActive}<span class="cursor">✦</span>{/if}
               {#if child.meta}<span class="meta">{child.meta}</span>{/if}
@@ -313,6 +318,24 @@ function handleNav(e: MouseEvent, idx: number) {
     animation: flicker 1.6s ease-in-out infinite;
     text-shadow: 0 0 6px rgba(45, 107, 63, 0.5);
   }
+
+  /* Draft tag — only renders in dev (drafts are filtered in prod). */
+  .draft-tag {
+    display: inline-block;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    font-weight: 600;
+    color: #7a1f1f;
+    background: rgba(184, 51, 51, 0.18);
+    border: 1px solid rgba(122, 31, 31, 0.5);
+    padding: 1px 5px;
+    margin-right: 6px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    line-height: 1.3;
+  }
+  .tree-entry.draft .leaf { color: var(--tome-ink-light); font-style: italic; }
+  .tree-entry.draft:hover .leaf { color: #7a1f1f; }
 
   @keyframes flicker {
     0%, 100% { opacity: 0.95; transform: translateY(0); }

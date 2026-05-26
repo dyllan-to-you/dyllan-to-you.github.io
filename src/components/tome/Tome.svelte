@@ -32,6 +32,7 @@ interface PageData {
   order: number;
   label: string;
   toc?: string;
+  draft?: boolean;
   pageLayout: "cover" | "content";
   variant?: "front" | "back";
   chapter?: { number: string; title: string; subtitle?: string };
@@ -65,11 +66,11 @@ let tocEntries = $derived.by(() => {
   const withIndex = pages.map((p, i) => ({ ...p, index: i }));
   const writingChildren = withIndex
     .filter((p) => p.toc && p.slug?.startsWith("writings/"))
-    .map((p) => ({ index: p.index, toc: p.toc as string, slug: p.slug, meta: p.meta }));
+    .map((p) => ({ index: p.index, toc: p.toc as string, slug: p.slug, meta: p.meta, draft: p.draft }));
   return withIndex
     .filter((p) => p.toc && !p.slug?.startsWith("writings/"))
     .map((p) => {
-      const base = { index: p.index, toc: p.toc as string, slug: p.slug, meta: p.meta };
+      const base = { index: p.index, toc: p.toc as string, slug: p.slug, meta: p.meta, draft: p.draft };
       if (p.slug === "writings" && writingChildren.length > 0) {
         return { ...base, children: writingChildren };
       }
@@ -230,17 +231,21 @@ onMount(() => {
   // Initial sync: if the URL points past the cover, animate the
   // cascading flip from cover to target. goTo's stagger logic
   // showcases each leaf as it turns. pushState is skipped because
-  // the URL already matches the target.
+  // the URL already matches the target. Focus is skipped because
+  // the user hasn't navigated in-app — they typed/refreshed/followed
+  // a link, and grabbing scroll-area focus would surface :focus-visible
+  // as an unwanted green ring on first paint.
   const initialIdx = indexForPath(window.location.pathname);
   if (initialIdx !== flipped) {
-    goTo(initialIdx);
+    goTo(initialIdx, { focusContent: false });
   }
 
   const onPop = () => {
     const idx = indexForPath(window.location.pathname);
     if (idx !== flipped) {
       suppressPush = true;
-      goTo(idx);
+      // Browser back/forward — same reasoning as initial mount.
+      goTo(idx, { focusContent: false });
     }
   };
   window.addEventListener("popstate", onPop);
@@ -251,9 +256,10 @@ onMount(() => {
      Navigation
   ═══════════════════════════════════════════════ */
 
-function goTo(target) {
+function goTo(target, opts: { focusContent?: boolean } = {}) {
   if (busy) return;
   if (target === flipped || target < 0 || target > total) return;
+  const focusContent = opts.focusContent ?? true;
 
   const forward = target > flipped;
   const from = Math.min(flipped, target);
@@ -291,13 +297,17 @@ function goTo(target) {
   // content rather than orphaned on the dogear they just activated.
   // setTimeout(0) lets Svelte's inert-attribute reactivity settle first;
   // focus() on a still-inert subtree silently no-ops.
-  setTimeout(() => {
-    const scrollArea = contentRefs.get(target);
-    if (scrollArea) {
-      if (!scrollArea.hasAttribute("tabindex")) scrollArea.setAttribute("tabindex", "-1");
-      scrollArea.focus({ preventScroll: true });
-    }
-  }, 0);
+  // Skipped on initial mount and popstate — the user hasn't intent-navigated
+  // within the app, so the green :focus-visible ring would be unwanted noise.
+  if (focusContent) {
+    setTimeout(() => {
+      const scrollArea = contentRefs.get(target);
+      if (scrollArea) {
+        if (!scrollArea.hasAttribute("tabindex")) scrollArea.setAttribute("tabindex", "-1");
+        scrollArea.focus({ preventScroll: true });
+      }
+    }, 0);
+  }
 
   clearTimeout(timer);
   timer = setTimeout(

@@ -34,6 +34,9 @@ export const PageSchema = z.object({
   order: z.number(),
   label: z.string(),
   toc: z.string().optional(),
+  // Hidden from the prod book; still rendered in dev so in-flight pages
+  // are visible while authoring. Mirrors the writings collection.
+  draft: z.boolean().default(false),
   pageLayout: z.enum(["cover", "content"]).default("content"),
   variant: z.enum(["front", "back"]).optional(),
   chapter: ChapterSchema.optional(),

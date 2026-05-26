@@ -7,7 +7,8 @@
 
 import { test, expect } from "@playwright/test";
 
-// The book has 9 pages (indices 0-8). The aria-live region announces state.
+// The aria-live region announces page state. Page count is data-driven
+// (drafts filtered in prod); tests walk-until-match rather than count.
 const FLIP_SETTLE_MS = 1000;
 
 test.describe("Book navigation", () => {
@@ -60,14 +61,15 @@ test.describe("Book navigation", () => {
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.waitForTimeout(500);
 
-    // Navigate to the colophon (page index 5 = 5 ArrowRight presses from cover)
-    for (let i = 0; i < 5; i++) {
+    // Walk until we land on Colophon. T7: derive target from data, not from
+    // a hardcoded literal — the book is additively-evolving.
+    let label = "";
+    for (let i = 0; i < 20; i++) {
       await page.keyboard.press("ArrowRight");
       await page.waitForTimeout(FLIP_SETTLE_MS);
+      label = (await page.locator('[data-tome-live-page]').textContent()) ?? "";
+      if (label.includes("Colophon")) break;
     }
-
-    // Verify we're at colophon
-    let label = await page.locator('[data-tome-live-page]').textContent();
     expect(label).toContain("Colophon");
 
     // One more flip should close the book — skip the back cover leaf spread
@@ -82,16 +84,19 @@ test.describe("Book navigation", () => {
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.waitForTimeout(500);
 
-    // Navigate all the way to closed back
-    for (let i = 0; i < 5; i++) {
+    // Walk to colophon (data-driven, T7), then one more flip to close.
+    let label = "";
+    for (let i = 0; i < 20; i++) {
       await page.keyboard.press("ArrowRight");
       await page.waitForTimeout(FLIP_SETTLE_MS);
+      label = (await page.locator('[data-tome-live-page]').textContent()) ?? "";
+      if (label.includes("Colophon")) break;
     }
     await page.keyboard.press("ArrowRight");
     await page.waitForTimeout(FLIP_SETTLE_MS);
 
     // Verify closed
-    let label = await page.locator('[data-tome-live-page]').textContent();
+    label = (await page.locator('[data-tome-live-page]').textContent()) ?? "";
     expect(label).toContain("Book closed (back)");
 
     // Go back — should land on colophon, not an intermediate state
@@ -110,13 +115,13 @@ test.describe("Book navigation", () => {
     await page.keyboard.press("ArrowRight");
     await page.waitForTimeout(FLIP_SETTLE_MS);
 
-    // Click a TOC entry (the-architect = /story page)
-    const tocEntry = page.locator("button.tree-entry", { hasText: "the-architect" });
+    // Click a TOC entry (the-resume = /resume page)
+    const tocEntry = page.locator("button.tree-entry", { hasText: "the-resume" });
     if (await tocEntry.count() > 0) {
       await tocEntry.first().click();
       await page.waitForTimeout(FLIP_SETTLE_MS);
       const label = await page.locator('[data-tome-live-page]').textContent();
-      expect(label).toContain("Architect");
+      expect(label).toContain("Résumé");
     }
   });
 });

@@ -35,6 +35,11 @@ $effect(() => {
        arrows when the area has no focusable content inside. Inert leaves
        still have their scroll-areas excluded from Tab order. -->
   <div class="scroll-area" bind:this={scrollAreaEl} tabindex="0">
+    <!-- Draft banner — dev-only by construction (drafts filtered in prod). -->
+    {#if page.draft}
+      <div class="draft-banner" role="status">DRAFT &mdash; not published in production</div>
+    {/if}
+
     <!-- Chapter header (if present) -->
     {#if page.chapter}
       <ChapterHeader number={page.chapter.number} title={page.chapter.title} subtitle={page.chapter.subtitle}/>
@@ -262,5 +267,27 @@ $effect(() => {
     font-family: var(--tome-font-mono);
     color: var(--tome-ink-light);
     font-size: var(--tome-text-caption); margin: 0;
+  }
+
+  /* ─── Draft banner (dev-only) ─── */
+  .draft-banner {
+    font-family: var(--tome-font-mono);
+    font-size: var(--tome-text-caption);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #7a1f1f;
+    background: repeating-linear-gradient(
+      45deg,
+      rgba(184, 51, 51, 0.10),
+      rgba(184, 51, 51, 0.10) 8px,
+      rgba(184, 51, 51, 0.20) 8px,
+      rgba(184, 51, 51, 0.20) 16px
+    );
+    border: 1px dashed rgba(122, 31, 31, 0.55);
+    padding: 8px 12px;
+    margin: 0 0 16px;
+    border-radius: 2px;
+    text-align: center;
+    font-weight: 500;
   }
 </style>
