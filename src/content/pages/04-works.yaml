@@ -1,7 +1,8 @@
 slug: works
-order: 3
+order: 4
 label: The Works
 toc: the-works
+draft: true
 chapter:
   number: "II"
   title: The Works
@@ -9,30 +10,24 @@ chapter:
 cards:
   - name: "Ur"
     description: "A grammar for describing anything. Derived from first principles, not designed by committee."
-  - name: "Urdex"
-    description: "Where everything connects. A personal knowledge graph — holons in, artifacts out."
-  - name: "Faewyld"
-    description: "Agent orchestration. Structured autonomy with feedback loops."
-  - name: "Life: Saga"
-    description: "A reality-playing game. Six runes for time, habits, memory, home, wealth, and relationships."
+  - name: "Verve"
+    description: "The first product built on Ur. A personal-data application — yours on your device."
 closing: "the grammar is open (Apache 2.0). the products are the business."
 body: |-
   <p>Imagine a personal wikipedia for your life, managed and maintained automatically. Every concept, relationship, habit, goal, and memory — linked, searchable, coherent, and yours. Local-first, so it's yours — not Google's, not some VC's.</p>
 
-  <p>That's what I'm building. The pitch is twelve words. The engine underneath is three systems that move up an autonomy gradient: manual specification, tooled memory, autonomous orchestration.</p>
+  <p>That's what I'm building. The pitch is twelve words. The engine underneath is a specification grammar; the products built on it move up an autonomy gradient from manual capture to tooled memory to agent-assisted curation.</p>
 
   <hr />
 
   <h2 id="the-engine">the engine</h2>
 
-  <p>The unit is the Holon — a typed note with typed links. Holons organize into holographs. From a holograph you can project anything: documentation, code, schemas, diagrams, a website. Change the artifact, and the change propagates back to the source. Bidirectional by derivation, not by design choice.</p>
+  <p>Ur is a derived specification grammar — a way to describe any system, idea, or process as typed notes with typed links. Those notes organize into graphs; from a graph you can project anything: documentation, code, schemas, diagrams, a website. Change the artifact, and the change propagates back to the source. Bidirectional by derivation, not by design choice.</p>
 
-  <p>The whole thing runs on my laptop in SQLite. Several hundred holons across dozens of holographs. Working protocol server, operational agent orchestration, comprehensive derivation with falsification conditions. The system has been in daily use since early 2026.</p>
+  <p>The whole thing runs on my laptop in SQLite. Several hundred typed entries across dozens of graphs. Working protocol server, operational agent orchestration, comprehensive derivation with falsification conditions. The system has been in daily use since early 2026.</p>
 
   <hr />
 
   <h2 id="the-products">the products</h2>
 
-  <p>Life: Saga makes invisible life systems visible and playable. Six runes — Verve (time and music), Forge (habits as experiments), Lore (sovereign memory), Hearth (domestic life), Trove (wealth), Locus (identity and relationships). Each rune is one dimension of life, made concrete and queryable.</p>
-
-  <p>Data lives on your device. No algorithmic feeds, no engagement manipulation, no cloud hostage-taking. Players define their own skills, quests, and progression. Progressive web app — no app store gatekeepers.</p>
+  <p>Verve is the first product built on Ur — a personal-data application that makes one slice of life (time and music) visible and queryable. Local-first by construction: your data lives on your device. No algorithmic feeds, no engagement manipulation, no cloud hostage-taking. Progressive web app — no app store gatekeepers.</p>
