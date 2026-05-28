@@ -12,11 +12,11 @@ closing: |-
   building: ontology x orchestration x play
   contact: howdy@dyllan.to
 body: |-
-  <p>Systems thinker. Software engineer. Independent. Seven years building platform architecture and real-time control systems for clean energy — SCADA systems managing 30+ MW of deployed solar and storage, data pipelines ingesting 70,000+ metrics at sub-second resolution, grid simulation tools for the World Bank. The kind of work where if your abstraction leaks, actual electricity goes somewhere it shouldn't.</p>
+  <p>Systems thinker. Software engineer. Seven years building platform architecture and real-time control systems for clean energy — SCADA systems managing 30+ MW of deployed solar and storage, data pipelines ingesting 70,000+ metrics at sub-second resolution, grid simulation tools for the World Bank. The kind of work where if your abstraction leaks, actual electricity goes somewhere it shouldn't.</p>
 
   <p>Then I asked a question I couldn't stop answering: what if you could describe anything — any system, any idea, any life — using the same structural grammar? Not a framework someone designed by committee. Something derived from first principles, the way lambda calculus falls out of asking "what is computation?"</p>
 
-  <p>That question became the current work: sovereign systems and transparent tools, built independently. The grammar (Ur) is open source. The products built on it are the business. Never VC — the alignment of incentives matters more than the dollar amount.</p>
+  <p>That question became the current work: sovereign systems and transparent tools. The grammar (Ur) is open source. The products built on it are the business.</p>
 
   <hr />
 

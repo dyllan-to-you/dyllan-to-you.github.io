@@ -11,7 +11,7 @@ closing: |-
   contact: howdy@dyllan.to
   github: github.com/dyllan-to-you
 body: |-
-  <p>Systems thinker and software engineer. About seven years building platform architecture, real-time control systems, and developer infrastructure for clean energy. Now: independent — building sovereign systems and transparent tools, grammar over prescription. See <a href="/now">now</a> for what I'm working on this week.</p>
+  <p>Systems thinker and software engineer. About seven years building platform architecture, real-time control systems, and developer infrastructure for clean energy. See <a href="/now">now</a> for what I'm working on this week.</p>
 
   <hr />
 
@@ -89,6 +89,6 @@ body: |-
 
   <h2 id="contact">contact</h2>
 
-  <p>Open to: collaboration on sovereign systems, local-first architecture, formal-but-practical knowledge graphs. Selectively open to: contract work that funds the mission. Not open to: VC-shaped opportunities.</p>
+  <p>Open to contract and freelance work on sovereign systems, local-first architecture, real-time control systems, and formal-but-practical knowledge graphs.</p>
 
   <p>Reach me at <a href="mailto:howdy@dyllan.to">howdy@dyllan.to</a>.</p>
