@@ -1,4 +1,5 @@
 <script lang="ts">
+import type { TomePage } from "../../lib/page";
 import ChapterHeader from "./ChapterHeader.svelte";
 import CircuitVine from "./CircuitVine.svelte";
 import PageNumber from "./PageNumber.svelte";
@@ -11,7 +12,7 @@ let {
   registerScrollArea,
   onCardNavigate,
 }: {
-  page: Record<string, unknown>;
+  page: TomePage;
   number: string | null;
   vine: string;
   registerScrollArea?: (el: HTMLElement | null) => void;

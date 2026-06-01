@@ -16,41 +16,16 @@
 -->
 <script lang="ts">
 import { onDestroy, onMount } from "svelte";
+import type { TomePage } from "../../lib/page";
 import ContentPage from "./ContentPage.svelte";
 import CoverPage from "./CoverPage.svelte";
 import Dogear from "./Dogear.svelte";
 import TocPage from "./TocPage.svelte";
 import { interaction, layout, timing } from "./tokens.ts";
 
-interface Section {
-  id: string;
-  text: string;
-}
+type Section = NonNullable<TomePage["sections"]>[number];
 
-interface PageData {
-  slug: string;
-  order: number;
-  label: string;
-  toc?: string;
-  draft?: boolean;
-  pageLayout: "cover" | "content";
-  variant?: "front" | "back";
-  chapter?: { number: string; title: string; subtitle?: string };
-  backFace?: "cover";
-  body?: string;
-  sections?: Section[];
-  prompt?: string;
-  quote?: string;
-  attribution?: string;
-  lines?: { text: string; italic?: boolean; mono?: boolean }[];
-  cards?: { name: string; description: string; href?: string }[];
-  cardsSource?: "writings";
-  header?: string;
-  closing?: string;
-  meta?: string;
-}
-
-let { pages }: { pages: PageData[] } = $props();
+let { pages }: { pages: TomePage[] } = $props();
 
 /* ═══════════════════════════════════════════════
      Derived page data
@@ -140,13 +115,23 @@ let DEPTH_UI = $derived((total + 2) * DEPTH);
      Engine state
   ═══════════════════════════════════════════════ */
 
+interface Animation {
+  from: number;
+  to: number;
+  forward: boolean;
+  startFlipped: number;
+  staggerMs: number;
+}
+
 let isPortrait = $state(false);
 let flipped = $state(0);
-let animation = $state(null);
+let animation = $state<Animation | null>(null);
 let timer: ReturnType<typeof setTimeout> | undefined;
+// Focus timeout — distinct from `timer` (the flip-teardown timer). Tracked so
+// an interleaving nav can cancel a focus() aimed at a now-superseded target.
+let focusTimer: ReturnType<typeof setTimeout> | undefined;
 let tocOpen = $state(false);
-let suppressPush = false;
-let wrapperEl = $state(null);
+let wrapperEl = $state<HTMLElement | null>(null);
 let prefersReducedMotion = $state(false);
 
 /* ─── Derived ─── */
@@ -231,15 +216,19 @@ let slugs = $derived(pages.map((p) => p.slug ?? ""));
 // colophon leaf — but direct-linking to /back is still useful.
 const BACK_SLUG = "back";
 
-function indexForPath(pathname) {
+function indexForPath(pathname: string): number {
   const clean = pathname.replace(/^\/+|\/+$/g, "");
-  if (clean === "") return 0;
+  if (clean === "") return 0; // root → cover
   if (clean === BACK_SLUG) return total;
   const found = slugs.indexOf(clean);
-  return found === -1 ? 0 : found;
+  // Fail visibly (parent tenet): an UNKNOWN non-empty path returns -1 rather
+  // than silently collapsing to the cover. Callers decide what -1 means:
+  // in-app card nav lets it fall through (no flip); direct URL nav clamps to
+  // cover with an explicit comment.
+  return found === -1 ? -1 : found;
 }
 
-function pathForIndex(i) {
+function pathForIndex(i: number): string {
   if (i === total) return `/${BACK_SLUG}`;
   const slug = slugs[i];
   return slug ? `/${slug}` : "/";
@@ -253,17 +242,20 @@ onMount(() => {
   // the user hasn't navigated in-app — they typed/refreshed/followed
   // a link, and grabbing scroll-area focus would surface :focus-visible
   // as an unwanted green ring on first paint.
-  const initialIdx = indexForPath(window.location.pathname);
+  // unknown direct-nav URL: deliberate cover fallback (clamp -1 → 0) so a bad
+  // typed/shared URL still lands somewhere sane rather than rejecting the nav.
+  const initialIdx = Math.max(0, indexForPath(window.location.pathname));
   if (initialIdx !== flipped) {
-    goTo(initialIdx, { focusContent: false });
+    goTo(initialIdx, { source: "mount" });
   }
 
   const onPop = () => {
-    const idx = indexForPath(window.location.pathname);
+    // unknown direct-nav URL: deliberate cover fallback (clamp -1 → 0).
+    const idx = Math.max(0, indexForPath(window.location.pathname));
     if (idx !== flipped) {
-      suppressPush = true;
-      // Browser back/forward — same reasoning as initial mount.
-      goTo(idx, { focusContent: false });
+      // Browser back/forward — same reasoning as initial mount: no pushState,
+      // no focus.
+      goTo(idx, { source: "popstate" });
     }
   };
   window.addEventListener("popstate", onPop);
@@ -274,10 +266,23 @@ onMount(() => {
      Navigation
   ═══════════════════════════════════════════════ */
 
-function goTo(target, opts: { focusContent?: boolean } = {}) {
+/** Where a navigation originated. Drives URL sync + focus, replacing the
+    old `suppressPush` temporal-coupling flag with an explicit, per-call param:
+      - 'user'     — in-app intent (dogear/swipe/keyboard/card): pushState +
+                     focus the target's scroll-area.
+      - 'popstate' — browser back/forward: URL already matches → no pushState,
+                     no focus (avoids an unwanted :focus-visible ring).
+      - 'mount'    — initial sync from a typed/refreshed URL: same as popstate. */
+type NavSource = "user" | "popstate" | "mount";
+
+function goTo(target: number, { source = "user" }: { source?: NavSource } = {}) {
+  // Clear any pending focus from a prior nav first — if a second nav
+  // interleaves, the earlier setTimeout(0) must not focus a superseded target.
+  clearTimeout(focusTimer);
+
   if (busy) return;
   if (target === flipped || target < 0 || target > total) return;
-  const focusContent = opts.focusContent ?? true;
+  const focusContent = source === "user";
 
   const forward = target > flipped;
   const from = Math.min(flipped, target);
@@ -289,11 +294,10 @@ function goTo(target, opts: { focusContent?: boolean } = {}) {
   flipped = target;
   tocOpen = false;
 
-  // Sync URL (skipped when called from popstate to avoid loops)
+  // Sync URL — only user-intent navigation pushes history. mount/popstate
+  // already reflect the URL, so pushing would loop or pollute the stack.
   if (typeof window !== "undefined") {
-    if (suppressPush) {
-      suppressPush = false;
-    } else {
+    if (source === "user") {
       const newPath = pathForIndex(target);
       if (window.location.pathname !== newPath) {
         history.pushState(null, "", newPath);
@@ -318,7 +322,7 @@ function goTo(target, opts: { focusContent?: boolean } = {}) {
   // Skipped on initial mount and popstate — the user hasn't intent-navigated
   // within the app, so the green :focus-visible ring would be unwanted noise.
   if (focusContent) {
-    setTimeout(() => {
+    focusTimer = setTimeout(() => {
       const scrollArea = contentRefs.get(target);
       if (scrollArea) {
         if (!scrollArea.hasAttribute("tabindex")) scrollArea.setAttribute("tabindex", "-1");
@@ -351,8 +355,11 @@ function handleCardNavigate(href: string) {
   try {
     const url = new URL(href, window.location.origin);
     if (url.origin !== window.location.origin) return; // external — let browser handle
+    // indexForPath returns -1 for an unknown path. The guard now fails it
+    // honestly — no silent flip-to-cover — so a card with a stale href falls
+    // through to the browser instead of masking the bad link.
     const idx = indexForPath(url.pathname);
-    if (idx !== undefined && idx >= 0 && idx < total) {
+    if (idx >= 0 && idx < total) {
       goTo(idx);
     }
   } catch {
@@ -389,16 +396,16 @@ function registerContentRef(pageIndex: number, el: HTMLElement | null) {
      Per-leaf calculations
   ═══════════════════════════════════════════════ */
 
-function isAnimating(i) {
-  return animation && i >= animation.from && i <= animation.to;
+function isAnimating(i: number): boolean {
+  return animation !== null && i >= animation.from && i <= animation.to;
 }
 
-function isFlippedFor(i) {
+function isFlippedFor(i: number): boolean {
   if (isAnimating(i)) return i < flipped;
   return animation ? i < animation.startFlipped : i < flipped;
 }
 
-function transformFor(i) {
+function transformFor(i: number): string {
   const onLeft = isFlippedFor(i);
   const depth = (onLeft ? i : total - i) * DEPTH;
   if (isPortrait) {
@@ -409,8 +416,8 @@ function transformFor(i) {
   return `translateZ(${depth}px) ${rotation}`;
 }
 
-function transitionFor(i) {
-  if (!isAnimating(i)) return "none";
+function transitionFor(i: number): string {
+  if (!isAnimating(i) || animation === null) return "none";
   if (prefersReducedMotion) return "none"; // snap, don't flip
   const { from, to, forward, staggerMs } = animation;
   const steps = to - from;
@@ -454,7 +461,7 @@ function handleTouchEnd(event) {
   delta > 0 ? goForward() : goBack();
 }
 
-function handleKeydown(event) {
+function handleKeydown(event: KeyboardEvent) {
   // Escape closes the portrait TOC drawer (mouse equivalent: click-outside).
   if (event.key === "Escape") {
     if (isPortrait && tocOpen) {
@@ -470,6 +477,25 @@ function handleKeydown(event) {
   const activeEl = document.activeElement as HTMLElement | null;
   const tag = activeEl?.tagName;
   if (tag === "A" || tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+
+  // When focus is inside a scroll-area (a long-prose page, tabindex=0 for
+  // keyboard scrolling), the vertical keys belong to NATIVE scroll — the
+  // engine must not hijack them. Reserve only the horizontal arrows for flips
+  // there. Outside a scroll-area (shell/body/dogear), all arrows + space flip.
+  const inScrollArea = activeEl?.closest(".scroll-area") != null;
+
+  if (inScrollArea) {
+    // Let ArrowUp/ArrowDown/Space/PageUp/PageDown fall through to the browser's
+    // native scroll — no preventDefault, no flip.
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      goForward();
+    } else if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      goBack();
+    }
+    return;
+  }
 
   if (["ArrowRight", " ", "ArrowDown"].includes(event.key)) {
     event.preventDefault();
@@ -513,7 +539,10 @@ $effect(() => {
   return () => wrapperEl.removeEventListener("wheel", handleWheel);
 });
 
-onDestroy(() => clearTimeout(timer));
+onDestroy(() => {
+  clearTimeout(timer);
+  clearTimeout(focusTimer);
+});
 </script>
 
 

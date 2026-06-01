@@ -27,6 +27,9 @@ const LineSchema = z.object({
 const CardSchema = z.object({
   name: z.string(),
   description: z.string(),
+  // Optional in-book/permalink target. Authored cards omit it; the layout's
+  // dynamic writings-cards builder sets it to the writing's permalink.
+  href: z.string().optional(),
 });
 
 export const PageSchema = z.object({
@@ -60,6 +63,23 @@ export const PageSchema = z.object({
 });
 
 export type Page = z.infer<typeof PageSchema>;
+
+/**
+ * Canonical tome-page type — the superset that actually flows through the
+ * tome engine. It is the authored `Page` (single-sourced from the Zod schema)
+ * plus the fields the layout *synthesizes* at compose time:
+ *
+ *   - `sections` — h2 anchors extracted from the rendered body (TOC nesting).
+ *   - `meta`     — TOC meta column text (e.g. a writing's short date).
+ *
+ * (Card `href` is authored-or-synthesized but lives on `CardSchema` itself, so
+ * it rides in via `Page`.) This is the ONE shape `BookLayout`, `Tome`, and
+ * `ContentPage` agree on — framework-neutral; no Astro/Svelte imports here.
+ */
+export type TomePage = Page & {
+  sections?: { id: string; text: string }[];
+  meta?: string;
+};
 
 /** Extract h2 ids from rendered page body HTML for TOC-section nesting. */
 export function extractSections(html: string): { id: string; text: string }[] {

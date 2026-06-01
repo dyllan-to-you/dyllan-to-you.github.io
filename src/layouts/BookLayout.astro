@@ -2,7 +2,7 @@
 import { getCollection } from "astro:content";
 import Tome from "../components/tome/Tome.svelte";
 import StickyNote from "../components/post/StickyNote.svelte";
-import { extractSections } from "../lib/page";
+import { extractSections, type TomePage } from "../lib/page";
 import { escapeHtml } from "../lib/html";
 import { renderBody as renderWritingBody, getReadingTime, type Writing } from "../lib/writing";
 import "../styles/guide.css";
@@ -60,29 +60,6 @@ ${renderWritingBody(w)}
 
 // Compose the tome page array. Writings are injected right after the
 // "writings" index page so they live as interior chapters of the book.
-type TomePage = {
-  slug: string;
-  order: number;
-  label: string;
-  toc?: string;
-  draft?: boolean;
-  pageLayout: "cover" | "content";
-  variant?: "front" | "back";
-  chapter?: { number: string; title: string; subtitle?: string };
-  backFace?: "cover";
-  body?: string;
-  sections?: { id: string; text: string }[];
-  meta?: string;
-  prompt?: string;
-  quote?: string;
-  attribution?: string;
-  lines?: { text: string; italic?: boolean; mono?: boolean }[];
-  cards?: { name: string; description: string; href?: string }[];
-  cardsSource?: "writings";
-  header?: string;
-  closing?: string;
-};
-
 const pages: TomePage[] = [];
 
 for (const entry of sortedPages) {
@@ -112,6 +89,9 @@ for (const entry of sortedPages) {
       pages.push({
         slug: `writings/${w.id}`,
         order: 0,
+        // We only iterate `publishedWritings` (drafts already filtered above),
+        // so an injected writing page is published by construction.
+        draft: false,
         label: w.data.title,
         toc: w.data.title,
         pageLayout: "content",
