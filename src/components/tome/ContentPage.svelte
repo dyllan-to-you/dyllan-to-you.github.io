@@ -27,8 +27,13 @@ $effect(() => {
 });
 </script>
 
-<div class="page" class:epigraph={page.quote} class:colophon={!!page.lines}>
-  {#if !page.lines}
+<!-- Render MODE is driven by the `block` discriminant (page.ts PageSchema),
+     NOT by sniffing quote/lines presence. The schema's .superRefine guarantees
+     the fields match the block, so these branches can trust the tag. The
+     orthogonal slots below (chapter/header/body/cards/closing) stay
+     presence-checked — they compose freely within a `flow` block. -->
+<div class="page" class:epigraph={page.block === 'epigraph'} class:colophon={page.block === 'colophon'}>
+  {#if page.block !== 'colophon'}
     <CircuitVine page={vine}/>
   {/if}
 
@@ -51,8 +56,9 @@ $effect(() => {
       <div class="header">&gt; {page.header}</div>
     {/if}
 
-    <!-- Epigraph layout (centered quote + attribution) -->
-    {#if page.quote}
+    <!-- Epigraph layout (centered quote + attribution). MODE-gated on
+         page.block; the refine guarantees a quote is present here. -->
+    {#if page.block === 'epigraph'}
       <div class="centered">
         {#if page.prompt}
           <div class="prompt">&gt; {page.prompt}</div>
@@ -98,8 +104,9 @@ $effect(() => {
       </p>
     {/if}
 
-    <!-- Colophon lines (if present) -->
-    {#if page.lines}
+    <!-- Colophon lines. MODE-gated on page.block; the refine guarantees
+         `lines` is present, the `&& page.lines` narrows the optional type. -->
+    {#if page.block === 'colophon' && page.lines}
       <div class="colophon-label">&gt; colophon</div>
       <div class="colophon-rule"></div>
       <div class="colophon-body">
@@ -276,7 +283,7 @@ $effect(() => {
     font-size: var(--tome-text-caption);
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #7a1f1f;
+    color: var(--tome-error);
     background: repeating-linear-gradient(
       45deg,
       rgba(184, 51, 51, 0.10),

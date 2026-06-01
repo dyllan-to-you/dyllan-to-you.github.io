@@ -3,6 +3,7 @@ order: 4
 label: The Works
 toc: the-works
 draft: true
+block: flow
 chapter:
   number: "II"
   title: The Works

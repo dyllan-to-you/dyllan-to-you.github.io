@@ -325,7 +325,7 @@ function handleNav(e: MouseEvent, idx: number) {
     font-size: 9px;
     letter-spacing: 0.12em;
     font-weight: 600;
-    color: #7a1f1f;
+    color: var(--tome-error);
     background: rgba(184, 51, 51, 0.18);
     border: 1px solid rgba(122, 31, 31, 0.5);
     padding: 1px 5px;
@@ -335,7 +335,7 @@ function handleNav(e: MouseEvent, idx: number) {
     line-height: 1.3;
   }
   .tree-entry.draft .leaf { color: var(--tome-ink-light); font-style: italic; }
-  .tree-entry.draft:hover .leaf { color: #7a1f1f; }
+  .tree-entry.draft:hover .leaf { color: var(--tome-error); }
 
   @keyframes flicker {
     0%, 100% { opacity: 0.95; transform: translateY(0); }

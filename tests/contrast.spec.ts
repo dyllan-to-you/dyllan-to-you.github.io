@@ -74,9 +74,17 @@ const PAIRS: Pair[] = [
   ["tome-voice-justice", "tome-paper", AA_BODY, "Justice's voice on parchment"],
   ["tome-voice-agent", "tome-paper", AA_BODY, "Claude's voice on parchment"],
   ["tome-link", "tome-paper", AA_BODY, "links on parchment"],
-  ["tome-ink-light", "tome-paper", AA_LARGE, "secondary ink on parchment (large text only)"],
-  ["tome-term-green", "tome-paper", AA_LARGE, "terminal accent on parchment (decorative/label)"],
-  ["tome-term-dim", "tome-paper", AA_LARGE, "dim terminal text on parchment (meta labels)"],
+  // Meta/caption chrome (.writing-meta, .voice-legend, .header, .attribution)
+  // renders at caption size (12.5px) — not "large text" — so it owes AA_BODY.
+  // It now paints in --tome-ink-light (5.25:1); D1 migrated it off the dimmer
+  // --tome-term-dim (3.29:1), which silently failed AA_BODY at this size.
+  ["tome-ink-light", "tome-paper", AA_BODY, "secondary ink / caption meta on parchment"],
+  ["tome-term-green", "tome-paper", AA_BODY, "terminal accent on parchment (section labels)"],
+  // --tome-term-dim is a reserve palette entry: after D1, NO body/caption-size
+  // text consumes it (the meta chrome moved to --tome-ink-light). Held to
+  // AA_LARGE only as a decorative-floor sanity check — if a future usage paints
+  // it at caption size, re-promote it to AA_BODY (or migrate, like D1 did).
+  ["tome-term-dim", "tome-paper", AA_LARGE, "dim terminal reserve (decorative floor — no caption text)"],
 ];
 
 test.describe("design-system contrast", () => {

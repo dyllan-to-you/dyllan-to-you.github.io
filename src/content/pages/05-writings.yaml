@@ -3,6 +3,7 @@ order: 5
 label: The Writings
 toc: the-writings
 draft: true
+block: flow
 chapter:
   number: "III"
   title: The Writings

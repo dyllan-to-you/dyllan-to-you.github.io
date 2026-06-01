@@ -2,6 +2,7 @@ slug: resume
 order: 2
 label: The Résumé
 toc: the-resume
+block: flow
 chapter:
   number: "I"
   title: The Résumé

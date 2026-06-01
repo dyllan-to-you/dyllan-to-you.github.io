@@ -3,6 +3,7 @@ order: 3
 label: The Architect
 toc: the-architect
 draft: true
+block: flow
 chapter:
   number: "I"
   title: The Architect

@@ -16,7 +16,18 @@
 -->
 <script lang="ts">
 import { onDestroy, onMount } from "svelte";
+import {
+  type Animation,
+  DEPTH,
+  isFlippedFor as geomIsFlippedFor,
+  transformFor as geomTransformFor,
+  transitionFor as geomTransitionFor,
+} from "../../lib/geometry";
 import type { TomePage } from "../../lib/page";
+import {
+  indexForPath as routeIndexForPath,
+  pathForIndex as routePathForIndex,
+} from "../../lib/routing";
 import ContentPage from "./ContentPage.svelte";
 import CoverPage from "./CoverPage.svelte";
 import Dogear from "./Dogear.svelte";
@@ -54,29 +65,46 @@ function toRoman(n: number): string {
 }
 
 /* Top-level TOC entries with optional children.
-   Writings (slug starts with "writings/") nest under the writings-index page. */
+   A child page declares its container via the `parent` connection (set at
+   compose time in BookLayout — e.g. injected writings carry parent:"writings").
+   It nests under the top-level entry whose `slug` equals that parent. This
+   replaces the old `slug.startsWith("writings/")` prefix-sniffing (tenet 7:
+   group on a typed field, not a magic string). Single level by design — the
+   tome's TOC is index → leaf, not an N-deep tree. */
 let tocEntries = $derived.by(() => {
   const withIndex = pages.map((p, i) => ({ ...p, index: i }));
-  const writingChildren = withIndex
-    .filter((p) => p.toc && p.slug?.startsWith("writings/"))
-    .map((p) => ({ index: p.index, toc: p.toc as string, slug: p.slug, meta: p.meta, draft: p.draft }));
+  // Bucket every child page by the parent slug it names.
+  const childrenByParent = new Map<string, typeof withIndex>();
+  for (const p of withIndex) {
+    if (p.toc && p.parent) {
+      const bucket = childrenByParent.get(p.parent) ?? [];
+      bucket.push(p);
+      childrenByParent.set(p.parent, bucket);
+    }
+  }
+  const toChild = (p: (typeof withIndex)[number]) => ({
+    index: p.index,
+    toc: p.toc as string,
+    slug: p.slug,
+    meta: p.meta,
+    draft: p.draft,
+  });
   return withIndex
-    .filter((p) => p.toc && !p.slug?.startsWith("writings/"))
+    .filter((p) => p.toc && !p.parent) // top-level = no parent connection
     .map((p) => {
-      const base = { index: p.index, toc: p.toc as string, slug: p.slug, meta: p.meta, draft: p.draft };
-      if (p.slug === "writings" && writingChildren.length > 0) {
-        return { ...base, children: writingChildren };
+      const base = toChild(p);
+      const kids = p.slug ? childrenByParent.get(p.slug) : undefined;
+      if (kids && kids.length > 0) {
+        return { ...base, children: kids.map(toChild) };
       }
       return base;
     });
 });
 
-/* Set of page indices that are writing-pages — used to know when a writing
-   is active so its parent's nested TOC branch stays expanded. */
+/* Set of page indices that are child-pages (nested under a parent) — used to
+   know when a child is active so its parent's TOC branch stays expanded. */
 let writingIndices = $derived(
-  new Set(
-    pages.flatMap((p, i) => (p.slug?.startsWith("writings/") ? [i] : [])),
-  ),
+  new Set(pages.flatMap((p, i) => (p.parent ? [i] : []))),
 );
 
 /* Map page index → section list for TOC nesting */
@@ -106,22 +134,17 @@ let vineSide = $derived(
      Constants (total is derived since it depends on pages)
   ═══════════════════════════════════════════════ */
 
-const DEPTH = 2;
+/* DEPTH (px per leaf in the preserve-3d stack) is single-sourced from
+   src/lib/geometry.ts so the extracted transform math and these overlay/UI
+   depths can't drift apart. */
 let total = $derived(pages.length);
 let DEPTH_OVERLAY = $derived((total + 1) * DEPTH);
 let DEPTH_UI = $derived((total + 2) * DEPTH);
 
 /* ═══════════════════════════════════════════════
      Engine state
+     (`Animation` type imported from src/lib/geometry.ts)
   ═══════════════════════════════════════════════ */
-
-interface Animation {
-  from: number;
-  to: number;
-  forward: boolean;
-  startFlipped: number;
-  staggerMs: number;
-}
 
 let isPortrait = $state(false);
 let flipped = $state(0);
@@ -211,27 +234,17 @@ $effect(() => {
 
 let slugs = $derived(pages.map((p) => p.slug ?? ""));
 
-// "back" is a virtual slug: the closed-back state (flipped === total).
-// It has no page in the registry — the back cover is the verso of the
-// colophon leaf — but direct-linking to /back is still useful.
-const BACK_SLUG = "back";
-
+// Thin component-side wrappers over the PURE routing fns (src/lib/routing.ts).
+// They close over the reactive `slugs`/`total` so every call sees current
+// state; the pure fns themselves take that state as explicit args (testable
+// in isolation). `indexForPath` still returns -1 for an unknown path so
+// callers can fail visibly; the virtual "back" slug lives in the module.
 function indexForPath(pathname: string): number {
-  const clean = pathname.replace(/^\/+|\/+$/g, "");
-  if (clean === "") return 0; // root → cover
-  if (clean === BACK_SLUG) return total;
-  const found = slugs.indexOf(clean);
-  // Fail visibly (parent tenet): an UNKNOWN non-empty path returns -1 rather
-  // than silently collapsing to the cover. Callers decide what -1 means:
-  // in-app card nav lets it fall through (no flip); direct URL nav clamps to
-  // cover with an explicit comment.
-  return found === -1 ? -1 : found;
+  return routeIndexForPath(pathname, slugs, total);
 }
 
 function pathForIndex(i: number): string {
-  if (i === total) return `/${BACK_SLUG}`;
-  const slug = slugs[i];
-  return slug ? `/${slug}` : "/";
+  return routePathForIndex(i, slugs, total);
 }
 
 onMount(() => {
@@ -394,36 +407,23 @@ function registerContentRef(pageIndex: number, el: HTMLElement | null) {
 
 /* ═══════════════════════════════════════════════
      Per-leaf calculations
+     Thin wrappers over the PURE geometry fns (src/lib/geometry.ts). Each
+     reads the component's reactive state at call time and forwards it as
+     explicit args, so the template's $derived re-evaluation still fires on
+     every flipped/animation/orientation change — the reactivity lives in
+     these reads, the math lives in the pure module.
   ═══════════════════════════════════════════════ */
 
-function isAnimating(i: number): boolean {
-  return animation !== null && i >= animation.from && i <= animation.to;
-}
-
 function isFlippedFor(i: number): boolean {
-  if (isAnimating(i)) return i < flipped;
-  return animation ? i < animation.startFlipped : i < flipped;
+  return geomIsFlippedFor(i, flipped, animation);
 }
 
 function transformFor(i: number): string {
-  const onLeft = isFlippedFor(i);
-  const depth = (onLeft ? i : total - i) * DEPTH;
-  if (isPortrait) {
-    const angle = onLeft ? 180 - i * 0.4 : 0;
-    return `translateZ(${depth}px) rotateX(${angle}deg)`;
-  }
-  const rotation = onLeft ? "rotateY(-180deg)" : "rotateY(0deg)";
-  return `translateZ(${depth}px) ${rotation}`;
+  return geomTransformFor(i, flipped, animation, isPortrait, total);
 }
 
 function transitionFor(i: number): string {
-  if (!isAnimating(i) || animation === null) return "none";
-  if (prefersReducedMotion) return "none"; // snap, don't flip
-  const { from, to, forward, staggerMs } = animation;
-  const steps = to - from;
-  const pos = forward ? i - from : to - i;
-  const delay = steps > 0 ? (pos / steps) * staggerMs : 0;
-  return `transform ${timing.flipMs}ms ${timing.flipEase} ${delay}ms`;
+  return geomTransitionFor(i, animation, prefersReducedMotion, timing.flipMs, timing.flipEase);
 }
 
 /* ═══════════════════════════════════════════════
@@ -706,10 +706,8 @@ onDestroy(() => {
 
 
 <style>
-  @keyframes -global-sigilPulse {
-    0%, 100% { filter: drop-shadow(0 0 8px rgba(201, 168, 76, 0.2)); }
-    50% { filter: drop-shadow(0 0 16px rgba(201, 168, 76, 0.4)); }
-  }
+  /* @keyframes sigilPulse moved into CoverPage.svelte (its sole consumer) as
+     a `-global-` keyframe — was a cross-component orphan defined here (D5). */
 
   .tome-root {
     width: 100vw; min-height: 100vh;

@@ -35,6 +35,13 @@
   --tome-term-dim: #8a7a6a;
   --tome-prompt: #3d7a4f;
 
+  /* ── State color: error / draft ──
+   * Deep oxblood for dev-only draft banners/tags and the writing render-error
+   * card. Single-sourced here so the three call sites (ContentPage draft
+   * banner, TocPage draft tag + hover, BookLayout error card) can't drift.
+   * Dev-surface chrome only — never paints in a published page. */
+  --tome-error: #7a1f1f;
+
   /* ── Voice attribution + link palette ──
    * All pass WCAG body-text contrast against the parchment (#f0e4cc, L=0.785).
    *
@@ -149,17 +156,20 @@
   border-radius: 0 2px 2px 0;
 }
 
-/* Voice legend — small meta-note shown at the top of attributed pieces */
+/* Voice legend — small meta-note shown at the top of attributed pieces.
+ * Renders at caption size (12.5px), so it owes WCAG AA_BODY (4.5:1), not
+ * AA_LARGE. --tome-ink-light (5.25:1) clears it; --tome-term-dim (3.29:1)
+ * does not. No opacity stack — opacity on an already-dim token silently
+ * negates the token's declared ratio (tenet T5). */
 .voice-legend {
   font-family: var(--tome-font-mono);
   font-size: var(--tome-text-caption);
-  color: var(--tome-term-dim);
+  color: var(--tome-ink-light);
   line-height: 1.6;
   border-top: 1px solid rgba(184, 115, 51, 0.25);
   border-bottom: 1px solid rgba(184, 115, 51, 0.25);
   padding: 10px 0;
   margin: 0 0 24px;
-  opacity: 0.85;
 }
 .voice-legend strong { font-weight: 500; }
 

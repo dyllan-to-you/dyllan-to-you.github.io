@@ -26,6 +26,17 @@ let { variant = "front" } = $props();
 </div>
 
 <style>
+  /* The cover-sigil pulse keyframe lives HERE — co-located with its sole
+     consumer (.sigil-wrap below) instead of orphaned in Tome.svelte (D5).
+     `-global-` makes Svelte emit it globally yet keep it referenced by this
+     component's `animation: sigilPulse`, so the CSS minifier doesn't tree-shake
+     it (a plain global @keyframes in guide.css gets dropped — nothing in that
+     file references it). */
+  @keyframes -global-sigilPulse {
+    0%, 100% { filter: drop-shadow(0 0 8px rgba(201, 168, 76, 0.2)); }
+    50% { filter: drop-shadow(0 0 16px rgba(201, 168, 76, 0.4)); }
+  }
+
   .page {
     width: 100%; height: 100%; box-sizing: border-box;
     display: flex; flex-direction: column;
