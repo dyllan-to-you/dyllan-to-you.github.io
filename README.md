@@ -1,90 +1,122 @@
 # Technomagyck Tome — dyllan.to
 
-A 3D page-flipping personal website rendered as a solarpunk leather tome. Built with Astro + Svelte 5.
+A 3D page-flipping personal website rendered as a solarpunk leather tome. Astro 6 (static) + Svelte 5.
 
-- **Landscape**: two-page book spread, right-to-left page flip (rotateY)
-- **Portrait**: single-page flipbook, bottom-to-top flip (rotateX)
-- Deterministic position mapping between orientations
-- Keyboard, click, and touch/swipe input
-- CSS 3D transforms with GPU compositing (willChange only on animating leaf)
-- Fully accessible: ARIA roles, live region announcements, focus-visible, 44px touch targets
+- **Landscape**: two-page book spread, right-to-left page flip (`rotateY` around the left edge)
+- **Portrait**: single-page flipbook, bottom-to-top flip (`rotateX` around the top edge)
+- Keyboard, click, touch/swipe, and horizontal-wheel input
+- CSS 3D transforms; depth via `translateZ` in a `preserve-3d` stack (no per-leaf `z-index`)
+- Routes are a **projection of the content collections** — one catch-all generator, no hand-maintained shells
+- Accessible: ARIA roles, `aria-live` page announcements, `inert` offscreen leaves, focus-visible, keyboard-scrollable prose, WCAG-AA contrast
 
 ## Getting Started
 
 ```bash
 cd dyllan-to
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
+
+`pnpm build` → `pnpm preview` to exercise the production (draft-filtered, statically-generated) build.
 
 ## File Structure
 
 ```
 src/
   pages/
-    index.astro              Astro shell (font loading, meta, hydration)
+    [...slug].astro      The SINGLE route generator. getStaticPaths projects every
+                         route from the pages + writings collections (root→cover,
+                         each published page, writings/<id>, /back). No hand shells.
+    rss.xml.ts           RSS feed over the writings collection.
+  layouts/
+    BookLayout.astro     Composition: loads both collections, injects writings after
+                         the writings-index leaf, builds the tome page array, renders
+                         per-route <head> (title/description/OG/canonical), mounts the
+                         Tome + StickyNote islands. Fault-isolates each writing render.
+  lib/
+    page.ts              PageSchema (+ `block` discriminant + .superRefine) + the
+                         canonical TomePage type + extractSections().
+    writing.ts           WritingSchema + renderBody() — voice-attributed blocks/spans.
+    content.ts           isPublished() — the single shared draft predicate.
+    geometry.ts          Pure leaf-geometry math (transformFor/transitionFor/…). Unit-tested.
+    routing.ts           Pure path ⇄ leaf-index (indexForPath/pathForIndex). Unit-tested.
+    html.ts              Shared escapeHtml().
   components/tome/
-    tokens.js              §1  Design tokens (colors, fonts, timing, layout, z-index)
-    Tome.svelte            §7  Book engine (flip state, 3D transforms, input handling)
-    CircuitVine.svelte     §3  Circuit-trace vine border decoration
-    CoverSigil.svelte      §3  Geometric/organic central emblem
-    CornerOrnament.svelte  §3  Corner flourish (4 rotations)
-    PageNumber.svelte      §4  Centered page number at bottom
-    ProjectCard.svelte     §4  Project name + description card
-    ChapterHeader.svelte   §4  Chapter opener (number, title, subtitle, divider)
-    PaperBlank.svelte      §5  Blank paper page (endpapers, fillers)
-    CoverPage.svelte       §5  Front cover
-    EpigraphPage.svelte    §5  "Assert nothing. Derive everything."
-    PhilosophyPage.svelte  §5  Philosophy + Practice
-    ArchitectPage.svelte   §5  Chapter I — The Architect
-    CoreProjectsPage.svelte §5 Ur, Faewyld, Ludex cards
-    WorksPage.svelte       §5  Chapter II — Locus, Verve, Toast cards
-    FrequenciesPage.svelte §5  Chapter III — Music and performance
-    ColophonPage.svelte    §5  Closing inscription
-    BackCover.svelte       §5  Back cover
+    tokens.ts            JS engine tokens (timing, layout, interaction).
+    Tome.svelte          Book engine: flip state machine, 3D transforms, input, URL
+                         routing (pushState/popstate), focus management, orientation.
+    ContentPage.svelte   Content-leaf renderer (layout MODE driven by page.block).
+    TocPage.svelte       Table of contents (landscape verso + portrait drawer; nests
+                         child pages under the parent named by their `parent` field).
+    CoverPage.svelte     Front/back cover (owns the sigilPulse keyframe).
+    CoverSigil.svelte    Geometric/organic central emblem.
+    CircuitVine.svelte   Circuit-trace vine border decoration.
+    CornerOrnament.svelte  Corner flourish.
+    ChapterHeader.svelte   Chapter opener (number, title, subtitle).
+    PageNumber.svelte    Roman page number.
+    ProjectCard.svelte   Card (permalink href → in-app flip when it maps to a leaf).
+    Dogear.svelte        Page-turn corner button.
+  components/post/
+    StickyNote.svelte    Shell-level overlay island — document hover/focus listener for
+                         voice-collab prompt strips + data-preview link previews.
+  content/
+    pages/*.yaml         The 8 book pages (numeric-prefixed for order).
+    writings/*.yaml      Voice-attributed essays (injected as interior chapters).
+  styles/guide.css       CSS-custom-property design tokens + reduced-motion + voice CSS.
+
+tests/
+  *.spec.ts              Playwright: accessibility (axe), contrast (pure-data WCAG),
+                         navigation, visual/screenshot.
+  ../src/lib/*.test.ts   vitest unit tests for geometry.ts + routing.ts (pnpm test:unit).
 ```
 
-Dependency graph: `tokens.js <- decorations <- atoms <- pages <- Tome.svelte`
+Dependency graph: `tokens.ts + lib/{geometry,routing,content,html,page,writing} <- atoms/decorations <- ContentPage/TocPage <- Tome.svelte <- BookLayout.astro <- [...slug].astro`
 
 ## Key Design Decisions
 
-**No overflow:hidden on page roots.** That CSS property inside a `preserve-3d` context forces the browser to flatten 3D rendering. Clipping is handled by the leaf face wrappers in Tome.svelte.
+**Routes are a projection of content.** `src/pages/[...slug].astro`'s `getStaticPaths` enumerates every route from the same `getCollection('pages')` + `getCollection('writings')` calls `BookLayout` composes from — through the single shared `isPublished()` predicate (`src/lib/content.ts`). So the generated route set and the rendered page set cannot drift: adding a page or un-drafting a writing arms a working permalink, never a 404. (See CLAUDE.md T12.)
 
-**Transitions gated per-leaf.** CSS transitions are `"none"` unless a specific leaf is mid-flip. This eliminates the orientation-switch animation race condition and avoids applying transitions to non-animating leaves.
+**Layout MODE is an explicit discriminant.** A content leaf's interior layout is `page.block` (`flow` | `epigraph` | `colophon`), not inferred from field presence. A mandatory Zod `.superRefine` aborts the build with a named error if the content contradicts the tag; the orthogonal slots (`body`/`cards`/`chapter`/`header`/`closing`) still compose within `flow`.
 
-**Deterministic orientation mapping.** Lookup tables (not proportional math) map between portrait and landscape positions. Each entry is hand-verified against the content layout.
+**No `overflow:hidden` on page roots.** That property inside a `preserve-3d` context flattens 3D rendering. Clipping is handled by the leaf face wrappers in `Tome.svelte`.
 
-**willChange only on animating leaf.** Permanent `will-change: transform` wastes GPU memory. Only the leaf currently mid-flip gets GPU compositing.
+**Transitions gated per-leaf.** CSS transitions are `"none"` unless a leaf is mid-flip — eliminates the orientation-switch race and avoids transitioning idle leaves. The teardown timer is keyed to `flipMs + staggerMs` (the real longest leaf delay), not a magic constant.
 
-**Font loading in Astro.** Fonts are loaded via `<link>` in `index.astro` with `preconnect`, not injected via `{@html}` at runtime. This avoids duplicate `<style>` elements and enables browser-level preloading.
+**Pure geometry, testable.** The flip math (`transformFor`/`transitionFor`/`isFlippedFor`) and path↔index routing live in pure `src/lib/{geometry,routing}.ts` with vitest coverage; `Tome.svelte` keeps the reactive state + flip state machine and calls them with live values.
 
-**Svelte 5 idioms.** Direct component rendering (`<Page />`), `$derived.by()` for complex derivations, `$props()` throughout. No `svelte:component`.
+**Build fault-isolation.** One bad `{s:id}`/voice/prompt ref degrades to a loud error card in dev and hard-aborts the build in prod (dev-soft / CI-hard) — a single content typo can't silently ship or nuke the whole site. (CLAUDE.md T13.)
+
+**Per-route social surface.** `<head>` emits OG/Twitter/canonical tags driven by each route's own data, so a shared link unfurls as itself, not the cover.
+
+**Font loading in Astro.** Fonts load via `<link>` with `preconnect` in `BookLayout`, not injected at runtime.
+
+**Svelte 5 idioms.** Runes throughout (`$state`/`$derived`/`$props`/`$effect`); direct component rendering; no `svelte:component`.
 
 ## Accessibility
 
-Run the accessibility suite on its own:
-
 ```bash
-pnpm test:a11y
+pnpm test:a11y     # axe + contrast
+pnpm test:unit     # vitest (geometry + routing)
+pnpm test          # full Playwright suite (run serially: --workers=1)
 ```
 
-Two checks fire:
-
-- **`tests/accessibility.spec.ts`** — runs `@axe-core/playwright` against every published route. Covers ARIA, landmarks, alt text, heading order, focus management, and color contrast on real rendered DOM. Two rules are explicitly disabled and the reasoning is in-file: `aria-hidden-focus` (the tome's offscreen leaves are intentionally hidden) and `page-has-heading-one` (the book's canonical h1 lives on the cover leaf, which is inert on non-cover routes; the book metaphor defeats this best-practice heuristic).
-- **`tests/contrast.spec.ts`** — pure-data check that every `--tome-*` foreground/background pair we actually render meets its declared WCAG ratio (4.5:1 body, 3:1 large). Runs offline; sub-second.
+- **`tests/accessibility.spec.ts`** — `@axe-core/playwright` against the **real generated route set**, asserting each route 200s before scanning (a 404 fails loudly, not silently). Two rules are disabled with in-file reasoning: `aria-hidden-focus` (offscreen leaves are intentionally hidden) and `page-has-heading-one` (the canonical h1 lives on the cover leaf, inert on non-cover routes — the book metaphor defeats the heuristic).
+- **`tests/contrast.spec.ts`** — pure-data check that every rendered `--tome-*` foreground/background pair meets its declared WCAG ratio at the size it's used (caption-size meta → AA body 4.5:1). Runs offline.
 
 Architectural notes:
 
-- Non-active leaves carry `inert` so screen readers don't linearize the entire vault as one document.
-- `prefers-reduced-motion` is honored both via global CSS overrides and JS short-circuits in `Tome.svelte` (`transitionFor()` returns `"none"`, `scrollIntoView` switches to `"auto"`).
-- The hover-revealed prompt strip and link preview in `StickyNote.svelte` mirror their `mouseover/mouseout` listeners with `focusin/focusout` so keyboard users get the same affordance, with an `aria-live` region announcing the prompt text.
-- The scroll-area on each content page is `tabindex="0"` (keyboard-scrollable for prose pages with no inner focusable content); inert leaves still exclude their scroll-area from Tab order.
+- Non-active leaves carry `inert` so screen readers don't linearize the entire book.
+- `prefers-reduced-motion` is honored via global CSS overrides + JS short-circuits in `Tome.svelte` (`transitionFor()` returns `"none"`; `scrollIntoView` switches to `"auto"`).
+- Inside a focused `.scroll-area`, vertical arrows + space yield to native scroll; only horizontal arrows flip — long prose stays keyboard-scrollable.
+- `StickyNote.svelte` mirrors `mouseover/mouseout` with `focusin/focusout` + an `aria-live` region so the prompt affordance is keyboard-reachable.
 
 ## Deploy
 
 ```bash
 npx astro add netlify   # or vercel, cloudflare, etc.
-npm run build
+pnpm build
 ```
 
-Astro with `output: 'static'` (default) produces a zero-JS-overhead static site with only the Svelte tome island hydrated.
+`output: 'static'` is pinned in `astro.config.mjs`; the build produces a static site with only the Svelte tome + StickyNote islands hydrated.
+
+> Known trade-off (deferred): every route ships the whole composed book (~3.1 MB) because the Tome island owns all leaves for the flip. A content-first inversion / per-route weight trim is gated on real traffic — see the parent vault's `dyllan-to.refactor.plan.md`.

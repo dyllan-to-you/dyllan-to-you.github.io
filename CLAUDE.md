@@ -8,7 +8,10 @@ Personal site for Dyllan Justice Tô-Yu. Astro 6 + Svelte 5. Two content collect
 - **Writing bodies** are structured (blocks + spans + prompts) and rendered by `src/lib/writing.ts:renderBody()` into HTML strings at layout time.
 - **Page bodies** are pre-rendered HTML stored verbatim in YAML.
 - **`BookLayout.astro`** composes pages + writings into the tome page array. Writings are injected after the `writings` index page so they live as interior chapters of the book.
-- **`[slug].astro`** for writings renders `BookLayout` with `initialSlug` set — the direct URL loads the tome at that writing's page, not a separate scroll view.
+- **Routing is a projection of content.** `src/pages/[...slug].astro` is the *only* route file; its `getStaticPaths` enumerates every route (root→cover, each published page, `writings/<entry.id>`, `/back`) from the same collections `BookLayout` loads, through the shared `isPublished()` predicate (`src/lib/content.ts`). No per-page shell, no `initialSlug` prop — the Tome reads `window.location.pathname` on mount and flips there. (T11.)
+- **One canonical page type.** `src/lib/page.ts` exports `TomePage` (the Zod `Page` + synthesized `sections`/`meta`/`parent`); `BookLayout`, `Tome`, and `ContentPage` all import it — never hand-redeclare the shape.
+- **Layout MODE is the `block` discriminant** (`flow`|`epigraph`|`colophon`) on `PageSchema`, guarded by a mandatory `.superRefine`; `ContentPage` switches on `page.block`, not on field presence. Orthogonal slots (`body`/`cards`/`chapter`/`header`/`closing`) still compose within `flow`.
+- **Pure geometry/routing.** Flip math (`transformFor`/`transitionFor`/`isFlippedFor`) and path↔index (`indexForPath`/`pathForIndex`) live in `src/lib/{geometry,routing}.ts`, unit-tested via vitest (`pnpm test:unit`); `Tome.svelte` owns the reactive state + flip state machine and calls them with live values.
 - **StickyNote** (hover popover for voice-collab spans and `data-preview` links) mounts at shell level in `BookLayout.astro`, so it works everywhere the tome renders.
 
 ## Tenets
@@ -91,10 +94,44 @@ A flattening parent with `backface-visibility: hidden` (the tome's `.face`) buil
 
 **How to apply:** Give the flattening parent its own clean stacking context with `isolation: isolate` — DOM-order stacking is then honored and the transformed child stays on top. (Fixed `.face` in `Tome.svelte`.) Diagnose this class of bug by probing `document.elementFromPoint(cx, cy)` at the element's center while toggling its transform: if a sibling appears under a transform but z-index can't reclaim it, suspect a `backface-visibility: hidden` ancestor, not 2D stacking.
 
+### T10 — `astro:content`'s `z` is value-only and Astro-7-deprecated; import from `astro/zod`
+
+`import { z } from "astro:content"` re-exports zod's `z` as a *value* with no type-space namespace, so `z.infer<typeof Schema>` fails (`Cannot find namespace 'z'`) under a cold type-check — and that cascades into implicit-`any` on every type derived from the schema. Astro's own deprecation note (it's removed in Astro 7) points to `import { z } from "astro/zod"`, which exports `z` as a proper namespace.
+
+**Why:** 11 real `src/` type errors hid behind a warm `.astro` cache; a cold `astro sync && astro check` surfaced 6 `z.infer` namespace errors + 5 cascade implicit-anys, all cleared by the one import swap.
+
+**How to apply:** Import `z` from `astro/zod` (not `astro:content`) wherever you use `z.infer` or schema *types*. And run the type gate cold — `rm -rf .astro node_modules/.vite && pnpm astro sync && pnpm check:ci` — a warm cache lies about type health (see T8).
+
+### T11 — Routes are a projection of content, never hand-mirrored shells
+
+Defining the URL set in two places — hand-written `src/pages/*.astro` shells **and** the runtime `slugs[]` in `Tome.svelte` — drifts silently: `/story` 404s, every `/writings/<id>` permalink 404s the instant it un-drafts, and nothing fails loudly. The fix is a single `[...slug].astro` whose `getStaticPaths` enumerates from the collections through the *shared* `isPublished()` predicate.
+
+**Why:** The pre-refactor site shipped exactly this split-brain — this very file once described a `[slug].astro` with `initialSlug` that was never built.
+
+**How to apply:** Never add a per-page `.astro` shell. Routes derive from data via `src/pages/[...slug].astro`. Its `getStaticPaths` filter MUST be byte-identical to `BookLayout`'s — both call `src/lib/content.ts:isPublished`. Use `entry.id` (the filename), never the decorative `data.id`. Bust `.astro/` after (T8).
+
+### T12 — A global `@keyframes` in `guide.css` gets tree-shaken if nothing references it
+
+A bare `@keyframes` in a global stylesheet with no in-file `animation:` consumer is dropped by the production CSS minifier — the animation works in dev and silently dies in `dist`. (Cousin of T2/T3: a build step that strips "unused" CSS can't see that a *component* references the keyframe.)
+
+**Why:** Relocating `sigilPulse` from `Tome.svelte` to `guide.css` (to fix a cross-component orphan) made the minifier tree-shake it; CoverPage stopped pulsing only in the built site.
+
+**How to apply:** Co-locate a keyframe with its sole consuming component, using Svelte's `-global-` prefix (`@keyframes -global-name`) so it's emitted globally yet kept referenced by that component's `animation:`. If a keyframe truly must live in `guide.css`, ensure something in that file references it.
+
+### T13 — Fault-isolate content rendering at the compose boundary (dev-soft / CI-hard)
+
+`renderBody` throws on a bad span/voice/prompt ref or a cycle. Called unguarded in `BookLayout`'s injection loop, one content typo aborts the entire static build for *every* route — violating the parent vault's defense-in-depth tenet (the fallback should be simpler, not absent).
+
+**Why:** A single bad `{s:id}` in any one writing reddened `astro build` site-wide.
+
+**How to apply:** Wrap per-item content rendering in try/catch at the composition boundary. Re-throw under `import.meta.env.PROD` so the build stays the publish gate (fail visibly); in dev, degrade to a loud, escaped error card naming the item + a `biome-ignore`-reasoned `console.warn`. The fallback is a static error string, not another system.
+
 ## Conventions
 
-- **File naming**: `<slug>.yaml` for both pages and writings. Pages have numeric prefix for sort (`00-cover-front.yaml` … `06-colophon.yaml`). Writings use kebab-case slug.
+- **File naming**: `<slug>.yaml` for both pages and writings. Pages have a numeric prefix for sort (`00-cover-front.yaml` … `07-colophon.yaml`). Writings use a kebab-case slug; the route key is `entry.id` (the filename), not the decorative `id` field.
 - **Writing schema**: `src/lib/writing.ts`. Blocks (paragraph/legend/separator) reference spans via `{s:id}` placeholders. Spans reference prompts by id. See also `justice/craft/voice-attribution.md` for authoring rules and the `/write` skill for the chat-time workflow.
-- **Page schema**: `src/lib/page.ts`. Frontmatter-rich; optional HTML body; sections auto-extracted from `h2[id]` for TOC nesting.
-- **Tome composition**: `src/layouts/BookLayout.astro`. Page order follows the numeric prefix; writings are injected after the writings-index page in descending-date order.
+- **Page schema**: `src/lib/page.ts`. Frontmatter-rich; optional HTML body; sections auto-extracted from `h2[id]` for TOC nesting. Layout MODE is the `block` enum (`flow`|`epigraph`|`colophon`) guarded by a `.superRefine`; this file also exports the canonical `TomePage` type.
+- **Routing**: `src/pages/[...slug].astro` — one catch-all `getStaticPaths` projects every route from the collections (T11); `src/pages/rss.xml.ts` is the writings feed. `src/lib/content.ts:isPublished` is the shared draft filter.
+- **Tome composition**: `src/layouts/BookLayout.astro`. Page order follows the numeric prefix; writings are injected after the writings-index page in descending-date order, each carrying `parent: "writings"` so the TOC nests them (not slug-prefix magic).
+- **Testing**: `pnpm test:unit` (vitest — pure geometry/routing in `src/lib`); `pnpm test:a11y` (axe + contrast); `pnpm test` (full Playwright — run `--workers=1`; the `@vision` specs flake under preview-server contention).
 - **Commit style**: inherits the project's mythic S-V-O register (see parent `CLAUDE.md`).
