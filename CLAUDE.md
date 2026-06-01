@@ -83,6 +83,14 @@ rm -rf .astro node_modules/.vite
 
 Then restart dev. If the field appears, the bug was cache invalidation; if it still doesn't, then look at the code. Doing this first saves 10–30 min of wrong-direction debugging.
 
+### T9 — `backface-visibility: hidden` parents ignore z-index for transformed children
+
+A flattening parent with `backface-visibility: hidden` (the tome's `.face`) builds a render surface that **re-sorts any transformed descendant to the bottom of the paint order — z-index and translateZ are both ignored**. So a child that paints on top at rest drops *behind* its siblings the instant it gets a `transform` (even a `:hover` `scale`, even a transform on a nested SVG).
+
+**Why:** The dogear page-turn buttons sit on `.face` and overlap the full-height `.edge-click` strips. At rest the dogear (later in DOM) wins the pointer. On `:hover` its `scale(1.08)` re-sorted it behind `.edge-click` → the pointer landed on `.edge-click` → `mouseleave` → `:hover` reverted → dogear back on top → re-hover. Result: the dogear *pulsed* in and out of hover and felt unclickable. `document.elementFromPoint` at the dogear's own center returned `.edge-click` whenever any transform was applied; `z-index: 999` and `translateZ` did nothing.
+
+**How to apply:** Give the flattening parent its own clean stacking context with `isolation: isolate` — DOM-order stacking is then honored and the transformed child stays on top. (Fixed `.face` in `Tome.svelte`.) Diagnose this class of bug by probing `document.elementFromPoint(cx, cy)` at the element's center while toggling its transform: if a sibling appears under a transform but z-index can't reclaim it, suspect a `backface-visibility: hidden` ancestor, not 2D stacking.
+
 ## Conventions
 
 - **File naming**: `<slug>.yaml` for both pages and writings. Pages have numeric prefix for sort (`00-cover-front.yaml` … `06-colophon.yaml`). Writings use kebab-case slug.

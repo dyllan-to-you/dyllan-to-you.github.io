@@ -709,6 +709,14 @@ onDestroy(() => clearTimeout(timer));
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     overflow: hidden; border-radius: 3px;
+    /* Own stacking context. Without it, the face's backface-visibility:hidden
+       flattening surface re-sorts any transformed descendant (the dogear's
+       :hover scale) to the bottom of the paint order — z-index is ignored —
+       dropping the dogear behind the overlapping .edge-click strip. The
+       pointer then lands on .edge-click, mouseleave fires, :hover reverts,
+       and the dogear pulses in/out of hover. isolate forces DOM-order
+       stacking so the scaled dogear stays on top. */
+    isolation: isolate;
   }
 
   .back-x { transform: rotateX(180deg); }
@@ -780,9 +788,13 @@ onDestroy(() => clearTimeout(timer));
   }
 
   /* ─── Padding-edge click zones ─── */
+  /* Start below the dogear corner (50px tall) so the two affordances don't
+     overlap — the dogear owns its corner, the strip owns the edge beneath it.
+     The redundancy was harmless (both fire the same nav) but left the corner
+     with a featureless strip stacked over the visible dogear. */
   .edge-click {
     position: absolute;
-    top: 0; bottom: 0;
+    top: 50px; bottom: 0;
     width: 32px;
     padding: 0; margin: 0;
     background: transparent;
