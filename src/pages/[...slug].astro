@@ -1,0 +1,100 @@
+---
+/**
+ * The single route generator for the whole tome.
+ *
+ * The set of URLs that exist is now a PROJECTION of the content collections —
+ * not a hand-maintained mirror of `src/pages/*.astro` shells. A catch-all
+ * (`[...slug]`) is required because writing permalinks are two-segment
+ * (`writings/<id>`), which a single `[slug]` can't own.
+ *
+ * Every route renders the same `BookLayout` (the whole book); the Tome island
+ * flips client-side to the leaf matching `window.location.pathname`. We pass
+ * per-route `title` so the SSR'd `<title>`/share-title matches the leaf the URL
+ * names (mirrors Tome.svelte's own `document.title` logic).
+ *
+ * Routes generated (with current drafts):
+ *   - root        → `{ slug: undefined }`  (the cover)
+ *   - each page   → `{ slug: data.slug }`  (published, non-cover)
+ *   - each writing→ `{ slug: 'writings/<entry.id>' }` (published; entry.id, NOT data.id)
+ *   - back cover  → `{ slug: 'back' }`     (virtual — verso of the colophon leaf)
+ *
+ * The draft filter is the SHARED `isPublished` helper, byte-identical to the
+ * one BookLayout uses — drift here is the exact dev-renders/prod-404s bug this
+ * phase exists to kill (D-DRAFTFILTER).
+ */
+import { getCollection } from "astro:content";
+import BookLayout from "../layouts/BookLayout.astro";
+import { isPublished } from "../lib/content";
+
+export async function getStaticPaths() {
+  // Defined inside getStaticPaths: Astro runs this function in an isolated
+  // build-time context where frontmatter module-scope consts aren't reliably
+  // in scope (the `SITE_DESCRIPTION is not defined` foot-gun).
+  const SITE_DESCRIPTION = "Personal site of Dyllan Justice Tô-Yu — solo founder of Playfaire PBC.";
+
+  const pages = await getCollection("pages", ({ data }) => isPublished(data));
+  const writings = await getCollection("writings", ({ data }) => isPublished(data));
+
+  const paths: {
+    params: { slug: string | undefined };
+    props: { title: string; description: string };
+  }[] = [];
+
+  for (const page of pages) {
+    const { slug, label, pageLayout, variant } = page.data;
+    // The cover (empty slug) owns root via `slug: undefined`. Its title is the
+    // site default (matches Tome's `target === 0` branch).
+    if (slug === "" || pageLayout === "cover" || variant === "front") {
+      paths.push({
+        params: { slug: undefined },
+        props: {
+          title: "Justice — Builder · Musician · Architect",
+          description: SITE_DESCRIPTION,
+        },
+      });
+      continue;
+    }
+    paths.push({
+      params: { slug },
+      props: { title: `${label} — Justice`, description: SITE_DESCRIPTION },
+    });
+  }
+
+  for (const writing of writings) {
+    // entry.id is the filename (e.g. `ur-manifesto`) — the routing key.
+    // data.id (`writing:<slug>`) is decorative and dropped from the schema.
+    paths.push({
+      params: { slug: `writings/${writing.id}` },
+      props: {
+        title: `${writing.data.title} — Justice`,
+        // Per-writing description so each shared essay unfurls its own blurb.
+        description: writing.data.description ?? SITE_DESCRIPTION,
+      },
+    });
+  }
+
+  // The back cover is virtual — the verso of the colophon leaf, no content
+  // entry. The Tome treats `/back` as `flipped === total`. Mirrors Tome's
+  // `target >= total` document.title branch.
+  paths.push({
+    params: { slug: "back" },
+    props: { title: "Back Cover — Justice", description: SITE_DESCRIPTION },
+  });
+
+  return paths;
+}
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+
+// Canonical / og:url for THIS route — Astro.url is the per-route URL at render
+// time; resolved against the configured site origin (NOT a constant) so every
+// generated page is self-referential. Falls back to Astro.url if site unset.
+const canonicalURL = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : Astro.url.href;
+---
+
+<BookLayout title={title} description={description} canonicalURL={canonicalURL} />

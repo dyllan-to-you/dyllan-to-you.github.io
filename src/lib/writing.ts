@@ -61,7 +61,10 @@ export const PromptSchema = z.object({
 });
 
 export const WritingSchema = z.object({
-  id: z.string(),
+  // NOTE: the decorative `id: writing:<slug>` field in the YAML is intentionally
+  // NOT in this schema. Routing keys off `entry.id` (the filename, e.g.
+  // `ur-manifesto`), never `data.id`; z.object strips the YAML `id` line so no
+  // path can ever be built from the colon-bearing decorative id (R18 / D-ID).
   title: z.string(),
   description: z.string().optional(),
   date: z.coerce.date(),
@@ -114,11 +117,11 @@ function renderBlock(block: Block, writing: Writing): string {
 function resolveSpans(content: string, writing: Writing, seen: Set<string> = new Set()): string {
   return content.replace(SPAN_PLACEHOLDER, (_, id: string) => {
     if (seen.has(id)) {
-      throw new Error(`Span cycle detected at ${id}`);
+      throw new Error(`Span cycle detected at ${id} (writing "${writing.title}")`);
     }
     const span = writing.spans[id];
     if (!span) {
-      throw new Error(`Unknown span id: ${id}`);
+      throw new Error(`Unknown span id: ${id} (writing "${writing.title}")`);
     }
     return renderSpan(id, span, writing, new Set([...seen, id]));
   });
@@ -127,7 +130,7 @@ function resolveSpans(content: string, writing: Writing, seen: Set<string> = new
 function renderSpan(id: string, span: Span, writing: Writing, seen: Set<string>): string {
   const classes = span.voice.map((v) => {
     const voice = writing.voices[v];
-    if (!voice) throw new Error(`Unknown voice: ${v} (span ${id})`);
+    if (!voice) throw new Error(`Unknown voice: ${v} (span ${id}, writing "${writing.title}")`);
     return voice.class;
   });
 
@@ -137,7 +140,9 @@ function renderSpan(id: string, span: Span, writing: Writing, seen: Set<string>)
   // Per voice-attribution.md rule 6 + 7.
   if (span.prompt) {
     const prompt = writing.prompts[span.prompt];
-    if (!prompt) throw new Error(`Unknown prompt: ${span.prompt} (span ${id})`);
+    if (!prompt) {
+      throw new Error(`Unknown prompt: ${span.prompt} (span ${id}, writing "${writing.title}")`);
+    }
     attrs.push(`data-prompt="${escapeHtml(formatPrompt(prompt))}"`);
   }
 

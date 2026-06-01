@@ -3,25 +3,47 @@ import { getCollection } from "astro:content";
 import Tome from "../components/tome/Tome.svelte";
 import StickyNote from "../components/post/StickyNote.svelte";
 import { extractSections, type TomePage } from "../lib/page";
+import { isPublished } from "../lib/content";
 import { escapeHtml } from "../lib/html";
 import { renderBody as renderWritingBody, getReadingTime, type Writing } from "../lib/writing";
 import "../styles/guide.css";
 
+const SITE_DESCRIPTION =
+  "Personal site of Dyllan Justice Tô-Yu — solo founder of Playfaire PBC.";
+// Default share image. A bespoke per-writing/OG card is a follow-up (D3 NOT);
+// /hatman.jpg is an existing public/ asset so the card is never blank.
+const DEFAULT_OG_IMAGE = "/hatman.jpg";
+
 interface Props {
   title?: string;
+  description?: string;
+  /** Absolute URL of THIS route — drives <link rel=canonical> + og:url so a
+   *  shared link unfurls (and crawlers canonicalize) as itself, not the cover.
+   *  `[...slug].astro` derives it from Astro.site + the route's own pathname.
+   *  Falls back to the site root if a consumer omits it. */
+  canonicalURL?: string;
 }
 
-const { title = "Justice — Builder · Musician · Architect" } = Astro.props;
+const {
+  title = "Justice — Builder · Musician · Architect",
+  description = SITE_DESCRIPTION,
+  canonicalURL = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : Astro.url.href,
+} = Astro.props;
+
+// Absolute OG image URL (social scrapers reject relative paths).
+const ogImageURL = Astro.site
+  ? new URL(DEFAULT_OG_IMAGE, Astro.site).href
+  : DEFAULT_OG_IMAGE;
 
 // Book pages — sorted by declared order. Drafts visible in dev only.
-const rawPages = await getCollection("pages", ({ data }) =>
-  import.meta.env.PROD ? !data.draft : true,
-);
+// `isPublished` is the SHARED predicate [...slug].astro's getStaticPaths uses,
+// so the rendered page set and the generated route set cannot drift.
+const rawPages = await getCollection("pages", ({ data }) => isPublished(data));
 const sortedPages = rawPages.sort((a, b) => a.data.order - b.data.order);
 
 // Writings — newest first for card listing; same order for in-book pages.
 const publishedWritings = (
-  await getCollection("writings", ({ data }) => (import.meta.env.PROD ? !data.draft : true))
+  await getCollection("writings", ({ data }) => isPublished(data))
 ).sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 
 /** Format a writing's date for the in-book header. */
@@ -58,6 +80,40 @@ ${renderWritingBody(w)}
 `.trim();
 }
 
+/** Fault-isolation boundary for one writing's render (D-BUILDFAIL).
+ *
+ *  `renderWritingBody` throws on a bad `{s:id}` ref, unknown voice/prompt, or
+ *  span cycle. Unguarded, one content typo aborts the WHOLE static build.
+ *
+ *  Policy: dev-soft / CI-hard.
+ *    - PROD: re-throw, enriched with the writing's entry id, so `astro build`
+ *      still hard-gates publish (fail visibly — the build is the gate).
+ *    - DEV:  degrade to a LOUD error card naming the writing + the literal
+ *      error, and warn at build time, so authoring of OTHER writings keeps
+ *      working (defense in depth — the card is the SIMPLER fallback, not a
+ *      second system). The card is built from escaped strings only, so it
+ *      cannot itself throw.
+ */
+function renderWritingAsBookPageSafe(w: Writing, entryId: string): string {
+  try {
+    return renderWritingAsBookPage(w);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    if (import.meta.env.PROD) {
+      throw new Error(`Failed to render writing "${entryId}": ${message}`);
+    }
+    // biome-ignore lint/suspicious/noConsole: build-time author diagnostic — surfaces the broken writing in the dev terminal; the rendered card surfaces it in the book.
+    console.warn(`[BookLayout] writing "${entryId}" failed to render: ${message}`);
+    return `
+<div class="writing-render-error" role="alert">
+  <strong>⚠ This writing failed to render.</strong>
+  <p class="writing-render-error__id">writing: <code>${escapeHtml(entryId)}</code></p>
+  <pre class="writing-render-error__message">${escapeHtml(message)}</pre>
+</div>
+`.trim();
+  }
+}
+
 // Compose the tome page array. Writings are injected right after the
 // "writings" index page so they live as interior chapters of the book.
 const pages: TomePage[] = [];
@@ -85,10 +141,15 @@ for (const entry of sortedPages) {
 
   // Inject writings as book pages after the Writings index.
   if (data.slug === "writings") {
-    for (const w of publishedWritings) {
+    publishedWritings.forEach((w, i) => {
       pages.push({
         slug: `writings/${w.id}`,
-        order: 0,
+        // Monotonic computed order: parent index order + a fractional
+        // increment that lands every injected writing strictly after the
+        // writings-index page and before the next top-level page (R15).
+        // Survives a hypothetical post-injection sort-by-order; no longer
+        // relies on push() insertion order as the silent sort key.
+        order: data.order + (i + 1) / (publishedWritings.length + 1),
         // We only iterate `publishedWritings` (drafts already filtered above),
         // so an injected writing page is published by construction.
         draft: false,
@@ -96,10 +157,10 @@ for (const entry of sortedPages) {
         toc: w.data.title,
         pageLayout: "content",
         header: `> writings / ${w.id}`,
-        body: renderWritingAsBookPage(w.data),
+        body: renderWritingAsBookPageSafe(w.data, w.id),
         meta: shortDate(w.data.date),
       });
-    }
+    });
   }
 }
 ---
@@ -109,14 +170,43 @@ for (const entry of sortedPages) {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
-    <meta name="description" content="Personal site of Dyllan Justice Tô-Yu — solo founder of Playfaire PBC." />
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
+
+    {/* Open Graph — per-route, so a shared link unfurls as itself, not the cover. */}
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:image" content={ogImageURL} />
+    <meta property="og:site_name" content="dyllan.to" />
+
+    {/* Twitter card */}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageURL} />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
   </head>
   <body>
+    {/* Tome stays client:load (D5 finding). The SSR'd first state is the CLOSED
+        COVER (flipped=0) on EVERY route — the cascade-to-target that reveals a
+        deep-nav route's actual content runs in onMount, AFTER hydration. Under
+        client:idle, requestIdleCallback can defer hydration well past first
+        paint on a busy main thread (944-line island + cover-sigil animation),
+        so a visitor deep-linked to /resume would stare at a closed book until
+        idle fires. That's a real dead-book window → keep client:load. (Closing
+        it properly needs an SSR'd-readable first spread — deferred to Stage 2
+        / the content-first inversion, out of scope this phase.) */}
     <Tome client:load pages={pages} />
-    <StickyNote client:load />
+    {/* StickyNote → client:idle: a passive hover/focus overlay with zero
+        first-paint responsibility. Its listeners only matter once the user
+        interacts, so deferring hydration to idle is a free first-load win with
+        no dead-window (D5 Stage 1). */}
+    <StickyNote client:idle />
   </body>
 </html>
 
@@ -193,6 +283,39 @@ for (const entry of sortedPages) {
     border: 1px solid rgba(184, 115, 51, 0.18);
     border-radius: 2px;
     background: rgba(224, 208, 176, 0.25);
+  }
+
+  /* ─── Dev-only writing render-error card (D-BUILDFAIL) ────────────────
+     Loud by design: a broken writing degrades to THIS in dev, never a
+     silent drop. Never reaches prod — PROD re-throws and aborts the build. */
+  .writing-render-error {
+    font-family: var(--tome-font-mono);
+    font-size: var(--tome-text-caption);
+    line-height: 1.6;
+    color: #7a1f1f;
+    padding: 16px 18px;
+    margin: 12px 0;
+    border: 2px solid #c0392b;
+    border-radius: 3px;
+    background: rgba(192, 57, 43, 0.08);
+  }
+  .writing-render-error strong {
+    display: block;
+    font-size: var(--tome-text-chrome);
+    margin-bottom: 8px;
+  }
+  .writing-render-error__id { margin: 0 0 8px; }
+  .writing-render-error__id code {
+    background: rgba(192, 57, 43, 0.12);
+    padding: 1px 5px;
+    border-radius: 2px;
+  }
+  .writing-render-error__message {
+    white-space: pre-wrap;
+    margin: 0;
+    padding: 8px 10px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 2px;
   }
 
 </style>
