@@ -58,7 +58,25 @@ let { pages }: { pages: PageData[] } = $props();
      top-level $props reads capturing the initial value)
   ═══════════════════════════════════════════════ */
 
-const ROMAN = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x"];
+/* Lowercase Roman numeral for a 1-based page index. Unbounded — the book
+   is additively-evolving, so a fixed lookup table rots at leaf 11 (parent
+   tenet: fail visibly, never silently). */
+function toRoman(n: number): string {
+  const table: [number, string][] = [
+    [1000, "m"], [900, "cm"], [500, "d"], [400, "cd"],
+    [100, "c"], [90, "xc"], [50, "l"], [40, "xl"],
+    [10, "x"], [9, "ix"], [5, "v"], [4, "iv"], [1, "i"],
+  ];
+  let out = "";
+  let rem = n;
+  for (const [value, symbol] of table) {
+    while (rem >= value) {
+      out += symbol;
+      rem -= value;
+    }
+  }
+  return out;
+}
 
 /* Top-level TOC entries with optional children.
    Writings (slug starts with "writings/") nest under the writings-index page. */
@@ -102,7 +120,7 @@ let contentRefs: Map<number, HTMLElement> = new Map();
 
 let pageNumbers = $derived.by(() => {
   let idx = 0;
-  return pages.map((p) => (p.pageLayout !== "cover" ? ROMAN[idx++] : null));
+  return pages.map((p) => (p.pageLayout !== "cover" ? toRoman(++idx) : null));
 });
 
 let vineSide = $derived(
@@ -146,7 +164,7 @@ let landscapeOffset = $derived.by(() => {
 let currentPageLabel = $derived.by(() => {
   if (isPortrait) {
     const idx = Math.min(flipped, total - 1);
-    return `Page ${flipped + 1} of ${total}: ${pages[idx].label}`;
+    return `Page ${flipped + 1} of ${total}: ${pages[idx]?.label ?? `Page ${flipped + 1}`}`;
   }
   if (flipped >= total) return "Book closed (back)";
   if (flipped === 0) return "Front Cover";
@@ -419,12 +437,16 @@ function handleClick() {
 let touchStart = { x: 0, y: 0 };
 
 function handleTouchStart(event) {
-  touchStart = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+  const t = event.touches[0];
+  if (!t) return;
+  touchStart = { x: t.clientX, y: t.clientY };
 }
 
 function handleTouchEnd(event) {
-  const dx = event.changedTouches[0].clientX - touchStart.x;
-  const dy = event.changedTouches[0].clientY - touchStart.y;
+  const t = event.changedTouches[0];
+  if (!t) return;
+  const dx = t.clientX - touchStart.x;
+  const dy = t.clientY - touchStart.y;
   const delta = isPortrait ? -dy : -dx;
   const cross = isPortrait ? Math.abs(dx) : Math.abs(dy);
   if (Math.abs(delta) < interaction.swipeThreshold) return;

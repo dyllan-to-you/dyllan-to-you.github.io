@@ -10,7 +10,7 @@
  * dependency that was the source of the dev-server HMR fragility on MDX edits.
  */
 
-import { z } from "astro:content";
+import { z } from "astro/zod";
 
 const ChapterSchema = z.object({
   number: z.string(),
@@ -72,15 +72,4 @@ export function extractSections(html: string): { id: string; text: string }[] {
     }
   }
   return sections;
-}
-
-/** Slugify a heading text into an id (mirrors rehype-slug behavior for our ASCII subset). */
-export function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-+|-+$/g, "");
 }

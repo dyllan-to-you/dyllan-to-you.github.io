@@ -28,5 +28,4 @@ export const layout = {
 
 export const interaction = {
   swipeThreshold: 50,
-  portraitBackZone: 0.35,
 };

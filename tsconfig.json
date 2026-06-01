@@ -1,3 +1,13 @@
 {
-  "extends": "astro/tsconfigs/strict"
+  "extends": "astro/tsconfigs/strict",
+  "compilerOptions": {
+    "types": ["node"]
+  },
+  // The LLM vision backend (tests/vision.ts) lazily imports @anthropic-ai/sdk,
+  // which is intentionally NOT installed — the default pixel backend needs
+  // nothing. Excluding the one opt-in helper from type-checking keeps `astro
+  // check` clean without pulling the SDK into install or shimming it. Re-include
+  // and install the SDK if the LLM backend graduates to first-class.
+  // (exclude replaces the base's, so the base "dist" exclusion is restated.)
+  "exclude": ["dist", "tests/vision.ts"]
 }

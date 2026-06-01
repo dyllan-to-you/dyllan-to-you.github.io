@@ -3,6 +3,7 @@ import { getCollection } from "astro:content";
 import Tome from "../components/tome/Tome.svelte";
 import StickyNote from "../components/post/StickyNote.svelte";
 import { extractSections } from "../lib/page";
+import { escapeHtml } from "../lib/html";
 import { renderBody as renderWritingBody, getReadingTime, type Writing } from "../lib/writing";
 import "../styles/guide.css";
 
@@ -31,14 +32,6 @@ function fmtDate(d: Date): string {
 /** Compact date for the TOC meta column — "Apr 26". */
 function shortDate(d: Date): string {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-}
-
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
 }
 
 /** Render a writing as the HTML body of an in-book page. Includes title,

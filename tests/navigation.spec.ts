@@ -76,7 +76,7 @@ test.describe("Book navigation", () => {
     await page.keyboard.press("ArrowRight");
     await page.waitForTimeout(FLIP_SETTLE_MS);
 
-    label = await page.locator('[data-tome-live-page]').textContent();
+    label = (await page.locator('[data-tome-live-page]').textContent()) ?? "";
     expect(label).toContain("Book closed (back)");
   });
 
@@ -103,7 +103,7 @@ test.describe("Book navigation", () => {
     await page.keyboard.press("ArrowLeft");
     await page.waitForTimeout(FLIP_SETTLE_MS);
 
-    label = await page.locator('[data-tome-live-page]').textContent();
+    label = (await page.locator('[data-tome-live-page]').textContent()) ?? "";
     expect(label).toContain("Colophon");
   });
 

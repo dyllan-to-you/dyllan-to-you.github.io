@@ -13,7 +13,8 @@
  * `prompt:atlas/pr001`). MVP is single-file only; scheme parsing is reserved.
  */
 
-import { z } from "astro:content";
+import { z } from "astro/zod";
+import { escapeHtml } from "./html";
 
 // ────────────────────────────────────────────────────────────────────────────
 // Schema
@@ -137,7 +138,7 @@ function renderSpan(id: string, span: Span, writing: Writing, seen: Set<string>)
   if (span.prompt) {
     const prompt = writing.prompts[span.prompt];
     if (!prompt) throw new Error(`Unknown prompt: ${span.prompt} (span ${id})`);
-    attrs.push(`data-prompt="${escapeAttr(formatPrompt(prompt))}"`);
+    attrs.push(`data-prompt="${escapeHtml(formatPrompt(prompt))}"`);
   }
 
   // Voice-collab spans carry the hover-revealed prompt strip; make them
@@ -157,12 +158,4 @@ function formatPrompt(prompt: Prompt): string {
   if (prompt.claude) parts.push(`Claude: ${prompt.claude}`);
   if (prompt.notes) parts.push(prompt.notes);
   return parts.join("\n\n");
-}
-
-function escapeAttr(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/"/g, "&quot;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
 }

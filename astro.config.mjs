@@ -3,6 +3,7 @@ import svelte from '@astrojs/svelte';
 import rehypeSlug from 'rehype-slug';
 
 export default defineConfig({
+  output: 'static',
   integrations: [svelte()],
   site: 'https://dyllan.to',
   markdown: {
