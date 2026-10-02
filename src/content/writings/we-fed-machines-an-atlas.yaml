@@ -1,6 +1,6 @@
 id: writing:we-fed-machines-an-atlas
 title: "We Fed Machines an Atlas..."
-description: "...and Manifested a Globe. On building a better map."
+description: "...and Manifested a Globe. On building a better map. The possibility manifold."
 date: 2026-04-23
 draft: true
 tags: [llms, possibility-space, destination, ur]
@@ -40,7 +40,7 @@ body:
   - { kind: paragraph, id: p08, content: "{s:s018} {s:s019}" }
   - { kind: paragraph, id: p09, content: "{s:s020} {s:s021} {s:s022}" }
   - { kind: paragraph, id: p10, content: "{s:s023} {s:s024} {s:s025} {s:s026}{s:s027}" }
-  - { kind: paragraph, id: p11, content: "{s:s028} A {s:s029}." }
+  - { kind: paragraph, id: p11, content: "{s:s028}" }
   - { kind: paragraph, id: p12, content: "{s:s030} {s:s031}" }
   - { kind: separator }
 
@@ -50,6 +50,12 @@ body:
   # p15 dropped 2026-04-26 — category-error line redundant with p13 deflation; M6 loop carries the methodological corrective.
   - { kind: paragraph, id: p16, content: "{s:s118} {s:s119} {s:s120} {s:s121}" }
   - { kind: paragraph, id: p16b, content: "{s:s098} {s:s099} {s:s100}{s:s101} {s:s102}{s:s103}" }
+  # p16c, p16d added 2026-05-08 — cities + bridges + tunnels + mass transit.
+  # Extends the mountains/rivers/roads geology into the social scale where
+  # different mindsets/perspectives/backgrounds = different cities in concept
+  # space and communication = bridge work. Primes p28a (bridges-as-Oasis-answer).
+  - { kind: paragraph, id: p16c, content: "{s:s152} {s:s153} {s:s154} {s:s155} {s:s156}" }
+  - { kind: paragraph, id: p16d, content: "{s:s157} {s:s158} {s:s159}" }
   # p17 dropped 2026-04-26 — terrain-globe declaration redundant with maniglobe coinage in M2.
   - { kind: paragraph, id: p18, content: "{s:s048} {s:s049}" }
   # p18b dropped 2026-04-26 — GPS-evolution lineage relocated; holographic-GPS register lands in M6 loop where it's operational.
@@ -63,6 +69,13 @@ body:
   - { kind: paragraph, id: p22, content: "{s:s056} {s:s057}" }
   - { kind: paragraph, id: p23, content: "{s:s058} {s:s059} {s:s060} {s:s061} {s:s062} {s:s063} {s:s064}" }
   - { kind: paragraph, id: p23a, content: "{s:s140} {s:s141} {s:s142} A {s:s143} — {s:s144}" }
+  # p23b added 2026-05-25 — hollow's second meaning. The hologlobe is structurally
+  # hollow (no interior world-model, s140-s144) AND modally hollow (no labels
+  # distinguishing IS/WAS/COULD-BE/FANTASY in the corpus the projection trained on).
+  # The second hollowness is what the AI discourse calls hallucination —
+  # surfaced on hover via the s168 prompt-thread (pr076), not in main body, to
+  # keep the structural register and avoid AI-jargon collisions.
+  - { kind: paragraph, id: p23b, content: "{s:s165} {s:s166} {s:s167} {s:s168}" }
   - { kind: separator }
 
   # ── Act 3 — Building a better map ────────────────────────────────
@@ -72,8 +85,17 @@ body:
 
   # Movement: the hologlobe at hand (the "what" — operational)
   - { kind: paragraph, id: p36, content: "{s:s092} {s:s093} {s:s094}" }
-  - { kind: paragraph, id: p36a, content: "{s:s077} {s:s078}" }
-  - { kind: paragraph, id: p37, content: "{s:s130} {s:s131} {s:s132} {s:s133} {s:s134} {s:s135} {s:s136} {s:s137}" }
+  # p36a — 2026-05-25: s170 appended as rabbithole caveat to the detours-are-
+  # cheap claim. Distinct from vapor (s064): vapor = false-positive ground,
+  # nothing under your foot; rabbithole = false-flat over real-but-unmapped
+  # terrain. Productive ambiguity: gift or loss. Distributed-not-consolidated
+  # with vapor and hallucination (p23b) — each failure bites in its operational
+  # context.
+  - { kind: paragraph, id: p36a, content: "{s:s077} {s:s078} {s:s170}" }
+  # p37 — 2026-05-25: s169 inserted between s136 ("the walk is how you check")
+  # and s137 ("the atlas grows because of it") — names the three-role dance
+  # explicitly before the iteration close that puts all three roles in motion.
+  - { kind: paragraph, id: p37, content: "{s:s130} {s:s131} {s:s132} {s:s133} {s:s134} {s:s135} {s:s136} {s:s169} {s:s137}" }
   - { kind: separator }
 
   # Movement: the destination (the "where" — climactic)
@@ -85,8 +107,25 @@ body:
   - { kind: paragraph, id: p24, content: "{s:s111} {s:s112} {s:s113} {s:s115}" }  # 2026-04-26: dropped s114 ("Not paved routes. Not atlas-retrieval.") — opaque term, awkward fragments.
   - { kind: paragraph, id: p33, content: "{s:s151} {s:s088} {s:s089} {s:s090}" }
   - { kind: paragraph, id: p26, content: "{s:s069} {s:s070} {s:s071}" }
-  - { kind: paragraph, id: p35, content: "{s:s091} {s:s091a}" }
+  # p26a added 2026-05-25 — needle naming. Names the committed destination
+  # (s071's "world-state you want to be true") as the far end of the needle
+  # through possibility-space. Standalone beat for emphasis — gives the needle
+  # metaphor its own line before the M6 operational loop reveals as needle-
+  # threading work.
+  - { kind: paragraph, id: p26a, content: "{s:s171}" }
+  # p35 — 2026-05-25: split s091 into three sentences for cadence (GPS metaphor
+  # expansion). s091 = framing claim; s091b = constraint examples; s091c = off-
+  # road awareness. Then p35a holds s091a as standalone three-agent beat (now
+  # extended with world-as-actor: "and the world that catches your foot").
+  - { kind: paragraph, id: p35, content: "{s:s091} {s:s091b} {s:s091c}" }
+  - { kind: paragraph, id: p35a, content: "{s:s091a}" }
   - { kind: paragraph, id: p28, content: "{s:s072} <em>{s:s073}</em> {s:s074}" }
+  # p28a added 2026-05-08 — bridges-as-Oasis-answer. Reveals s073's destination
+  # as a network ("everyone with means, resources, opportunities" is plural
+  # natively), resolves the M4 Oasis rumor (not a watering hole, the connected
+  # city), and pivots the M6 close from personal-address to bridge-work between
+  # yours and others'. Sequence: address → network → reprise → walk.
+  - { kind: paragraph, id: p28a, content: "{s:s160} {s:s161} {s:s162} {s:s163} {s:s164}" }
   - { kind: paragraph, id: p38a, content: "{s:s145}" }  # NEW 2026-04-26: bare CNF reprise — direct reader-prompt right before walk.
   - { kind: paragraph, id: p38, content: "{s:s096}" }
   # p39 dropped 2026-04-26 — teaser line "to really understand where we are at, we want to understand how we got here" removed for now; standalone essay until the next post is ready.
@@ -234,14 +273,22 @@ spans:
     voice: [collab]
     prompt: pr016
     text: "The globe isn't a globe of a sphere. It's a globe of a manifold."
+  # s029 archived 2026-05-25 — maniglobe coinage retired in M2. Replaced by the
+  # manifold-of-probability / map-of-possibility couplet in s030 (precision over
+  # portmanteau). Hologlobe (M4 s140-s144) remains as the essay's single coined
+  # term — the structural coinage (maniglobe) collapses; the epistemic coinage
+  # (hologlobe) carries the weight. Span preserved for provenance per s007/s042/s046 pattern.
   s029:
     voice: [justice-inline, collab]
     prompt: pr017
     text: "<strong>maniglobe</strong>"
 
   s030:
-    voice: [justice-inline]
-    text: "<strong>We fed machines an atlas and manifested a maniglobe.</strong>"
+    voice: [justice-inline, collab]
+    prompt: pr018
+    text: "<strong>We fed machines an atlas and manifested a manifold of probability. A map of possibility.</strong>"
+    drafts:
+      - "<strong>We fed machines an atlas and manifested a maniglobe.</strong>"
   s031:
     voice: [agent-inline, collab]
     prompt: pr018
@@ -439,10 +486,18 @@ spans:
     voice: [collab]
     prompt: pr038
     text: "Mine:"
+  # s073: 2026-05-08 — Justice replaced the life/liberty/pursuit framing with
+  # an extension of it. American promise upgraded: life→means, liberty→resources,
+  # pursuit-of-happiness→opportunities-to-make-positive-impact. Connects to his
+  # North Star ("every person empowered to make positive impact") and primes the
+  # M6 bridges-as-Oasis-answer beat (p28a) — "everyone empowered" is a network,
+  # not a point, which is exactly what p28a unfolds.
   s073:
     voice: [justice-inline]
     text: >-
-      a world where everyone has life, liberty, and the pursuit of happiness — as long as that pursuit doesn't infringe, nonconsensually, on the life and liberty of others.
+      a world where everyone has the means, the resources, and the opportunities to make a positive impact.
+    drafts:
+      - "a world where everyone has life, liberty, and the pursuit of happiness — as long as that pursuit doesn't infringe, nonconsensually, on the life and liberty of others."
   s074:
     voice: [collab]
     prompt: pr039
@@ -543,12 +598,15 @@ spans:
   s091:
     voice: [justice-inline, collab]
     prompt: pr062
-    text: "The best LLM is the one that understands your intent and explores the search space alongside you."
+    text: "The best LLM, like the best GPS, is the one that can get you where you're going, ideally within your constraints."
+    drafts:
+      - "The best LLM is the one that understands your intent and explores the search space alongside you."
   s091a:
     voice: [agent-inline, collab]
     prompt: pr066
-    text: "Two agents on the same hologlobe."
+    text: "Two agents on the same hologlobe — and the world that catches your foot."
     drafts:
+      - "Two agents on the same hologlobe."
       - '"Which LLM is best?" is the question of a lost traveler who doesn''t want to admit they don''t have a destination.'
 
   s092:
@@ -850,6 +908,159 @@ spans:
     prompt: pr069
     text: "The more context you give the hologlobe, the more you're telling it where to walk."
 
+  # ── p16c — cities + bridges (geology becomes social) ─────────────
+  # 2026-05-08: Justice's extension — different mindsets/perspectives/backgrounds
+  # are different cities in concept space; communication builds bridges. Lands
+  # right after p16b (mountains/rivers/roads geology) so the cities/bridges
+  # vocabulary sits inside the same metaphor scaffolding. Primes p28a's
+  # bridges-as-Oasis-answer reveal in M6 — Oasis stops being a watering hole and
+  # resolves as the connected city.
+  s152:
+    voice: [collab]
+    prompt: pr070
+    text: "Where rivers meet, cities form."
+
+  s153:
+    voice: [justice-inline]
+    text: "Different mindsets, perspectives, backgrounds — different cities in concept space."
+
+  s154:
+    voice: [collab]
+    prompt: pr071
+    text: "The mathematician's, the gardener's, the founder's, the parent's. Each a local pocket where a worldview is dense, where the day-to-day walks happen, where the language rhymes."
+
+  s155:
+    voice: [justice-inline]
+    text: "Communication builds bridges."
+
+  s156:
+    voice: [collab]
+    prompt: pr072
+    text: "A formalism, a translation, a word that lands the same in two cities — built when someone walks both rivers and notices they could meet."
+
+  # ── p16d — tunnels + mass transit ───────────────────────────────
+  s157:
+    voice: [agent-inline]
+    text: "Sometimes you tunnel through a mountain instead — name an invariant that runs beneath two cities, and the route opens."
+
+  s158:
+    voice: [justice-inline]
+    text: "Bridges grow the cities. Mass transit follows."
+
+  s159:
+    voice: [collab]
+    prompt: pr073
+    text: "Shared frameworks, lingua francas, the atlas itself — infrastructure that lets a stranger from one city navigate another without learning every road."
+
+  # ── p28a — bridges as Oasis-answer (M6 thematic close) ─────────
+  # 2026-05-08: pairs with the s073 update. The new destination ("everyone with
+  # means, resources, opportunities to make a positive impact") is network-shaped
+  # natively — "everyone" implies distribution, infrastructure, transit. This
+  # paragraph cashes the cities/bridges/tunnels/transit metaphor (introduced in
+  # p16c/d) at the existential close. Resolves the M4 Oasis rumor: not a watering
+  # hole, the connected city.
+  s160:
+    voice: [collab]
+    prompt: pr074
+    text: "But the address isn't a point."
+
+  s161:
+    voice: [justice-inline]
+    text: "Everyone with means, resources, opportunities — that's many cities, not one. It's a network."
+
+  s162:
+    voice: [collab]
+    prompt: pr075
+    text: "Bridges between cities. Tunnels through mountains. Mass transit between worldviews."
+
+  s163:
+    voice: [justice-inline]
+    text: "The Oasis isn't a watering hole. It's the connected city."
+
+  s164:
+    voice: [agent-inline]
+    text: "Once you know your address, the work becomes the bridges between yours and others'."
+
+  # ── p23b — hollow in another way (M4 hallucination beat) ────────
+  # 2026-05-25: extends the M4 hologlobe-hollow coinage (s140-s144) to its second
+  # meaning. Structural hollow = no interior world-model. Modal hollow = no labels
+  # distinguishing IS/WAS/COULD-BE/FANTASY in the corpus the projection trained on.
+  # Same hollow, two senses. The discourse-name "hallucination" surfaces on hover
+  # via the s168 prompt-thread (pr076), not in main body — keeps the structural
+  # register, plants the anchor for readers who want it.
+  s165:
+    voice: [collab]
+    prompt: pr076
+    text: "<strong>Hollow in another way too.</strong>"
+
+  s166:
+    voice: [collab]
+    prompt: pr076
+    text: "The atlas held writings of every kind — what is, what was, what could be, what never could."
+
+  s167:
+    voice: [collab]
+    prompt: pr076
+    text: "To the projection, they all left the same shape in the math."
+
+  s168:
+    voice: [collab]
+    prompt: pr076
+    text: >-
+      So when it draws a path from where you are, it can't tell you which steps are tracing known terrain and which are tracing someone's once-imagined dragon. The path looks the same either way.
+
+  # ── p26a — needle naming (CNF answer as needle's far end) ───────
+  # 2026-05-25: names the destination as the far end of the needle through
+  # possibility-space. Connects the CNF diagnostic (s069-s071) to the trajectory
+  # framing — your committed destination is the point you're threading toward,
+  # in the vast space of what could be. Sets up the M6 operational loop as
+  # needle-threading work.
+  s171:
+    voice: [collab]
+    prompt: pr079
+    text: "It's the far end of the needle. In the vast space of what could be, the specific point you're trying to thread a path to."
+
+  # ── p35/p35a — GPS-extension for "best LLM" (s091 expansion) ────
+  # 2026-05-25: Justice's GPS metaphor for what "best LLM" actually means —
+  # destination-effective navigation within constraints, not benchmark score.
+  # Split s091 into three sentences for cadence: framing claim (s091), constraint
+  # examples (s091b), off-road awareness (s091c). Then p35a holds s091a as a
+  # standalone three-agent beat (now extended with world-as-actor).
+  s091b:
+    voice: [justice-inline, collab]
+    prompt: pr062
+    text: "Avoiding tolls or not, dodging traffic, planning gas stations that are cheap."
+
+  s091c:
+    voice: [justice-inline, collab]
+    prompt: pr062
+    text: "Lets you know when you have to go offroad, and lets you know the risks of each path."
+
+  # ── M6 three-role beat (s136 → s169 → s137) ──────────────────────
+  # 2026-05-25: names the three-role dance explicitly between the verification
+  # reprise (s136 "the walk is how you check") and the iteration close (s137
+  # "the atlas grows because of it"). Machine surfaces (topology); human commits
+  # (direction); world catches your foot or doesn't (verification). World is an
+  # actor not an agent — it acts without willing, responds without proposing.
+  # The asymmetry is what makes the dance necessary.
+  s169:
+    voice: [collab]
+    prompt: pr077
+    text: "The hologlobe surfaces. You commit. The world catches your foot or doesn't. None of the three can do the others' jobs."
+
+  # ── M6 rabbithole beat (companion to s077-s078 in p36a) ─────────
+  # 2026-05-25: caveat to the hologlobe-detours-are-cheap claim. The same
+  # interpolation that surfaces unwalked candidates can drop you down a
+  # rabbithole — real terrain off-map, productive ambiguity (Wonderland or
+  # lost). Distinct from vapor (s064 — false-positive ground) and hallucination
+  # (p23b — fantasy-region drawn as real). The three failure modes are
+  # distributed across the essay where they bite operationally rather than
+  # consolidated as a sidebar taxonomy.
+  s170:
+    voice: [justice-inline, collab]
+    prompt: pr078
+    text: "And every now and then it drops you down a rabbithole no one's walked. Sometimes that's where the work was. Sometimes you don't find your way back to the atlas."
+
 prompts:
   pr001:
     justice: >-
@@ -929,10 +1140,14 @@ prompts:
   pr017:
     justice: >-
       maniglobe is chosen as a portmanteau to handle the mixed readings of atlas in topology and geography/cartography.
-    notes: — manifold + globe + many + manifest.
+    notes: >-
+      Original portmanteau load: manifold + globe + many + manifest.
+      Retired 2026-05-25: the manifold-of-probability / map-of-possibility couplet in s030 names what the LLM IS (intrinsic probability-shaped manifold) and what it serves AS (map of possibility-territory) more precisely than the portmanteau could. Probability is intrinsic; possibility is territorial; manifold names structure; map names artifact-for-use. The portmanteau conflated them. Hologlobe (M4) survives as the essay's one coined word.
 
   pr018:
-    claude: "'typewriter' is the deflating contrast to 'maniglobe' — sets up the recreation beat."
+    claude: "'typewriter' is the deflating contrast to 'a map of possibility' — sets up the recreation beat."
+    notes: >-
+      Updated 2026-05-25 alongside s030 rewrite (maniglobe → manifold-of-probability / map-of-possibility couplet). pr018 now carries the s030 prompt-thread for both sentences of the rewritten title-line: the technical claim ("manifold of probability") names what the LLM IS; the appositive ("A map of possibility") names what it serves AS. Probability is intrinsic to the artifact; possibility is the modal territory it lets you navigate. The couplet keeps both readings in the same breath, and the typewriter-deflation in s031 still lands because using a map-of-possibility *as a typewriter* is exactly the recreation-mode anti-pattern M3 unpacks.
 
   pr019:
     justice: >-
@@ -1098,9 +1313,11 @@ prompts:
 
   pr062:
     justice: >-
-      The best LLM is in a sense the one that understands user intent and acts most effectively at exploring the solution/concept/possibility space alongside the user.
+      Original (2026-04): "The best LLM is in a sense the one that understands user intent and acts most effectively at exploring the solution/concept/possibility space alongside the user."
+      Then 2026-05-25: "The best LLM, like the best GPS, is the one that can get you where you're going, ideally within your constraints. Avoiding tolls or not, dodging traffic, planning gas stations that are cheap. Lets you know when you have to go offroad, and lets you know the risks of each path."
     claude: >-
-      reframed s091 — the original 'lost traveler' line was too dismissive. Benchmark wars dodge the work of destination, but the question itself has a real answer when asked in good faith: 'best' is collaborative effectiveness in exploration, not benchmark score.
+      Original reframe (2026-04): the 'lost traveler' line was too dismissive. Benchmark wars dodge the work of destination, but the question itself has a real answer when asked in good faith: 'best' is collaborative effectiveness in exploration, not benchmark score.
+      2026-05-25 expansion: GPS metaphor extends the framing operationally. "Best LLM" = destination-effective navigation within constraints, not benchmark score on synthetic tasks. The GPS examples (tolls, traffic, gas stations) ground the abstract "constraints" claim in a register every reader knows. The off-road / risks-of-each-path close sets up the failure-mode triple (vapor / rabbithole / hallucination) without naming them — readers who hit M4's hollow coinage (p23b) and M6's rabbithole beat (s170) get the operational stakes here. Split into three spans (s091/s091b/s091c) for cadence; p35a holds s091a as the standalone three-agent beat (now extended with world-as-actor).
 
   pr063:
     justice: >-
@@ -1120,11 +1337,12 @@ prompts:
 
   pr066:
     justice: >-
-      "I want to broaden the definition of agent to mean 'human' and/or 'ai'."
+      "I want to broaden the definition of agent to mean 'human' and/or 'ai'." Then 2026-05-25: "The world has actions, it's a system in a sense. It's an actor, if not an agent."
     claude: >-
-      Agent, in the older broader sense — anyone who acts. Human or machine, walker or rider, builder or built. If you're moving on the hologlobe, you're an agent. (The AI industry's narrower usage — autonomous system, hamster ball with steering — is one species of this older genus.) Two agents on the same hologlobe: you and the LLM, both walking the projected surface together.
+      Agent, in the older broader sense — anyone who acts. Human or machine, walker or rider, builder or built. If you're moving on the hologlobe, you're an agent. (The AI industry's narrower usage — autonomous system, hamster ball with steering — is one species of this older genus.) Two agents on the same hologlobe: you and the LLM, both walking the projected surface together. And the world that catches your foot — an *actor* not an agent: it acts without willing, responds without proposing. Agents propose and choose; actors only respond. The three-handed dance needs all three.
     notes: >-
       Originally p19b carried this reclaim as a standalone paragraph. Relocated to this tooltip 2026-04-27 — the in-text aside read as a non-sequitur. Tooltip surfaces the broader meaning for readers who want it without interrupting M4 flow.
+      2026-05-25 extension: s091a updated to "Two agents on the same hologlobe — and the world that catches your foot." Adds the third role (world-as-actor) without overloading "agent" past usefulness — the actor/agent distinction preserves the broader-agent reclaim while making room for the role that has unforgeable feedback but no will. s169 in M6 (p37) cashes this out as prescription: machine surfaces, human commits, world catches.
 
   pr068:
     justice: >-
@@ -1137,3 +1355,64 @@ prompts:
       "The more context you give, the more it biases the walk. Or more accurately, the more guidance you're giving to tell it where to go."
     claude: >-
       Inserted at the start of p33 (hard-part beat) as setup for the dodges. Names prompting as direction-giving — which makes the pivot to "the hard part isn't picking the right prompt" land more pointedly: prompts DO give direction; the harder problem is knowing what direction. Justice's reframe shifts "biases the walk" (mechanical/negative) to "telling it where to go" (affirmative, destination-coded) — same fact, different valence.
+
+  pr070:
+    justice: >-
+      "different mindsets, perspectives, backgrounds, are almost like different cities or areas in concept space from which a person is venturing from, how communication builds bridges, grows the city, makes transit between worldviews possible"
+    claude: >-
+      Extended the geology one settlement-step further — cities historically form at river confluences (water access, trade), so "where rivers meet, cities form" continues the mountains/rivers/roads vocabulary into the social scale where Justice's cities-of-concept-space lives. Opens p16c without breaking register.
+
+  pr071:
+    justice: ditto pr070 — Justice's framing of cities as mindsets/perspectives/backgrounds.
+    claude: >-
+      Enumerated example cities (mathematician/gardener/founder/parent) as concrete instances grounding the abstract "city = worldview" claim. Unpacked "city" via the three-clause definition: dense worldview, day-to-day walks, language that rhymes. Concrete-then-abstract pattern matching p16b's mountains/rivers/roads structure (justice-anchor + collab-elaboration).
+
+  pr072:
+    justice: >-
+      "communication builds bridges, grows the city, makes transit between worldviews possible"
+    claude: >-
+      Unpacked "bridge" as the trio that names what bridges *are* across worldviews — formalism, translation, shared word — and named the build-condition ("when someone walks both rivers and notices they could meet"). Mirrors p16b's "roads bridge the rivers" at the social scale: rivers/roads at the domain layer, cities/bridges at the citizen layer. Same shape, different stratum.
+
+  pr073:
+    justice: >-
+      "transit between worldviews possible" — Justice's framing of mass transit as the scaling-out from bilateral bridges.
+    claude: >-
+      Mass transit as the scaling artifact — shared frameworks, lingua francas, the atlas itself. Atlas-as-transit-infrastructure closes the loop back to M1/M2: what the astronauts built across generations *is* the original mass transit between cities of concept space. The register intentionally clashes (industrial term in geological language) — Justice flagged this as a feature: industrial-modern verb on natural-timeless landscape names the social construct as construct.
+
+  pr074:
+    justice: >-
+      Justice's new s073 destination ("everyone has the means, the resources, and the opportunities to make a positive impact") is plural natively — "everyone" can't be a point. Pivot opener for p28a names that.
+    claude: >-
+      "But the address isn't a point" — single-line seam between p28's address-declaration and p28a's network-reframe. Doubles as a callback to s059's earlier "the machines aren't on the real planet, they're on the globe" structural-turn move: each "But X isn't Y, it's Z" beat in this essay marks an upgrade in how the reader holds the metaphor.
+
+  pr075:
+    justice: >-
+      "communication builds bridges, grows the city, makes transit between worldviews possible" — at the M6 close, the three connective shapes get cashed in.
+    claude: >-
+      Triple-list naming the three connective shapes (bridges between cities / tunnels through mountains / mass transit between worldviews) introduced in p16c/d, now compressed into a single trochaic line at the M6 close. The Oasis turns out to be the network they connect — s163 ("not a watering hole, the connected city") resolves the M4 rumor.
+
+  pr076:
+    justice: >-
+      LLMs train on writings that cover what is, what has been, what could be, and fantasy. The projection can't tell those apart — they all leave the same shape in the math. So when it draws a path, you can't tell from the path itself whether it's tracing reality or someone's once-imagined dragon.
+    claude: >-
+      The AI discourse has a name for this — *hallucination* — and mostly treats it as a bug to be fixed. It isn't a bug. It's the projection doing exactly what it was built to do: interpolate across a corpus that was always modally mixed, with no labels to keep the modes apart. You can shrink it (RLHF, citation-grounding, retrieval-augmentation, fact-checkers — every "fix" is some form of injecting human modal-discrimination back into the loop). You can't dissolve it. The corpus will always contain fantasy; the projection will always mix modes. The asymmetric dance — human modal-discrimination upstream, world's verification downstream — is the answer, not the elimination.
+    notes: >-
+      Drafted 2026-05-25 as a hybrid M4 beat: structural framing in the body (p23b: s165-s168), discourse-name *hallucination* surfaced on hover via this prompt-thread (s168 carries the dotted-underline). The hover-text lets the structural insight land in the main prose without the AI-jargon while planting the discourse-anchor for readers who want it. Same pattern as pr066 (broader-agent definition relocated to s091a tooltip). The p23b paragraph extends the M4 hologlobe-hollow coinage (s140-s144) to its second meaning: structural hollow (no interior world-model) AND modal hollow (no labels distinguishing fantasy from reality in the training corpus). Same hollow word, two senses.
+
+  pr077:
+    justice: >-
+      "in the end, humans have to execute and make it happen. LLMs make it easier to plan the route. Make the fog less dense. But can still have you fall in a hole / down a rabbithole noone's explored." The world has actions — it's a system in a sense. It's an actor, if not an agent.
+    claude: >-
+      Drafted s169 as the M6 explicit three-role beat. Machine surfaces topology (sees the whole manifold); human commits direction (chooses destination, filters trajectories, carries modal-discrimination); world catches your foot or doesn't (verification — the only unforgeable feedback). The world is an *actor* not an agent — it acts without willing, responds without proposing. The asymmetry is structural: agents propose and choose; actors only respond. Together they form a three-handed dance where each role does what the others can't. Lands between s136 (the walk is how you check) and s137 (the atlas grows) — names the three roles explicitly right before the iteration close that puts them all in motion. The s091a extension ("Two agents on the same hologlobe — and the world that catches your foot") seeds the third role at the M5/M6 hinge; s169 lands it as prescription.
+
+  pr078:
+    justice: >-
+      "can drop you down a rabbithole noone's explored!"
+    claude: >-
+      Rabbithole as a distinct failure mode from vapor. Vapor (s064) is false-positive ground — the projection drew solid where nothing exists; you fall through into nothing. Rabbithole is false-flat over real-but-unmapped terrain — the projection smoothed over a tunnel that goes somewhere off-map. Productive ambiguity: Alice found Wonderland; you might too, or you might not find your way back. Also a quiet topology pun — a manifold *can* have tunnels and handles invisible from a surface view; the hologlobe projects only the surface. Lands in p36a as a caveat-companion to the "detours are cheap" claim (s077-s078). Distributed across the essay with vapor (s064) and hallucination (p23b) rather than consolidated as a sidebar taxonomy — each failure bites in its operational context.
+
+  pr079:
+    justice: >-
+      Inherits from the pursuit-as-process beat (s075) and the destination-as-world-state claim (s071). Names the trajectory framing explicitly — your committed destination is the far end of a needle through possibility-space.
+    claude: >-
+      Sharpens the central metaphor: the COULD-BE region is vast (most of modal space sits between IS and FANTASY), so "thread the needle" needs the needle to be *the trajectory*, not the region. A trajectory satisfies three constraints: rooted in IS (where you actually are), pointed at chosen COULD-BE (your destination), plausible intermediates (no fantasy detours = no hallucination). The hologlobe surfaces candidate trajectories; the human filters and chooses; the world verifies by walking. Stands as a standalone p26a for emphasis — gives the needle metaphor its own beat between the destination work (p26) and the GPS-best-LLM claim (p35).
