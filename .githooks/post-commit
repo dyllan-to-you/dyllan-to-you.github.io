@@ -28,5 +28,6 @@ if git diff --quiet --cached "$SUB_NAME" && git diff --quiet "$SUB_NAME"; then
 fi
 
 git add "$SUB_NAME"
-git commit --no-verify -m "Bump $SUB_NAME: $SUB_SUBJECT" -m "Submodule $SUB_NAME advanced to $SUB_SHA." >/dev/null
+# Pathspec = commit ONLY the pointer; anything else staged in the parent stays staged.
+git commit --no-verify -m "Bump $SUB_NAME: $SUB_SUBJECT" -m "Submodule $SUB_NAME advanced to $SUB_SHA." -- "$SUB_NAME" >/dev/null
 echo "→ parent ($SUB_NAME) bumped to $SUB_SHA"
