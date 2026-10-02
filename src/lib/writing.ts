@@ -56,10 +56,12 @@ export const SpanSchema = z.object({
 
 export const PromptSchema = z.object({
   justice: z.string().optional(),
-  claude: z.string().optional(),
+  claude: z.string().optional(), // legacy Claude Code writings
+  agent: z.string().optional(), // model-neutral summary for new writings
+  agentName: z.string().optional(), // attribution label, e.g. "Pi (OpenAI GPT-6.1)"
   notes: z.string().optional(),
-  // Origin pointer into the event log: `<session-id>/<message-uuid>` of the
-  // /write transcript turn that shaped this prompt. Evidence, never rendered.
+  // Origin pointer into the session transcript for the turn that shaped this
+  // prompt. Evidence, never rendered.
   source: z.string().optional(),
 });
 
@@ -164,6 +166,7 @@ function formatPrompt(prompt: Prompt): string {
   const parts: string[] = [];
   if (prompt.justice) parts.push(`Justice: ${prompt.justice}`);
   if (prompt.claude) parts.push(`Claude: ${prompt.claude}`);
+  if (prompt.agent) parts.push(`${prompt.agentName || "Agent"}: ${prompt.agent}`);
   if (prompt.notes) parts.push(prompt.notes);
   return parts.join("\n\n");
 }
