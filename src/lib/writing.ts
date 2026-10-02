@@ -58,6 +58,9 @@ export const PromptSchema = z.object({
   justice: z.string().optional(),
   claude: z.string().optional(),
   notes: z.string().optional(),
+  // Origin pointer into the event log: `<session-id>/<message-uuid>` of the
+  // /write transcript turn that shaped this prompt. Evidence, never rendered.
+  source: z.string().optional(),
 });
 
 export const WritingSchema = z.object({
