@@ -74,7 +74,7 @@ Dependency graph: `tokens.ts + lib/{geometry,routing,content,html,page,writing} 
 
 ## Key Design Decisions
 
-**Routes are a projection of content.** `src/pages/[...slug].astro`'s `getStaticPaths` enumerates every route from the same `getCollection('pages')` + `getCollection('writings')` calls `BookLayout` composes from — through the single shared `isPublished()` predicate (`src/lib/content.ts`). So the generated route set and the rendered page set cannot drift: adding a page or un-drafting a writing arms a working permalink, never a 404. (See CLAUDE.md T12.)
+**Routes are a projection of content.** `src/pages/[...slug].astro`'s `getStaticPaths` enumerates every route from the same `getCollection('pages')` + `getCollection('writings')` calls `BookLayout` composes from — through the single shared `isPublished()` predicate (`src/lib/content.ts`). So the generated route set and the rendered page set cannot drift: adding a page or un-drafting a writing arms a working permalink, never a 404. (See AGENTS.md T12.)
 
 **Layout MODE is an explicit discriminant.** A content leaf's interior layout is `page.block` (`flow` | `epigraph` | `colophon`), not inferred from field presence. A mandatory Zod `.superRefine` aborts the build with a named error if the content contradicts the tag; the orthogonal slots (`body`/`cards`/`chapter`/`header`/`closing`) still compose within `flow`.
 
@@ -84,7 +84,7 @@ Dependency graph: `tokens.ts + lib/{geometry,routing,content,html,page,writing} 
 
 **Pure geometry, testable.** The flip math (`transformFor`/`transitionFor`/`isFlippedFor`) and path↔index routing live in pure `src/lib/{geometry,routing}.ts` with vitest coverage; `Tome.svelte` keeps the reactive state + flip state machine and calls them with live values.
 
-**Build fault-isolation.** One bad `{s:id}`/voice/prompt ref degrades to a loud error card in dev and hard-aborts the build in prod (dev-soft / CI-hard) — a single content typo can't silently ship or nuke the whole site. (CLAUDE.md T13.)
+**Build fault-isolation.** One bad `{s:id}`/voice/prompt ref degrades to a loud error card in dev and hard-aborts the build in prod (dev-soft / CI-hard) — a single content typo can't silently ship or nuke the whole site. (AGENTS.md T13.)
 
 **Per-route social surface.** `<head>` emits OG/Twitter/canonical tags driven by each route's own data, so a shared link unfurls as itself, not the cover.
 

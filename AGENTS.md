@@ -68,7 +68,7 @@ The tome renders every leaf in DOM at once and uses `inert` on non-active leaves
 
 `tests/navigation.spec.ts` walks the book via `for (let i = 0; i < 5; i++) page.keyboard.press("ArrowRight")` and asserts arrival at Colophon. That arithmetic was correct when the book had 6 pages. The book is now 7 pages and the test silently lands on "Now" — failing on the assertion text, not the walk count, so the failure mode looks like a regression rather than test rot.
 
-**Why:** Caught during the 2026-05-16 a11y pass when running the full suite. The test predates the addition of the writings index page. The book is additively-evolving (Tenet from parent `CLAUDE.md`: "Additive evolution") — its size will grow again.
+**Why:** Caught during the 2026-05-16 a11y pass when running the full suite. The test predates the addition of the writings index page. The book is additively-evolving (Tenet from parent `AGENTS.md`: "Additive evolution") — its size will grow again.
 
 **How to apply:** When walking a sequence whose length is data-driven (pages array, writings collection, etc.), derive the target index from the data, not from a hardcoded literal. For book tests: `for (let i = 0; i < pages.length - 1; i++)` or query the live region label after each press and break on match. Same shape generalizes to any "click N times to reach X" test against any append-only structure.
 
@@ -134,4 +134,4 @@ A bare `@keyframes` in a global stylesheet with no in-file `animation:` consumer
 - **Routing**: `src/pages/[...slug].astro` — one catch-all `getStaticPaths` projects every route from the collections (T11); `src/pages/rss.xml.ts` is the writings feed. `src/lib/content.ts:isPublished` is the shared draft filter.
 - **Tome composition**: `src/layouts/BookLayout.astro`. Page order follows the numeric prefix; writings are injected after the writings-index page in descending-date order, each carrying `parent: "writings"` so the TOC nests them (not slug-prefix magic).
 - **Testing**: `pnpm test:unit` (vitest — pure geometry/routing in `src/lib`); `pnpm test:a11y` (axe + contrast); `pnpm test` (full Playwright — run `--workers=1`; the `@vision` specs flake under preview-server contention).
-- **Commit style**: inherits the project's mythic S-V-O register (see parent `CLAUDE.md`).
+- **Commit style**: inherits the project's mythic S-V-O register (see parent `AGENTS.md`).
