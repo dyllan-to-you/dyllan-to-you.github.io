@@ -4,7 +4,7 @@ label: Now
 toc: now
 block: flow
 header: "cat ~/now"
-closing: "last updated: 2026-04-15"
+closing: "last updated: 2026-10-02"
 body: |-
   <h2 id="building">building</h2>
 

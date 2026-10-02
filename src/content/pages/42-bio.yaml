@@ -1,23 +1,32 @@
-My dad's side of the family. They had a bicycle shop in Vietnam. Then the war came, and my dad's family came to the us as refugees. 
+slug: bio
+order: 42
+label: Bio
+toc: bio
+draft: true
+block: flow
+# Raw draft, 2026-10-02 — Justice's words, verbatim; wrapped in page frontmatter only.
+# Ends mid-thought ("I remember") on purpose: pick up from there.
+body: |-
+  <p>My dad's side of the family. They had a bicycle shop in Vietnam. Then the war came, and my dad's family came to the us as refugees.</p>
 
-My mom's side, as I understand it: my grandfather was a chef. He'd start a chinese restaurant. Cook dope chinese food. make bank. gamble away all of the winnings. 
+  <p>My mom's side, as I understand it: my grandfather was a chef. He'd start a chinese restaurant. Cook dope chinese food. make bank. gamble away all of the winnings.</p>
 
-being too lucky can make you feel guilty, it seems
+  <p>being too lucky can make you feel guilty, it seems</p>
 
-my parents met working in one of my grandfather's restaurants i guess im not sure
+  <p>my parents met working in one of my grandfather's restaurants i guess im not sure</p>
 
-the story i was told was of my mom, adultified as a kid
-she was responsible for her two younger brothers, my uncles. 
+  <p>the story i was told was of my mom, adultified as a kid<br />
+  she was responsible for her two younger brothers, my uncles.</p>
 
-anyways
+  <p>anyways</p>
 
-when i was telling my mom about my debt and my situation, she told me about her situation. in brief  i guess. 
+  <p>when i was telling my mom about my debt and my situation, she told me about her situation. in brief  i guess.</p>
 
-she said she was on a self-destructive path. but when she was impregnated with me, i guess i turned it all around?
-because then not working for self but for other?
-she went back to school to get her masters. She had a bachelors in chemistry but didn't take it anywhere i guess; she didn't have enough confidence or faith in herself i guess?
+  <p>she said she was on a self-destructive path. but when she was impregnated with me, i guess i turned it all around?<br />
+  because then not working for self but for other?<br />
+  she went back to school to get her masters. She had a bachelors in chemistry but didn't take it anywhere i guess; she didn't have enough confidence or faith in herself i guess?</p>
 
-she went back to school to get a masters in information technology
-which is what all of this is, y'know
+  <p>she went back to school to get a masters in information technology<br />
+  which is what all of this is, y'know</p>
 
-I remember 
+  <p>I remember</p>
